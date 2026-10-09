@@ -9,6 +9,7 @@ import BookStore from "./pages/BookStore";
 import BookDetails from "./pages/BookDetails";
 import BookPublishing from "./pages/BookPublishing";
 import Contacts from "./pages/Contacts";
+import HRDepartment from "./pages/HRDepartment";
 import Conference from "./pages/Conference";
 
 function App() {
@@ -30,6 +31,8 @@ function App() {
         />
         <Route path="/book-publishing" element={<BookPublishing />} />
         <Route path="/contact" element={<Contacts />} />
+        <Route path="/hr-department" element={<HRDepartment />} />
+        <Route path="/hr" element={<HRDepartment />} />
         <Route path="/conferences/:confname" element={<Conference />} />
       </Routes>
       <Footer />
