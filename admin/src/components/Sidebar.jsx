@@ -23,6 +23,10 @@ const navItems = [
   { path: '/admin/books', icon: MdMenuBook, label: 'Store Books' },
   { path: '/admin/conferences', icon: MdGroups, label: 'Conferences' },
   { path: '/admin/testimonials', icon: MdStar, label: 'Testimonials' },
+  // Job adverts for the public /careers page. Without an entry here the screen
+  // exists but is reachable only by typing the URL, which is how a content
+  // screen ends up unused.
+  { path: '/admin/careers', icon: MdWork, label: 'Careers' },
   { path: '/admin/meet-our-team', icon: MdAssignment, label: 'Meet Our Team' },
 ];
 

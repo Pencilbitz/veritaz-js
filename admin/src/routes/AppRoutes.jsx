@@ -10,6 +10,8 @@ import Conferences from '../pages/Conferences';
 import AddConference from '../pages/AddConference';
 import Testimonials from '../pages/Testimonials';
 import AddTestimonial from '../pages/AddTestimonial';
+import Careers from '../pages/Careers';
+import AddCareer from '../pages/AddCareer';
 import MeetOurTeam from '../pages/MeetOurTeam';
 import ImportData from '../pages/ImportData';
 import Login from "../pages/Login";
@@ -52,6 +54,14 @@ const AppRoutes = () => {
         <Route path="testimonials" element={<Testimonials />} />
         <Route path="testimonials/add" element={<AddTestimonial />} />
         <Route path="testimonials/edit/:id" element={<AddTestimonial />} />
+
+        {/* Careers. Nested inside the same /admin element as everything else, so
+            the ProtectedRoute above covers these too — veritaz_careers grants
+            write only to the authenticated role, and this is where that session
+            comes from. */}
+        <Route path="careers" element={<Careers />} />
+        <Route path="careers/add" element={<AddCareer />} />
+        <Route path="careers/edit/:id" element={<AddCareer />} />
 
         <Route path="meet-our-team" element={<MeetOurTeam />} />
 
