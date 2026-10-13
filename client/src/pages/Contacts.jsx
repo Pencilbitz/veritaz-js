@@ -4,27 +4,7 @@ import { supabase } from "../lib/supabase";
 export default function Contacts() {
   // Form submission state
   const [formStatus, setFormStatus] = useState({ message: '', type: '' });
-  const [teamMembers, setTeamMembers] = useState([]);
 
-  useEffect(() => {
-    const fetchTeam = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("veritaz_team_contacts")
-          .select("*")
-          .order("id", { ascending: true });
-
-        if (error) throw error;
-
-        console.log(data);
-        setTeamMembers(data || []);
-      } catch (err) {
-        console.error("Error fetching contacts:", err);
-      }
-    };
-
-    fetchTeam();
-  }, []);
 
   // Handle Third-Party Scripts (GTM & Google Analytics) on Mount
   useEffect(() => {
@@ -145,89 +125,7 @@ export default function Contacts() {
   return (
     <div style={{ maxWidth: '1520px' }} className="container mx-auto bg-gray-50 font-sans">
 
-      {/* Meet Our Team Section */}
-      <section className="py-5 bg-gray-50 px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-[#3e7d89] text-4xl md:text-4xl font-bold mb-4">Meet our team!</h2>
-          <p className="text-slate-500 font-medium">Direct lines to our department specialists</p>
-        </div>
 
-        <div className="max-w-5xl mx-auto flex flex-wrap gap-6 lg:gap-6 justify-center">
-          {(() => {
-            const coo = teamMembers.find(m => m.designation?.toLowerCase().includes('chief operations officer') || m.name?.toLowerCase().includes('baskar'));
-            if (!coo) return null;
-            return (
-              <div className="relative group overflow-hidden bg-white w-full max-w-[350px] h-[420px] sm:h-[500px] shadow-lg rounded-lg flex items-center justify-center">
-                <img
-                  src={coo.photo ? (coo.photo.startsWith('http') ? coo.photo : `${coo.photo}`) : 'https://placehold.co/400x500/EEE/31343C?text=Photo'}
-                  alt={coo.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 sm:p-8 text-white">
-                  <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-wider leading-tight">{coo.name}</h2>
-                  <p className="text-white font-semibold text-sm sm:text-base mb-3">{coo.designation}</p>
-
-                  <div className="flex items-center text-white text-sm sm:text-base">
-                    {coo.phone && (
-                      <a href={`tel:${coo.phone.replace(/[^+\d]/g, '')}`} className="inline-flex items-center hover:text-white transition-colors duration-300">
-                        <i className="fa-solid fa-phone mr-2 text-blue-400"></i>
-                        <span className="font-medium">{coo.phone}</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      </section>
-
-      {/* Assistant Senior Manager Section */}
-      <section className="py-8 bg-gray-50 px-4">
-        <div className="max-w-[350px] mx-auto">
-          {(() => {
-            const asst = teamMembers.find(m => m.designation?.toLowerCase().includes('assistant senior manager') || m.name?.toLowerCase().includes('logeshwari'));
-            if (!asst) return null;
-            return (
-              <div className="bg-white rounded-tl-[60px] rounded-br-[60px] overflow-hidden shadow-lg border border-slate-100 flex flex-col h-full hover:shadow-2xl transition-all duration-300">
-                <div className="h-72 overflow-hidden relative group shrink-0">
-                  <img
-                    src={asst.photo ? (asst.photo.startsWith('http') ? asst.photo : `${asst.photo}`) : 'https://placehold.co/400x400/EEE/31343C?text=Photo'}
-                    alt={asst.name}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#3e7d89]/20 to-transparent pointer-events-none"></div>
-                </div>
-
-                <div className="p-4 flex-grow flex flex-col w-full bg-white relative z-10">
-                  <h3 className="text-xl font-bold text-slate-800 mb-1">{asst.name}</h3>
-                  <p className="text-[#3e7d89] text-xs font-bold uppercase tracking-widest">{asst.designation}</p>
-
-                  <div className="space-y-2 mt-2">
-                    {asst.phone && (
-                      <a href={`tel:${asst.phone.replace(/[^+\d]/g, '')}`} className="flex items-center rounded-xl bg-slate-50 hover:bg-[#3e7d89] hover:text-white transition-colors p-2 group">
-                        <span className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-[#3e7d89]">
-                          <i className="fa-solid fa-phone text-sm"></i>
-                        </span>
-                        <span className="text-sm font-semibold ml-3">{asst.phone}</span>
-                      </a>
-                    )}
-
-                    {asst.email && (
-                      <a href={`mailto:${asst.email}`} className="flex items-center rounded-xl bg-slate-50 hover:bg-[#3e7d89] hover:text-white transition-colors p-2 group">
-                        <span className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-[#3e7d89]">
-                          <i className="fa-solid fa-envelope text-sm"></i>
-                        </span>
-                        <span className="text-xs font-semibold truncate ml-3">{asst.email}</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      </section>
 
       {/* Contact Section */}
       <section className="bg-slate-50 py-24 px-6 relative overflow-hidden font-sans">
