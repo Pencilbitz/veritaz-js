@@ -202,6 +202,9 @@ export default function Navbar() {
                             Our Company
                         </a>
 
+                        {/* Events hidden from navigation - restore this block to bring it back.
+                            The /events route and event detail pages still resolve, so links
+                            already shared keep working, and the admin still manages events.
                         <a
                             href="/events"
                             className="px-4 py-2 rounded-md text-sm font-semibold text-slate-700 hover:bg-gray-50 hover:text-pink-600 transition-all flex items-center gap-2"
@@ -209,6 +212,7 @@ export default function Navbar() {
                             <Calendar className="w-4 h-4 text-pink-500" />
                             Events
                         </a>
+                        */}
 
                         <a
                             href="/book-store"
@@ -410,6 +414,7 @@ export default function Navbar() {
                             <ChevronRight className="w-4 h-4 text-slate-300" />
                         </a>
 
+                        {/* Events hidden from navigation - restore this block to bring it back.
                         <a
                             href="/events"
                             className="flex items-center gap-4 px-6 py-3 text-slate-700 font-medium hover:bg-pink-50 hover:text-pink-600 transition-colors"
@@ -420,6 +425,7 @@ export default function Navbar() {
                             <span className="flex-1">Events</span>
                             <ChevronRight className="w-4 h-4 text-slate-300" />
                         </a>
+                        */}
 
                         <a
                             href="/book-store"
