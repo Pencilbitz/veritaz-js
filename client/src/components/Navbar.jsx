@@ -1,620 +1,495 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   Menu,
   X,
   Home,
   ShieldCheck,
   Building2,
-  Calendar,
   ShoppingBag,
   BookOpen,
   Mail,
   Users,
   ChevronDown,
   ChevronRight,
+  BadgeCheck,
+  Briefcase,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
-
 import {
   FaLinkedinIn,
   FaFacebookF,
   FaInstagram,
   FaWhatsapp,
 } from "react-icons/fa";
-import axios from "axios";
+import { supabase } from "../lib/supabase";
+
+const EMAIL = "veritazinternationalpress@gmail.com";
+const MAIL_HREF = `mailto:${EMAIL}?subject=Enquiry%20from%20Website`;
+const WHATSAPP_HREF = "https://wa.me/916380658876";
+
+const socials = [
+  { href: "https://www.linkedin.com/in/veritaz-international-press/", icon: FaLinkedinIn, label: "LinkedIn" },
+  { href: "https://www.facebook.com/profile.php?id=61583778217764", icon: FaFacebookF, label: "Facebook" },
+  { href: "https://www.instagram.com/veritazinternationalpress/", icon: FaInstagram, label: "Instagram" },
+];
+
+// Events is hidden from navigation - add
+//   { to: "/events", label: "Events", icon: Calendar }
+// back after "Our Company" (and import Calendar) to restore it. The /events
+// route and event detail pages still resolve, so links already shared keep
+// working, and the admin still manages events.
+const primaryLinks = [
+  { to: "/", label: "Home", icon: Home, end: true },
+  { to: "/our-company", label: "Our Company", icon: Building2 },
+  { to: "/book-store", label: "Book Store", icon: ShoppingBag },
+  { to: "/book-publishing", label: "Publishing", icon: BookOpen },
+];
+
+// HR Department is a dropdown because its two destinations are read by two
+// different visitors - an employer running a background check and a job
+// applicant - so each gets a one-line hint. The HRMS staff portal is
+// deliberately not here; it is reachable from the HR Department page.
+const hrLinks = [
+  { to: "/hr-department", label: "Employment Verification", hint: "For employers & agencies", icon: BadgeCheck },
+  { to: "/careers", label: "Careers", hint: "Open roles & applications", icon: Briefcase },
+];
+
+const confNameOf = (conf) => conf.conferencename || conf.conferenceName || "";
+const confSlugOf = (conf) => confNameOf(conf).replace(/\s+/g, "-").toLowerCase();
+
+const desktopLinkClass = (active) =>
+  `relative px-3.5 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 transition-colors ${
+    active ? "text-slate-900 bg-amber-50" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+  }`;
+
+function DesktopDropdown({ label, icon: Icon, active, width = "w-72", children }) {
+  // Opens on hover and on keyboard focus (focus-within), so the menu is
+  // reachable without a mouse.
+  return (
+    <div className="relative group">
+      <button type="button" className={desktopLinkClass(active)} aria-haspopup="true">
+        <Icon className={`hidden xl:block w-4 h-4 ${active ? "text-amber-500" : "text-slate-400 group-hover:text-amber-500"}`} />
+        {label}
+        <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180" />
+      </button>
+      <div
+        className={`absolute left-1/2 -translate-x-1/2 pt-3 ${width} z-50 invisible opacity-0 translate-y-1 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-200`}
+      >
+        <div className="bg-white rounded-2xl shadow-xl shadow-slate-900/10 ring-1 ring-slate-100 p-2">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MobileAccordion({ label, icon: Icon, open, onToggle, active, children }) {
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors ${
+          active ? "bg-amber-50 text-slate-900" : "text-slate-700 hover:bg-slate-50"
+        }`}
+      >
+        <span className={`p-2 rounded-lg ${active ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-500"}`}>
+          <Icon className="w-5 h-5" />
+        </span>
+        <span className="flex-1 text-left">{label}</span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+        <div className="overflow-hidden">
+          <div className="ml-7 pl-6 border-l-2 border-amber-100 py-1 space-y-0.5">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Navbar() {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    // The HR Department submenu needs its own flag rather than sharing
-    // isDropdownOpen with Conference: one shared boolean would open and close both
-    // accordions together, and the mobile panel shows them stacked.
-    const [isHrDropdownOpen, setIsHrDropdownOpen] = useState(false);
-    const [conferences, setConferences] = useState([]);
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Conference and HR each need their own flag: one shared boolean would open
+  // and close both accordions together, and the mobile panel stacks them.
+  const [isConfOpen, setIsConfOpen] = useState(false);
+  const [isHrOpen, setIsHrOpen] = useState(false);
+  const [conferences, setConferences] = useState([]);
+  const [scrolled, setScrolled] = useState(false);
 
-    const openMenu = () => setIsMenuOpen(true);
-
-    const closeMenu = () => {
-        setIsMenuOpen(false);
-        setIsDropdownOpen(false);
-        setIsHrDropdownOpen(false);
-    };
-
-    const toggleMobileDropdown = () => {
-        setIsDropdownOpen(!isDropdownOpen);
-    };
-
-    const toggleHrDropdown = () => {
-        setIsHrDropdownOpen(!isHrDropdownOpen);
-    };
-
-    useEffect(() => {
-  const fetchConferences = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("veritaz_conferences")
-        .select("*");
-
-      if (error) throw error;
-
-      console.log("Conferences:", data);
-
-      setConferences(data || []);
-    } catch (error) {
-      console.error("Failed to fetch conferences:", error);
-      setConferences([]);
-    }
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    setIsConfOpen(false);
+    setIsHrOpen(false);
   };
 
-  fetchConferences();
-}, []);
-
-    useEffect(() => {
-        document.body.style.overflow = isMenuOpen ? "hidden" : "";
-        return () => { document.body.style.overflow = ""; };
-    }, [isMenuOpen]);
-
-    return (
-        <header className="w-full bg-white shadow-sm sticky top-0 z-50">
-
-            {/* ================= TOP HEADER ================= */}
-
-            <div className="container mx-auto px-3 sm:px-4 md:px-6 py-3 flex items-center justify-between gap-2">
-
-                {/* Logo */}
-
-                <div className="flex items-center gap-1 min-w-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-18 md:h-18 flex-shrink-0">
-                        <img
-                            src="/assets/image/veritaz-bg-Remove.png"
-                            alt="Veritaz"
-                            className="w-full h-full object-contain"
-                        />
-                    </div>
-
-                    <div className="min-w-0">
-                        <h2 className="text-base sm:text-lg md:text-2xl font-bold tracking-wide md:tracking-widest text-gray-800 uppercase leading-none truncate">
-                            Veritaz
-                        </h2>
-
-                        <p className="text-[9px] sm:text-[10px] md:text-[10px] tracking-[0.1em] sm:tracking-[0.2em] text-gray-500 uppercase font-bold mt-0.5">
-                            International Press
-                        </p>
-                    </div>
-                </div>
-
-                {/* Right Side */}
-
-                <div className="flex items-center gap-1.5 sm:gap-2 md:gap-6 flex-shrink-0">
-
-                    {/* Mail */}
-
-                    <a
-                        href="mailto:veritazinternationalpress@gmail.com?subject=Enquiry%20from%20Website"
-                        className="flex items-center gap-0 sm:gap-3 px-2.5 sm:px-4 py-2 border border-gray-200 rounded-full bg-white hover:bg-yellow-50 hover:border-yellow-500 hover:shadow-md transition-all group"
-                    >
-                        <Mail className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform" />
-
-                        <div className="hidden sm:flex flex-col leading-tight">
-                            <span className="font-bold text-[10px] tracking-wider text-gray-400">
-                                Send Mail
-                            </span>
-                        </div>
-                    </a>
-
-                    {/* WhatsApp */}
-
-                    <a
-                        href="https://wa.me/916380658876"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-2 px-2.5 sm:px-3 py-2 border border-green-200 rounded-full bg-white hover:bg-green-50 hover:border-green-500 transition-all group"
-                    >
-                        <FaWhatsapp className="text-green-500 text-xl group-hover:scale-110 transition-transform" />
-                        <span className="hidden sm:inline font-bold text-xs text-gray-700">
-                            Join WhatsApp
-                        </span>
-                    </a>
-
-                    {/* Desktop Social */}
-
-                    <div className="hidden md:flex items-center space-x-4 text-gray-400 border-l pl-6 ml-2">
-
-                        <a
-                            href="https://www.linkedin.com/in/veritaz-international-press/"
-                            className="hover:text-blue-700 transition-colors"
-                        >
-                            <FaLinkedinIn className="w-5 h-5" />
-                        </a>
-
-                        <a
-                            href="https://www.facebook.com/profile.php?id=61583778217764"
-                            className="hover:text-blue-600 transition-colors"
-                        >
-                            <FaFacebookF className="w-5 h-5" />
-                        </a>
-
-                        <a
-                            href="https://www.instagram.com/veritazinternationalpress/"
-                            className="hover:text-pink-600 transition-colors"
-                        >
-                            <FaInstagram className="w-5 h-5" />
-                        </a>
-
-                    </div>
-
-                    {/* Mobile Menu */}
-
-                    <button
-                        onClick={openMenu}
-                        className="lg:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg flex-shrink-0"
-                        aria-label="Open menu"
-                    >
-                        <Menu className="w-7 h-7" />
-                    </button>
-
-                </div>
-
-            </div>
-
-            {/* ================= DESKTOP NAV ================= */}
-
-            <nav className="hidden lg:block border-t border-gray-100 bg-white">
-
-                <div className="container mx-auto px-6">
-
-                    <div className="flex justify-center items-center h-14 space-x-2">
-
-                        <a
-                            href="/"
-                            className="px-4 py-2 rounded-md text-sm font-semibold text-slate-700 hover:bg-gray-50 hover:text-blue-600 transition-all flex items-center gap-2"
-                        >
-                            <Home className="w-4 h-4 text-blue-500" />
-                            Home
-                        </a>
-
-                        <a
-                            href="/our-company"
-                            className="px-4 py-2 rounded-md text-sm font-semibold text-slate-700 hover:bg-gray-50 hover:text-purple-600 transition-all flex items-center gap-2"
-                        >
-                            <Building2 className="w-4 h-4 text-purple-500" />
-                            Our Company
-                        </a>
-
-                        {/* Events hidden from navigation - restore this block to bring it back.
-                            The /events route and event detail pages still resolve, so links
-                            already shared keep working, and the admin still manages events.
-                        <a
-                            href="/events"
-                            className="px-4 py-2 rounded-md text-sm font-semibold text-slate-700 hover:bg-gray-50 hover:text-pink-600 transition-all flex items-center gap-2"
-                        >
-                            <Calendar className="w-4 h-4 text-pink-500" />
-                            Events
-                        </a>
-                        */}
-
-                        <a
-                            href="/book-store"
-                            className="px-4 py-2 rounded-md text-sm font-semibold text-slate-700 hover:bg-gray-50 hover:text-emerald-600 transition-all flex items-center gap-2"
-                        >
-                            <ShoppingBag className="w-4 h-4 text-emerald-500" />
-                            Book Store
-                        </a>
-
-                        <a
-                            href="/book-publishing"
-                            className="px-4 py-2 rounded-md text-sm font-semibold text-slate-700 hover:bg-gray-50 hover:text-yellow-600 transition-all flex items-center gap-2"
-                        >
-                            <BookOpen className="w-4 h-4 text-yellow-500" />
-                            Publishing
-                        </a>
-
-                        {/* Conference Dropdown */}
-
-                        <div className="relative group">
-
-                            <button className="px-4 py-2 rounded-md text-sm font-semibold text-slate-700 group-hover:bg-gray-50 group-hover:text-indigo-600 transition-all flex items-center gap-2">
-
-                                <Users className="w-4 h-4 text-indigo-500" />
-
-                                Conference
-
-                                <ChevronDown className="w-3 h-3 transition-transform group-hover:rotate-180" />
-
-                            </button>
-
-                            <div className="absolute left-0 pt-2 w-72 hidden group-hover:block z-50">
-                                <div className="bg-white rounded-xl shadow-xl py-2 border border-gray-100 animate-fadeIn">
-                                    {conferences.length > 0 ? (
-                                        conferences.map((conf) => {
-                                            const confName = conf.conferencename || conf.conferenceName || "";
-                                            const confSlug = confName.replace(/\s+/g, "-").toLowerCase();
-                                            return (
-                                                <Link
-                                                    key={conf.id}
-                                                    to={`/conferences/${confSlug}`}
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                                                >
-                                                    {confName || "Unnamed Conference"}
-                                                </Link>
-                                            );
-                                        })
-                                    ) : (
-                                        <span className="block px-4 py-2 text-xs text-gray-400">No Released Conferences</span>
-                                    )}
-                                </div>
-                            </div>
-
-                        </div>
-
-                        {/* HR Department Dropdown
-
-                            Briefly a plain link, back when the only other entry was
-                            the HRMS Portal — a staff sign-in, which is the wrong thing
-                            to advertise in a public nav, and a chevron over one item is
-                            noise. Careers gives it a genuine second destination, both
-                            public and both internal routes, so the chevron earns its
-                            place again. (The portal is still reachable from the HR
-                            Department page itself.)
-
-                            The sub-labels are here because "Employment Verification"
-                            and "Careers" are read by two completely different visitors
-                            — an employer running a background check and a job applicant
-                            — and one line each saves the wrong one from clicking
-                            through to find out. */}
-
-                        <div className="relative group">
-
-                            <button className="px-4 py-2 rounded-md text-sm font-semibold text-slate-700 group-hover:bg-gray-50 group-hover:text-teal-600 transition-all flex items-center gap-2">
-
-                                <ShieldCheck className="w-4 h-4 text-teal-500" />
-
-                                HR Department
-
-                                <ChevronDown className="w-3 h-3 transition-transform group-hover:rotate-180" />
-
-                            </button>
-
-                            <div className="absolute left-0 pt-2 w-72 hidden group-hover:block z-50">
-                                <div className="bg-white rounded-xl shadow-xl py-2 border border-gray-100 animate-fadeIn">
-
-                                    {/* Plain hover: utilities, not group-hover: — this panel is
-                                        already inside the `group` that opens it, so a nested
-                                        group-hover here would track the wrong element. */}
-
-                                    <Link
-                                        to="/hr-department"
-                                        className="block px-4 py-2.5 text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
-                                    >
-                                        <span className="block text-sm font-semibold">
-                                            Employment Verification
-                                        </span>
-                                        <span className="block text-xs text-gray-400">
-                                            For employers &amp; agencies
-                                        </span>
-                                    </Link>
-
-                                    <Link
-                                        to="/careers"
-                                        className="block px-4 py-2.5 text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
-                                    >
-                                        <span className="block text-sm font-semibold">
-                                            Careers
-                                        </span>
-                                        <span className="block text-xs text-gray-400">
-                                            Open roles &amp; applications
-                                        </span>
-                                    </Link>
-
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <a
-                            href="/contact"
-                            className="px-4 py-2 rounded-md text-sm font-semibold text-slate-700 hover:bg-gray-50 hover:text-red-600 transition-all flex items-center gap-2"
-                        >
-                            <Mail className="w-4 h-4 text-red-500" />
-                            Contact
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </nav>
-
-            {/* ================= MOBILE MENU (Structure Only) ================= */}
-
-            <div
-                className={`fixed inset-0 z-[100] transition-all duration-300 ${isMenuOpen ? "visible" : "invisible"
-                    }`}
+  useEffect(() => {
+    const fetchConferences = async () => {
+      try {
+        const { data, error } = await supabase.from("veritaz_conferences").select("*");
+        if (error) throw error;
+        setConferences(data || []);
+      } catch (error) {
+        console.error("Failed to fetch conferences:", error);
+        setConferences([]);
+      }
+    };
+    fetchConferences();
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Links are client-side now, so the mobile panel has to close itself on
+  // navigation instead of relying on a full page load to tear it down.
+  useEffect(() => {
+    closeMenu();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? "hidden" : "";
+    const onKey = (e) => e.key === "Escape" && closeMenu();
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [isMenuOpen]);
+
+  const confActive = location.pathname.startsWith("/conferences/");
+  const hrActive = hrLinks.some((l) => location.pathname.startsWith(l.to)) || location.pathname === "/hr";
+
+  return (
+    <header className="w-full sticky top-0 z-50">
+      {/* ================= TOP UTILITY BAR ================= */}
+      <div
+        className={`hidden md:block bg-slate-900 text-slate-300 text-xs overflow-hidden transition-all duration-300 ${
+          scrolled ? "max-h-0" : "max-h-10"
+        }`}
+      >
+        <div className="container mx-auto px-6 h-10 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <a href={MAIL_HREF} className="flex items-center gap-2 hover:text-amber-400 transition-colors">
+              <Mail className="w-3.5 h-3.5 text-amber-400" />
+              {EMAIL}
+            </a>
+            <a
+              href={WHATSAPP_HREF}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 hover:text-green-400 transition-colors"
             >
-                {/* Backdrop */}
+              <FaWhatsapp className="w-3.5 h-3.5 text-green-400" />
+              +91 63806 58876
+            </a>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="mr-2 text-slate-500 uppercase tracking-widest text-[10px] font-semibold">Follow us</span>
+            {socials.map(({ href, icon: Icon, label }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={label}
+                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 hover:text-white transition-colors"
+              >
+                <Icon className="w-3.5 h-3.5" />
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
 
-                <div
-                    onClick={closeMenu}
-                    className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${isMenuOpen ? "opacity-100" : "opacity-0"
-                        }`}
-                />
+      {/* ================= MAIN BAR ================= */}
+      <div
+        className={`bg-white/95 backdrop-blur-md border-b transition-shadow duration-300 ${
+          scrolled ? "border-slate-200 shadow-lg shadow-slate-900/5" : "border-slate-100"
+        }`}
+      >
+        <div
+          className={`container mx-auto px-3 sm:px-4 md:px-6 flex items-center justify-between gap-3 transition-all duration-300 ${
+            scrolled ? "h-16" : "h-[76px]"
+          }`}
+        >
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 min-w-0 group">
+            <img
+              src="/assets/image/veritaz-bg-Remove.png"
+              alt="Veritaz"
+              className={`object-contain flex-shrink-0 transition-all duration-300 ${
+                scrolled ? "w-11 h-11" : "w-12 h-12 md:w-14 md:h-14"
+              }`}
+            />
+            <span className="min-w-0">
+              <span className="block text-lg md:text-xl font-extrabold tracking-[0.15em] text-slate-900 uppercase leading-none">
+                Veritaz
+              </span>
+              <span className="block text-[9px] md:text-[10px] tracking-[0.25em] text-amber-600 uppercase font-bold mt-1">
+                International Press
+              </span>
+            </span>
+          </Link>
 
-                {/* Menu Panel */}
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-0.5" aria-label="Main">
+            {primaryLinks.map(({ to, label, icon: Icon, end }) => (
+              <NavLink key={to} to={to} end={end} className={({ isActive }) => desktopLinkClass(isActive)}>
+                {({ isActive }) => (
+                  <>
+                    <Icon className={`hidden xl:block w-4 h-4 ${isActive ? "text-amber-500" : "text-slate-400"}`} />
+                    {label}
+                  </>
+                )}
+              </NavLink>
+            ))}
 
-                <div
-                    className={`absolute right-0 top-0 h-full w-[85%] max-w-sm bg-white shadow-2xl flex flex-col transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "translate-x-full"
-                        }`}
-                >
-                    {/* Header */}
-
-                    <div className="p-6 flex items-center justify-between border-b border-gray-100">
-
-                        <span className="text-lg font-bold text-gray-800 uppercase tracking-widest">
-                            Menu
-                        </span>
-
-                        <button
-                            onClick={closeMenu}
-                            className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
-                            aria-label="Close menu"
-                        >
-                            <X className="w-6 h-6" />
-                        </button>
-
-                    </div>
-
-                    {/* PART 2 STARTS HERE */}
-
-                    {/* Mobile navigation and footer will be added in Part 2 */}
-
-                    {/* ================= MOBILE NAVIGATION ================= */}
-
-                    <nav className="flex-1 overflow-y-auto py-2">
-
-                        <a
-                            href="/"
-                            className="flex items-center gap-4 px-6 py-3 text-slate-700 font-medium hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                        >
-                            <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
-                                <Home className="w-5 h-5" />
-                            </div>
-                            <span className="flex-1">Home</span>
-                            <ChevronRight className="w-4 h-4 text-slate-300" />
-                        </a>
-
-                        <a
-                            href="/our-company"
-                            className="flex items-center gap-4 px-6 py-3 text-slate-700 font-medium hover:bg-purple-50 hover:text-purple-600 transition-colors"
-                        >
-                            <div className="p-2 rounded-lg bg-purple-50 text-purple-600">
-                                <Building2 className="w-5 h-5" />
-                            </div>
-                            <span className="flex-1">Our Company</span>
-                            <ChevronRight className="w-4 h-4 text-slate-300" />
-                        </a>
-
-                        {/* Events hidden from navigation - restore this block to bring it back.
-                        <a
-                            href="/events"
-                            className="flex items-center gap-4 px-6 py-3 text-slate-700 font-medium hover:bg-pink-50 hover:text-pink-600 transition-colors"
-                        >
-                            <div className="p-2 rounded-lg bg-pink-50 text-pink-600">
-                                <Calendar className="w-5 h-5" />
-                            </div>
-                            <span className="flex-1">Events</span>
-                            <ChevronRight className="w-4 h-4 text-slate-300" />
-                        </a>
-                        */}
-
-                        <a
-                            href="/book-store"
-                            className="flex items-center gap-4 px-6 py-3 text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                        >
-                            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
-                                <ShoppingBag className="w-5 h-5" />
-                            </div>
-                            <span className="flex-1">Book Store</span>
-                            <ChevronRight className="w-4 h-4 text-slate-300" />
-                        </a>
-
-                        <a
-                            href="/book-publishing"
-                            className="flex items-center gap-4 px-6 py-3 text-slate-700 font-medium hover:bg-amber-50 hover:text-amber-600 transition-colors"
-                        >
-                            <div className="p-2 rounded-lg bg-amber-50 text-amber-600">
-                                <BookOpen className="w-5 h-5" />
-                            </div>
-                            <span className="flex-1">Publishing</span>
-                            <ChevronRight className="w-4 h-4 text-slate-300" />
-                        </a>
-
-                        {/* Conference Dropdown */}
-
-                        <div className="border-b border-gray-100">
-
-                            <button
-                                onClick={toggleMobileDropdown}
-                                className="w-full flex items-center gap-4 px-6 py-3 text-slate-700 font-medium hover:bg-indigo-50 transition-colors"
-                            >
-                                <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600">
-                                    <Users className="w-5 h-5" />
-                                </div>
-
-                                <span className="flex-1 text-left">
-                                    Conference
-                                </span>
-
-                                <ChevronDown
-                                    className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""
-                                        }`}
-                                />
-                            </button>
-
-                            {isDropdownOpen && (
-                                <div className="bg-gray-50 py-2 pl-14">
-                                    {conferences.map((conf) => {
-                                        const confName = conf.conferencename || conf.conferenceName || "";
-                                        const confSlug = confName.replace(/\s+/g, "-").toLowerCase();
-                                        return (
-                                            <a
-                                                key={conf.id}
-                                                href={`/conferences/${confSlug}`}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md truncate"
-                                            >
-                                                {confName}
-                                            </a>
-                                        );
-                                    })}
-                                    {conferences.length === 0 && (
-                                        <div className="px-4 py-2 text-sm text-gray-500">
-                                            No conferences available
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                        </div>
-
-                        {/* HR Department Dropdown — same accordion as Conference above,
-                            down to the rotating chevron, so the two stacked submenus
-                            behave identically under a thumb. Items are plain anchors
-                            like the Conference ones: the full navigation also tears down
-                            this panel, which is why nothing here calls closeMenu. */}
-
-                        <div className="border-b border-gray-100">
-
-                            <button
-                                onClick={toggleHrDropdown}
-                                className="w-full flex items-center gap-4 px-6 py-3 text-slate-700 font-medium hover:bg-teal-50 transition-colors"
-                            >
-                                <div className="p-2 rounded-lg bg-teal-50 text-teal-600">
-                                    <ShieldCheck className="w-5 h-5" />
-                                </div>
-
-                                <span className="flex-1 text-left">
-                                    HR Department
-                                </span>
-
-                                <ChevronDown
-                                    className={`w-4 h-4 transition-transform duration-300 ${isHrDropdownOpen ? "rotate-180" : ""
-                                        }`}
-                                />
-                            </button>
-
-                            {isHrDropdownOpen && (
-                                <div className="bg-gray-50 py-2 pl-14">
-
-                                    <a
-                                        href="/hr-department"
-                                        className="block px-4 py-2 rounded-md text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition-colors"
-                                    >
-                                        <span className="block text-sm font-semibold">
-                                            Employment Verification
-                                        </span>
-                                        <span className="block text-xs text-gray-400">
-                                            For employers &amp; agencies
-                                        </span>
-                                    </a>
-
-                                    <a
-                                        href="/careers"
-                                        className="block px-4 py-2 rounded-md text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition-colors"
-                                    >
-                                        <span className="block text-sm font-semibold">
-                                            Careers
-                                        </span>
-                                        <span className="block text-xs text-gray-400">
-                                            Open roles &amp; applications
-                                        </span>
-                                    </a>
-
-                                </div>
-                            )}
-
-                        </div>
-
-                        <a
-                            href="/contact"
-                            className="flex items-center gap-4 px-6 py-3 text-slate-700 font-medium hover:bg-red-50 hover:text-red-600 transition-colors"
-                        >
-                            <div className="p-2 rounded-lg bg-red-50 text-red-600">
-                                <Mail className="w-5 h-5" />
-                            </div>
-
-                            <span className="flex-1">
-                                Contact Us
-                            </span>
-
-                            <ChevronRight className="w-4 h-4 text-slate-300" />
-                        </a>
-
-                    </nav>
-
-                    {/* ================= MOBILE FOOTER ================= */}
-
-                    <div className="p-8 border-t border-gray-100 bg-gray-50">
-
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
-                            Follow Us
-                        </p>
-
-                        <div className="flex space-x-6">
-
-                            <a
-                                href="https://www.linkedin.com/in/veritaz-international-press/"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-gray-400 hover:text-blue-700 transition-colors"
-                            >
-                                <FaLinkedinIn className="w-5 h-5" />
-                            </a>
-
-                            <a
-                                href="https://www.facebook.com/profile.php?id=61583778217764"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-gray-400 hover:text-blue-600 transition-colors"
-                            >
-                                <FaFacebookF className="w-5 h-5" />
-                            </a>
-
-                            <a
-                                href="https://www.instagram.com/veritazinternationalpress/"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-gray-400 hover:text-pink-600 transition-colors"
-                            >
-                                <FaInstagram className="w-5 h-5" />
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                    {/* End Mobile Menu */}
+            <DesktopDropdown label="Conference" icon={Users} active={confActive}>
+              {conferences.length > 0 ? (
+                <div className="max-h-80 overflow-y-auto">
+                  {conferences.map((conf) => (
+                    <Link
+                      key={conf.id}
+                      to={`/conferences/${confSlugOf(conf)}`}
+                      className="block px-3 py-2.5 rounded-xl text-sm text-slate-700 hover:bg-amber-50 hover:text-slate-900 transition-colors"
+                    >
+                      {confNameOf(conf) || "Unnamed Conference"}
+                    </Link>
+                  ))}
                 </div>
+              ) : (
+                <span className="block px-3 py-2.5 text-xs text-slate-400">No Released Conferences</span>
+              )}
+            </DesktopDropdown>
+
+            <DesktopDropdown label="HR Department" icon={ShieldCheck} active={hrActive} width="w-80">
+              {hrLinks.map(({ to, label, hint, icon: Icon }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="flex items-start gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-amber-50 transition-colors"
+                >
+                  <span className="p-2 rounded-lg bg-amber-100 text-amber-600">
+                    <Icon className="w-4 h-4" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold text-slate-800">{label}</span>
+                    <span className="block text-xs text-slate-400">{hint}</span>
+                  </span>
+                </Link>
+              ))}
+            </DesktopDropdown>
+
+            <NavLink to="/contact" className={({ isActive }) => desktopLinkClass(isActive)}>
+              {({ isActive }) => (
+                <>
+                  <Mail className={`hidden xl:block w-4 h-4 ${isActive ? "text-amber-500" : "text-slate-400"}`} />
+                  Contact
+                </>
+              )}
+            </NavLink>
+          </nav>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <a
+              href={MAIL_HREF}
+              aria-label="Send mail"
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-full border border-slate-200 text-amber-500 hover:bg-amber-50 transition-colors"
+            >
+              <Mail className="w-5 h-5" />
+            </a>
+            <a
+              href={WHATSAPP_HREF}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 h-10 px-3 sm:px-4 rounded-full bg-green-500 text-white text-sm font-semibold shadow-md shadow-green-500/25 hover:bg-green-600 hover:shadow-lg transition-all"
+            >
+              <FaWhatsapp className="text-lg" />
+              <span className="hidden sm:inline lg:hidden xl:inline">Join WhatsApp</span>
+            </a>
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= MOBILE MENU ================= */}
+      <div className={`lg:hidden fixed inset-0 z-[100] ${isMenuOpen ? "visible" : "invisible"}`}>
+        <div
+          onClick={closeMenu}
+          className={`absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300 ${
+            isMenuOpen ? "opacity-100" : "opacity-0"
+          }`}
+        />
+
+        <div
+          className={`absolute right-0 top-0 h-full w-[85%] max-w-sm bg-white shadow-2xl flex flex-col transition-transform duration-300 ${
+            isMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+        >
+          {/* Panel header */}
+          <div className="px-5 h-[72px] flex items-center justify-between border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <img src="/assets/image/veritaz-bg-Remove.png" alt="" className="w-10 h-10 object-contain" />
+              <span>
+                <span className="block text-base font-extrabold tracking-[0.15em] text-slate-900 uppercase leading-none">
+                  Veritaz
+                </span>
+                <span className="block text-[9px] tracking-[0.25em] text-amber-600 uppercase font-bold mt-1">
+                  International Press
+                </span>
+              </span>
             </div>
-        </header>
-    );
+            <button
+              onClick={closeMenu}
+              className="w-10 h-10 flex items-center justify-center text-slate-500 hover:bg-slate-100 rounded-full"
+              aria-label="Close menu"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Links */}
+          <nav className="flex-1 overflow-y-auto p-3 space-y-1" aria-label="Mobile">
+            {primaryLinks.map(({ to, label, icon: Icon, end }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors ${
+                    isActive ? "bg-amber-50 text-slate-900" : "text-slate-700 hover:bg-slate-50"
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <span className={`p-2 rounded-lg ${isActive ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-500"}`}>
+                      <Icon className="w-5 h-5" />
+                    </span>
+                    <span className="flex-1">{label}</span>
+                    <ChevronRight className="w-4 h-4 text-slate-300" />
+                  </>
+                )}
+              </NavLink>
+            ))}
+
+            <MobileAccordion
+              label="Conference"
+              icon={Users}
+              open={isConfOpen}
+              onToggle={() => setIsConfOpen((v) => !v)}
+              active={confActive}
+            >
+              {conferences.length > 0 ? (
+                conferences.map((conf) => (
+                  <Link
+                    key={conf.id}
+                    to={`/conferences/${confSlugOf(conf)}`}
+                    className="block px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-amber-50 rounded-lg truncate"
+                  >
+                    {confNameOf(conf) || "Unnamed Conference"}
+                  </Link>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-sm text-slate-400">No conferences available</div>
+              )}
+            </MobileAccordion>
+
+            <MobileAccordion
+              label="HR Department"
+              icon={ShieldCheck}
+              open={isHrOpen}
+              onToggle={() => setIsHrOpen((v) => !v)}
+              active={hrActive}
+            >
+              {hrLinks.map(({ to, label, hint }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="block px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-amber-50 transition-colors"
+                >
+                  <span className="block text-sm font-semibold">{label}</span>
+                  <span className="block text-xs text-slate-400">{hint}</span>
+                </Link>
+              ))}
+            </MobileAccordion>
+
+            <NavLink
+              to="/contact"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors ${
+                  isActive ? "bg-amber-50 text-slate-900" : "text-slate-700 hover:bg-slate-50"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <span className={`p-2 rounded-lg ${isActive ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-500"}`}>
+                    <Mail className="w-5 h-5" />
+                  </span>
+                  <span className="flex-1">Contact Us</span>
+                  <ChevronRight className="w-4 h-4 text-slate-300" />
+                </>
+              )}
+            </NavLink>
+          </nav>
+
+          {/* Panel footer */}
+          <div className="p-5 border-t border-slate-100 bg-slate-50 space-y-4">
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={MAIL_HREF}
+                className="flex items-center justify-center gap-2 h-11 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:border-amber-400 transition-colors"
+              >
+                <Mail className="w-4 h-4 text-amber-500" />
+                Send Mail
+              </a>
+              <a
+                href={WHATSAPP_HREF}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 h-11 rounded-xl bg-green-500 text-sm font-semibold text-white hover:bg-green-600 transition-colors"
+              >
+                <FaWhatsapp className="text-base" />
+                WhatsApp
+              </a>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Follow us</span>
+              <div className="flex gap-2">
+                {socials.map(({ href, icon: Icon, label }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={label}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors"
+                  >
+                    <Icon className="w-4 h-4" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
 }
