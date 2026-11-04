@@ -20,7 +20,6 @@ import {
   FaLinkedinIn,
   FaFacebookF,
   FaInstagram,
-  FaWhatsapp,
 } from "react-icons/fa";
 import axios from "axios";
 
@@ -121,20 +120,6 @@ export default function Navbar() {
                                 Send Mail
                             </span>
                         </div>
-                    </a>
-
-                    {/* WhatsApp */}
-
-                    <a
-                        href="https://wa.me/916380658876"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-2 px-2.5 sm:px-3 py-2 border border-green-200 rounded-full bg-white hover:bg-green-50 hover:border-green-500 transition-all group"
-                    >
-                        <FaWhatsapp className="text-green-500 text-xl group-hover:scale-110 transition-transform" />
-                        <span className="hidden sm:inline font-bold text-xs text-gray-700">
-                            Join WhatsApp
-                        </span>
                     </a>
 
                     {/* Desktop Social */}
