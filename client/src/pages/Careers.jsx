@@ -88,10 +88,10 @@ const CAREERS_SELECT =
 // claims about the company, which is why this list is safe to hardcode while a
 // list of roles is not.
 const WHAT_TO_INCLUDE = [
-  'Your CV or résumé, attached as a PDF.',
-  'The kind of work you are looking for — editorial, publishing operations, events, design, technology or support.',
-  'A short note on why Veritaz International Press, in your own words. A few lines is plenty.',
-  'A phone number and an email address we can reach you on.',
+  ['CV or Résumé', 'Attached in PDF format.'],
+  ['Desired Field', 'Specify your interest (e.g., Editorial, Publishing Operations, Event Coordination, Graphic Design, Information Technology, or Administration).'],
+  ['Statement of Intent', 'A short note explaining why you wish to join Veritaz International Press (3–4 sentences is sufficient).'],
+  ['Contact Details', 'Your current phone number and primary email address.'],
 ];
 
 const SectionHeading = ({ children }) => (
@@ -156,13 +156,12 @@ export default function Careers() {
             <Briefcase size={24} />
           </span>
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
-              Careers
+            <p className="text-sm font-bold uppercase tracking-wider text-[#1d4ed8]">Careers</p>
+            <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
+              Join Our Team at Veritaz International Press
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-600 sm:text-[15px]">
-              Veritaz International Press publishes books and runs academic conferences and
-              events. We welcome applications by email throughout the year, and we share open
-              roles here and on our social channels whenever there are any.
+              Veritaz International Press publishes academic textbooks, coordinates scholarly volumes, and manages international academic conferences. We accept applications year-round and publish specific openings here and across our official channels as positions become available.
             </p>
           </div>
         </header>
@@ -175,7 +174,7 @@ export default function Careers() {
                 keeps the page from reflowing under the reader's cursor, and it
                 means the loading state cannot be mistaken for a broken page. */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-              <SectionHeading>Open roles</SectionHeading>
+              <SectionHeading>Open Roles</SectionHeading>
 
               {loading ? (
                 <RolesLoading />
@@ -192,22 +191,26 @@ export default function Careers() {
 
             {/* ── How to apply ─────────────────────────────────── */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-              <SectionHeading>How to apply</SectionHeading>
+              <SectionHeading>How to Apply</SectionHeading>
 
               <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                Email your application to our HR department. There is no form to fill in and no
-                account to create — a single email with your CV attached is a complete
-                application, whether or not a role has been advertised.
+                Submitting your application is simple and direct, no portal setup or lengthy forms required. Send a single email with your CV attached to our human resources team at{' '}
+                <a href={APPLY_MAILTO} className="font-semibold text-[#1d4ed8] hover:underline">
+                  {HR_EMAIL}
+                </a>
+                .
               </p>
 
-              <h3 className="mt-6 text-sm font-extrabold text-gray-900">What to include</h3>
+              <h3 className="mt-6 text-sm font-extrabold text-gray-900">Please include the following in your email:</h3>
               <ul className="mt-3 space-y-3 text-sm text-slate-700">
                 {WHAT_TO_INCLUDE.map((item, i) => (
                   <li key={i} className="flex gap-3">
                     <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2563eb]/10 text-[11px] font-bold text-[#1d4ed8]">
                       {i + 1}
                     </span>
-                    <span className="leading-relaxed">{item}</span>
+                    <span className="leading-relaxed">
+                      <strong className="text-gray-900">{item[0]}:</strong> {item[1]}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -238,12 +241,10 @@ export default function Careers() {
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <h2 className="flex items-center gap-2 text-sm font-extrabold text-gray-900">
                 <Users size={16} className="text-[#1d4ed8]" />
-                After you apply
+                What Happens Next?
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-700">
-                Our HR department reviews each application. If your background suits something we
-                are working on, they will get in touch using the phone number or email address in
-                your message.
+                Our HR team reviews every submission. If your qualifications match an active project or upcoming vacancy, HR team will reach out to you directly via phone or email.
               </p>
             </div>
 
@@ -323,9 +324,7 @@ function NoRoles() {
   return (
     <div className="mt-4">
       <p className="text-sm leading-relaxed text-slate-700">
-        We do not have any roles listed on this page at the moment. That does not mean we are not
-        hiring — applications are read as they arrive, so send yours in and it will be on file when
-        something opens up.
+        There are currently no active listings on this page. However, we continuously review incoming CVs and keep promising applications on file for upcoming opportunities across editorial, event management, and administrative teams.
       </p>
       <a
         href={APPLY_MAILTO}

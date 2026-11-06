@@ -92,9 +92,7 @@ export default function OurCompany() {
 
                             {/* Description - Adjusted spacing and optimized width */}
                             <p className="mt-5 text-base md:text-lg text-gray-200/90 leading-relaxed max-w-2xl mx-auto">
-                                Empowering researchers, educators, and authors with world-class
-                                publishing solutions, innovative academic services, and global
-                                distribution that transforms ideas into lasting impact.
+                                We provide complete book publishing with editing, custom cover design, official ISBN registration, precision printing, and global eBook distribution. We deliver full patent filing and registration support to protect intellectual property for authors, scholars, and innovators.
                             </p>
 
                             {/* Buttons space */}
@@ -138,26 +136,18 @@ export default function OurCompany() {
                                 <h2 className="text-4xl lg:text-5xl font-black text-slate-900 leading-tight mb-6">
                                     Empowering
                                     <span className="block text-indigo-600">
-                                        Authors & Researchers
+                                        Authors & Innovators
                                     </span>
                                     Worldwide
                                 </h2>
 
                                 <p className="text-lg text-slate-600 leading-8 text-justify mb-6">
                                     <strong>Welcome to Veritaz International Press</strong>,
-                                    your trusted partner for publication services and patent
-                                    grant solutions. We empower educators, innovators,
-                                    researchers, and institutions through world-class academic
-                                    publishing, intellectual property support, and professional
-                                    development.
+                                    a trusted destination for comprehensive publication services and patent solutions. We support educators, scholars, and institutions by advancing careers and turning original intellectual work into globally recognized publications.
                                 </p>
 
                                 <p className="text-lg text-slate-600 leading-8 text-justify mb-10">
-                                    Whether you're publishing textbooks, protecting innovative
-                                    designs, or expanding your academic career, our experienced
-                                    team provides personalized guidance from concept to global
-                                    distribution, ensuring quality, credibility, and long-term
-                                    impact.
+                                    From initial concept to multi channel reach, our dedicated team ensures your work achieves maximum impact, authority, and professional credibility.
                                 </p>
 
 
@@ -238,18 +228,11 @@ export default function OurCompany() {
                                 </h2>
 
                                 <p className="text-lg text-slate-600 leading-8 text-justify mb-8">
-                                    Veritaz International Press specializes in publishing
-                                    high-quality textbooks, scholarly journals, conference
-                                    proceedings, patents, and research publications that inspire
-                                    innovation and academic excellence.
+                                    We specialize in bringing high-quality textbooks, conference proceedings, patents, and academic works to life fueling innovation and career advancement across disciplines. Beyond complete book production, we manage Faculty Development Programs (FDPs), national and international academic conferences, and comprehensive patent filing to secure your intellectual property.
                                 </p>
 
                                 <p className="text-lg text-slate-600 leading-8 text-justify mb-10">
-                                    Whether you're an experienced researcher, educator, or a
-                                    first-time author, our dedicated publishing experts guide
-                                    you through editing, design, ISBN registration, printing,
-                                    and worldwide distribution—making your publishing journey
-                                    smooth, professional, and impactful.
+                                    Whether you are an established scholar, educator, or first-time writer, our dedicated team supports your complete workflow: professional manuscript editing, custom cover design, official ISBN registration, precision book printing, worldwide eBook distribution, and full patent grant assistance.
                                 </p>
 
 
@@ -298,9 +281,7 @@ export default function OurCompany() {
 
                             <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-slate-600">
 
-                                We don't just publish books—we empower authors with the
-                                tools, expertise, global reach, and dedicated support
-                                needed to turn knowledge into worldwide impact.
+                                We don't just publish books—we bring intellectual work to life. From initial manuscript editing and official ISBN assignment to precision printing and patent filing, we deliver complete solutions that transform original ideas into globally recognized publications.
 
                             </p>
 
@@ -424,13 +405,11 @@ export default function OurCompany() {
                                             <div>
 
                                                 <h3 className="text-xl font-bold text-slate-900 mb-3">
-                                                    Multiformat Publishing
+                                                    Multiformat Book Publishing
                                                 </h3>
 
                                                 <p className="text-slate-600 leading-7">
-                                                    From print to digital, we ensure your work is accessible
-                                                    across every platform with our comprehensive publishing
-                                                    solutions.
+                                                    From precision paperback printing to digital formatting, we make your work accessible across every platform with full ISBN registration and custom cover design.
                                                 </p>
 
                                             </div>
@@ -456,13 +435,11 @@ export default function OurCompany() {
                                             <div>
 
                                                 <h3 className="text-xl font-bold text-slate-900 mb-3">
-                                                    Strategic Book Marketing
+                                                    Targeted Academic Visibility
                                                 </h3>
 
                                                 <p className="text-slate-600 leading-7">
-                                                    Reach the right audience with our proven marketing
-                                                    strategies tailored specifically for your genre and
-                                                    target readers.
+                                                    Connect with institutions, scholars, and key readers using tailored positioning strategies designed specifically for academic textbooks and professional works.
                                                 </p>
 
                                             </div>
@@ -488,13 +465,10 @@ export default function OurCompany() {
                                             <div>
 
                                                 <h3 className="text-xl font-bold text-slate-900 mb-3">
-                                                    Global Distribution
-                                                </h3>
+                                                    Global eBook & Print Distribution </h3>
 
                                                 <p className="text-slate-600 leading-7">
-                                                    Our worldwide distribution network ensures your books
-                                                    reach readers through leading online marketplaces and
-                                                    physical bookstores.
+                                                    Our expansive international distribution network places your title into leading online booksellers and library catalogs worldwide.
                                                 </p>
 
                                             </div>
@@ -520,13 +494,11 @@ export default function OurCompany() {
                                             <div>
 
                                                 <h3 className="text-xl font-bold text-slate-900 mb-3">
-                                                    Affordable Solutions
+                                                    Cost-Effective Author Solutions
                                                 </h3>
 
                                                 <p className="text-slate-600 leading-7">
-                                                    Professional publishing packages designed to be
-                                                    cost-effective without compromising quality,
-                                                    creativity, or global visibility.
+                                                    Budget-friendly self-publishing packages crafted to maintain standard setting quality, fast turnaround times, and maximum global reach.
                                                 </p>
 
                                             </div>
@@ -562,15 +534,11 @@ export default function OurCompany() {
                                                     </span>
 
                                                     <h3 className="text-3xl font-black text-white mt-2">
-                                                        Award-Winning Support
+                                                        Award-Winning Publishing Support
                                                     </h3>
 
                                                     <p className="text-indigo-100 mt-4 leading-7 max-w-2xl">
-                                                        Our dedicated author support team has been
-                                                        recognized for excellence in the publishing
-                                                        industry, providing personalized assistance
-                                                        from manuscript preparation to worldwide
-                                                        distribution.
+                                                        Recognized for high standard author care, our team delivers personalized assistance for textbook releases, patent grant processing, and academic event publishing to ensure maximum professional reach.
                                                     </p>
 
                                                 </div>
@@ -677,25 +645,23 @@ export default function OurCompany() {
                         <ol className="list-decimal pl-8 space-y-5 text-lg text-gray-700 leading-relaxed">
 
                             <li>
-                                Writing a textbook is one of the standard approaches of helping
-                                Students and the Academic Community.
+                                <strong>Academic Community Impact:</strong> Authorship serves as a foundational benchmark for advancing curriculum standards and supporting higher education.
                             </li>
 
                             <li>
-                                Increases leverage in the direction of increments based on
-                                publication.
+                                <strong>Career Advancement &amp; Appraisal:</strong> Published textbooks directly strengthen eligibility for academic promotions, salary increments, and institutional appraisals.
                             </li>
 
                             <li>
-                                Author(s) can use the details for NAAC, UGC, NIRF, NBA, etc.
+                                <strong>Institutional Accreditation Alignment:</strong> Detailed publication metrics directly support submission criteria for NAAC, UGC, NIRF, NBA, and global ranking frameworks.
                             </li>
 
                             <li>
-                                It adds weightage to your professional profile.
+                                <strong>Elevated Professional Profile:</strong> Having formal publications adds weightage to your CV, establishing lasting academic authority in your discipline.
                             </li>
 
                             <li>
-                                ISBN gives your publication unique global recognition.
+                                <strong>Global ISBN Recognition:</strong> Official ISBN assignment ensures unique worldwide identification, cataloging, and international availability across digital and print networks.
                             </li>
 
                         </ol>
@@ -705,12 +671,8 @@ export default function OurCompany() {
                         <div className="mt-12 rounded-3xl bg-gradient-to-r from-indigo-600 to-purple-600 p-8 shadow-xl">
 
                             <p className="text-lg md:text-xl leading-relaxed text-white text-justify">
-                                At <strong>Veritaz International Press</strong>, we're more than
-                                just a service provider—we are your partner in growth and
-                                innovation. Whether you're publishing your first book,
-                                securing a patent for your invention, or looking to advance
-                                your academic career, we're here to support you every step of
-                                the way.
+                                <strong className="block mb-3 text-white">AUTHOR ADVANCEMENT &amp; SUPPORT</strong>
+                                Behind every textbook, patent, and scholarly contribution is a personal vision to inspire others and advance knowledge. At <strong>Veritaz International Press</strong>, we share that purpose. Whether you are taking your first courageous step as an author or adding another proud achievement to your career, our team supports your vision with genuine care, ensuring your work achieves the respect, credibility, and global reach it truly deserves.
                             </p>
 
                         </div>

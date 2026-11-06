@@ -1,874 +1,653 @@
-import { useEffect, useRef, useState } from "react";
-import { CheckCircle } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  Phone,
+  Mail,
+  MessageCircle,
+  Play,
+  Quote,
+  Star,
+  X,
+} from "lucide-react";
 import { supabase } from "../lib/supabase";
 
-export default function Home() {
+const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 xl:px-10";
+const SERIF = { fontFamily: "'Fraunces', Georgia, serif" };
 
-    const bSliderRef = useRef(null);
-    const modalRef = useRef(null);
-    const videoRef = useRef(null);
+const FALLBACK_COVERS = [
+  "/assets/image/books/index-1.png",
+  "/assets/image/books/index-2.png",
+  "/assets/image/books/index-3.png",
+];
 
-    let isPaused = false;
-    let autoScrollInterval = null;
+const stats = [
+  { value: "500+", label: "Books Published" },
+  { value: "200+", label: "Patents Registered" },
+  { value: "98%", label: "Client Satisfaction" },
+];
 
-    const scrollGrid = (dir) => {
-        const bSlider = bSliderRef.current;
-        if (!bSlider) return;
+const services = [
+  {
+    title: "Textbook & Book Publishing",
+    text: "A leading book publishing company providing end-to-end self-publishing, professional manuscript editing, custom cover design, official ISBN registration, high-quality book printing, and eBook publishing with global distribution across major platforms including Flipkart.",
+  },
+  {
+    title: "Patent Grant Support",
+    text: "Protect your innovations with expert patent grant support. We offer complete patent registration, documentation, IP protection, and end-to-end patent consulting services for national and international patent filings across 12 countries.",
+  },
+  {
+    title: "Educational Events",
+    text: "Complete event coordination and academic organizing for international conferences, faculty development programs (FDPs), interactive workshops, and scholarly seminars designed to foster institutional growth and knowledge sharing.",
+  },
+  {
+    title: "IEEE Conference Publications",
+    text: "Dedicated editorial, formatting, and submission assistance for scholars aiming to publish high-impact papers in prestigious IEEE conferences globally.",
+  },
+  {
+    title: "Professional Upskilling Programs",
+    text: "Industry aligned upskilling programs and specialized training modules built to advance professional competencies, research capabilities, and career growth for educators, students, and professionals.",
+  },
+];
 
-        const firstCard = bSlider.querySelector(".snap-start");
-        if (!firstCard) return;
+const reasons = [
+  { title: "ISBN Assignment", text: "Every book is published with an official ISBN for international tracking and cataloging." },
+  { title: "Affordable Pricing", text: "Industry-leading publication packages with transparent, budget-friendly costs." },
+  { title: "Government Recognized", text: "Fully registered company recognized under MSME for official compliance." },
+  { title: "Author Copies", text: "Complimentary printed books provided to every author upon publication." },
+  { title: "Global Distribution Network", text: "Strategic partnerships with major distribution platforms including Flipkart and leading online booksellers." },
+  { title: "Academic Bestsellers", text: "Top-selling engineering, technical, and academic titles across major colleges and institutions." },
+  { title: "Academic Credit & API Score", text: "Fully compliant with UGC and institutional accreditation guidelines to boost API and self-appraisal points." },
+  { title: "Physical Certificate", text: "Hardcopy publication certificates delivered directly to every author." },
+  { title: "Complimentary Online Marketing", text: "Free digital promotion and multi-channel distribution across national online marketplaces and publisher portals." },
+  { title: "Multilingual Publishing", text: "Complete editorial, layout, and printing capabilities in all regional languages." },
+  { title: "Premium Production Quality", text: "Printed on high-grade 80 GSM paper with crisp color/monochrome printing and durable glossy lamination." },
+  { title: "Dedicated Support", text: "Personalized publishing assistance backed by responsive 24/7 client care." },
+  { title: "Market Presence", text: "Proven track record with multiple national bestsellers across genres." },
+];
 
-        const cardWidth = firstCard.clientWidth + 32;
+const bookPath = (book) => `/books/${book.title.replace(/\s+/g, "-").toLowerCase()}-${book.id}`;
 
-        if (dir === "left") {
-            bSlider.scrollLeft -= cardWidth;
-        } else {
-            bSlider.scrollLeft += cardWidth;
-        }
-    };
+function setMeta(selector, create, value) {
+  let el = document.head.querySelector(selector);
+  if (!el) {
+    el = document.createElement(create.tag);
+    Object.assign(el, create.attrs);
+    document.head.appendChild(el);
+  }
+  el[create.prop] = value;
+}
 
-    const [testimonials, setTestimonials] = useState([]);
+/** Counts up once when scrolled into view. The real value is rendered first,
+ *  so it is still correct with reduced motion or if this effect never runs. */
+function CountUp({ value }) {
+  const ref = useRef(null);
 
-    useEffect(() => {
-        const fetchTestimonials = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from("veritaz_testimonials")
-                    .select("*")
-                    .order("id", { ascending: true });
+  useEffect(() => {
+    const el = ref.current;
+    const match = /^(\d+)(.*)$/.exec(value);
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!el || !match || calm) return undefined;
 
-                if (error) throw error;
+    const target = Number(match[1]);
+    const suffix = match[2];
+    let frame = 0;
 
-                setTestimonials(data || []);
-            } catch (error) {
-                console.error("Error fetching testimonials:", error);
-            }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        const start = performance.now();
+        const tick = (now) => {
+          const t = Math.min((now - start) / 1400, 1);
+          const eased = 1 - (1 - t) ** 3;
+          el.textContent = `${Math.round(target * eased)}${suffix}`;
+          if (t < 1) frame = requestAnimationFrame(tick);
         };
+        frame = requestAnimationFrame(tick);
+      },
+      { threshold: 0.6 }
+    );
+    observer.observe(el);
 
-        fetchTestimonials();
-    }, []);
-
-    useEffect(() => {
-        const bSlider = bSliderRef.current;
-        if (!bSlider) return;
-
-        autoScrollInterval = setInterval(() => {
-            if (!isPaused) {
-                if (
-                    bSlider.scrollLeft + bSlider.clientWidth >=
-                    bSlider.scrollWidth - 10
-                ) {
-                    bSlider.scrollTo({ left: 0, behavior: "smooth" });
-                } else {
-                    scrollGrid("right");
-                }
-            }
-        }, 4000);
-
-        const handleMouseEnter = () => (isPaused = true);
-        const handleMouseLeave = () => (isPaused = false);
-
-        bSlider.addEventListener("mouseenter", handleMouseEnter);
-        bSlider.addEventListener("mouseleave", handleMouseLeave);
-
-        return () => {
-            clearInterval(autoScrollInterval);
-            bSlider.removeEventListener("mouseenter", handleMouseEnter);
-            bSlider.removeEventListener("mouseleave", handleMouseLeave);
-        };
-    }, []);
-
-    const openVideoModal = (videoSrc) => {
-        const modal = modalRef.current;
-        const video = videoRef.current;
-
-        if (!modal || !video) return;
-
-        video.src = videoSrc;
-        modal.classList.remove("hidden");
-
-        setTimeout(() => {
-            modal.classList.remove("opacity-0");
-        }, 10);
-
-        video.play();
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+      el.textContent = value;
     };
+  }, [value]);
 
-    const closeVideoModal = () => {
-        const modal = modalRef.current;
-        const video = videoRef.current;
+  return <span ref={ref}>{value}</span>;
+}
 
-        if (!modal || !video) return;
-
-        modal.classList.add("opacity-0");
-
-        setTimeout(() => {
-            modal.classList.add("hidden");
-            video.pause();
-            video.src = "";
-        }, 300);
-    };
-
-    useEffect(() => {
-        document.title = "Best Book Publication Company in India | Veritaz International";
-
-        // 1. Meta Description
-        let metaDescription = document.querySelector('meta[name="description"]');
-        if (!metaDescription) {
-            metaDescription = document.createElement('meta');
-            metaDescription.name = "description";
-            document.head.appendChild(metaDescription);
-        }
-        metaDescription.content = "Publish textbooks, research papers, patents, copyrights and academic journals with Veritaz International. Trusted publication experts across India.";
-
-        // 2. Meta Keywords
-        let metaKeywords = document.querySelector('meta[name="keywords"]');
-        if (!metaKeywords) {
-            metaKeywords = document.createElement('meta');
-            metaKeywords.name = "keywords";
-            document.head.appendChild(metaKeywords);
-        }
-        metaKeywords.content = "Textbook Publishing India, Patent Filing Services, ISBN Registration, Copyright Services, Book Publishing Company, Veritaz International Press, Academic Publishing";
-        // 3. Robots Tag
-        let metaRobots = document.querySelector('meta[name="robots"]');
-        if (!metaRobots) {
-            metaRobots = document.createElement('meta');
-            metaRobots.name = "robots";
-            document.head.appendChild(metaRobots);
-        }
-        metaRobots.content = "index, follow";
-
-        // 4. Canonical Link
-        let canonicalLink = document.querySelector('link[rel="canonical"]');
-        if (!canonicalLink) {
-            canonicalLink = document.createElement('link');
-            canonicalLink.rel = "canonical";
-            document.head.appendChild(canonicalLink);
-        }
-        canonicalLink.href = "https://www.veritazinternational.com/";
-    }, []);
-
-
+function Avatar({ src, name }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
     return (
-        <>
+      <span className="w-14 h-14 rounded-full bg-brand-violet text-white font-bold text-lg flex items-center justify-center flex-shrink-0">
+        {(name || "?").trim().charAt(0).toUpperCase()}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={name || "Client"}
+      className="w-14 h-14 rounded-full object-cover flex-shrink-0 ring-2 ring-white"
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
-            <header
-                style={{
-                    backgroundImage:
-                        "url('https://img.freepik.com/premium-photo/plain-background-copy-space_198067-677668.jpg')",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
+const HERO_WORDS = ["Where", "Great", "Writing", "Becomes", "a"];
+
+function Hero({ covers, booksReady }) {
+  const [loaded, setLoaded] = useState(0);
+  const [gaveUp, setGaveUp] = useState(false);
+
+  // The fan waits for its images so the opening is not spent on empty space,
+  // but a slow network should not leave the hero bare, so stop waiting after a while.
+  useEffect(() => {
+    const timer = setTimeout(() => setGaveUp(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const fan = useMemo(() => {
+    if (!booksReady && !gaveUp) return [];
+    const pool = covers.length ? covers : FALLBACK_COVERS;
+    return Array.from({ length: 5 }, (_, i) => pool[i % pool.length]);
+  }, [covers, booksReady, gaveUp]);
+
+  const open = gaveUp || (fan.length > 0 && loaded >= fan.length);
+
+  return (
+    <section className="relative overflow-hidden bg-gradient-to-b from-brand-deep to-brand-violet text-white">
+      <span aria-hidden="true" className="orb orb-cyan" />
+      <span aria-hidden="true" className="orb orb-orchid" />
+
+      <div className={`${WRAP} relative pt-16 lg:pt-24 text-center`}>
+        <h1 style={SERIF} className="mx-auto max-w-5xl text-[2.6rem] sm:text-6xl xl:text-7xl leading-[1.08] font-medium tracking-tight">
+          {HERO_WORDS.map((word, i) => (
+            <span key={word}>
+              <span className="hero-word" style={{ "--w": i }}>{word}</span>{" "}
+            </span>
+          ))}
+          <em className="hero-word text-brand-gold" style={{ "--w": 5 }}>Printed</em>{" "}
+          <em className="hero-word text-brand-gold" style={{ "--w": 6 }}>Reality</em>
+        </h1>
+        <p className="hero-fade mx-auto mt-6 max-w-2xl text-lg text-white/90 leading-relaxed">
+          Seamless book creation through self-publishing, editing, cover design, ISBN &amp; patent
+          registration, printing, and eBook distribution.
+        </p>
+        <div className="hero-fade mt-9 flex flex-col sm:flex-row justify-center gap-3">
+          <a
+            href="#publish-form"
+            className="inline-flex items-center justify-center gap-2 h-14 px-8 rounded-full bg-brand-gold text-brand-deep font-bold hover:bg-brand-goldlight transition-colors"
+          >
+            Start Publishing Today
+            <ArrowRight className="w-5 h-5" />
+          </a>
+          <Link
+            to="/book-store"
+            className="inline-flex items-center justify-center h-14 px-8 rounded-full border border-white/40 font-semibold hover:bg-white/10 transition-colors"
+          >
+            Browse the Book Store
+          </Link>
+        </div>
+
+        {/* Decorative: the same titles are linked properly in the shelf below. */}
+        <div aria-hidden="true" className={`book-fan ${open ? "is-ready" : ""}`}>
+          {fan.map((src, i) => {
+            const offset = i - 2;
+            return (
+              <img
+                key={i}
+                src={src}
+                alt=""
+                className="fan-card"
+                style={{ "--p": offset, "--d": offset * offset, zIndex: 5 - Math.abs(offset) }}
+                onLoad={() => setLoaded((n) => n + 1)}
+                onError={(e) => {
+                  e.currentTarget.src = FALLBACK_COVERS[0];
                 }}
-                className="hero-gradient pt-5 sm:pt-5 lg:pt-15 xl:pt-14 pb-24 md:pb-32 px-6 lg:px-20 relative overflow-hidden"
+              />
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Pins on wide screens and pans sideways through the services as you scroll
+ *  (see .process-* in index.css). Everywhere else it is a plain card grid. */
+function Process() {
+  return (
+    <section className="process-pin bg-brand-paper">
+      <div className="process-sticky">
+        <div className="process-track">
+          <div className="process-intro">
+            <h2 style={SERIF} className="text-5xl lg:text-7xl font-medium text-brand-deep tracking-tight leading-[1.05]">
+              Inside Our Process
+            </h2>
+            <p className="mt-5 max-w-md text-lg text-slate-600 leading-relaxed">
+              A seamless, guided workflow ensuring precision, quality, and complete author support at
+              every stage of the publishing journey.
+            </p>
+          </div>
+
+          {services.map((s, i) => (
+            <article key={s.title} className="process-card reveal">
+              <span style={SERIF} className="block text-6xl lg:text-8xl font-medium text-brand-violet/25">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 style={SERIF} className="mt-4 text-2xl lg:text-3xl font-medium text-brand-deep">
+                {s.title}
+              </h3>
+              <p className="mt-3 text-slate-600 leading-relaxed">{s.text}</p>
+            </article>
+          ))}
+        </div>
+        <span aria-hidden="true" className="process-bar" />
+      </div>
+    </section>
+  );
+}
+
+function FromDraft() {
+  return (
+    <section className="bg-gradient-to-r from-brand-deep to-brand-violet text-white py-20 lg:py-32">
+      <div className={`${WRAP} text-center`}>
+        <h2 style={SERIF} className="reveal mx-auto max-w-4xl text-4xl lg:text-7xl font-medium tracking-tight leading-[1.05]">
+          From Draft to Global Bookshelves
+        </h2>
+        <p className="reveal mx-auto mt-6 max-w-2xl text-lg text-white/90 leading-relaxed">
+          Veritaz International Press bridges the gap between innovative ideas and global
+          recognition through complete publishing, patent protection, and academic support.
+        </p>
+
+        <dl className="mx-auto mt-14 max-w-4xl grid sm:grid-cols-3 gap-8">
+          {stats.map((s) => (
+            <div key={s.label} className="reveal">
+              <dd style={SERIF} className="text-6xl lg:text-7xl font-medium text-brand-gold tabular-nums">
+                <CountUp value={s.value} />
+              </dd>
+              <dt className="mt-2 font-medium text-white/90">{s.label}</dt>
+            </div>
+          ))}
+        </dl>
+
+        <div className="reveal mt-14 flex flex-col sm:flex-row justify-center gap-3">
+          <a
+            href="#publish-form"
+            className="inline-flex items-center justify-center gap-2 h-14 px-8 rounded-full bg-brand-gold text-brand-deep font-bold hover:bg-brand-goldlight transition-colors"
+          >
+            Start Publishing Today
+            <ArrowRight className="w-5 h-5" />
+          </a>
+          <Link
+            to="/contact"
+            className="inline-flex items-center justify-center h-14 px-8 rounded-full border border-white/40 font-semibold hover:bg-white/10 transition-colors"
+          >
+            Contact us
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ShelfBook({ book, hidden = false }) {
+  return (
+    <Link
+      to={bookPath(book)}
+      aria-hidden={hidden || undefined}
+      tabIndex={hidden ? -1 : undefined}
+      className="shelf-book group"
+    >
+      <img
+        src={book.cover1}
+        alt={hidden ? "" : book.title}
+        loading="lazy"
+        className="w-full aspect-[3/4] object-cover rounded shadow-lg"
+        onError={(e) => {
+          e.currentTarget.src = FALLBACK_COVERS[0];
+        }}
+      />
+      <h3 className="mt-3 text-sm font-bold text-slate-800 line-clamp-2 group-hover:text-brand-violet transition-colors">
+        {book.title}
+      </h3>
+      <p className="mt-1 text-xs text-slate-500 line-clamp-1">{book.authors}</p>
+    </Link>
+  );
+}
+
+/** Endless belt of books. The list is doubled so -50% lands on an identical
+ *  frame; the copy is hidden from keyboards and screen readers. */
+function Shelf({ books }) {
+  if (!books.length) return null;
+  return (
+    <section className="bg-white py-16 lg:py-24 overflow-hidden">
+      <div className={`${WRAP} flex flex-wrap items-end justify-between gap-4 mb-10`}>
+        <h2 style={SERIF} className="reveal text-4xl lg:text-5xl font-medium text-brand-deep tracking-tight">
+          From our shelves
+        </h2>
+        <Link to="/book-store" className="inline-flex items-center gap-2 font-bold text-brand-violet hover:gap-3 transition-all">
+          View all books
+          <ArrowRight className="w-5 h-5" />
+        </Link>
+      </div>
+      <div className="shelf-window">
+        <div className="shelf-belt">
+          {books.map((book) => (
+            <ShelfBook key={book.id} book={book} />
+          ))}
+          {books.map((book) => (
+            <ShelfBook key={`copy-${book.id}`} book={book} hidden />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Reasons() {
+  return (
+    <section className="bg-brand-ink text-white py-16 lg:py-28">
+      <div className={WRAP}>
+        <h2 style={SERIF} className="reveal text-4xl lg:text-6xl font-medium tracking-tight">
+          Why Authors Choose Us
+        </h2>
+        <ul className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+          {reasons.map((r, i) => (
+            <li
+              key={r.title}
+              className={`reveal reason-card ${i === reasons.length - 1 ? "sm:col-span-2 lg:col-span-3" : ""}`}
             >
-                <div className="flex flex-col lg:flex-row items-center justify-between">
+              <Check className="w-6 h-6 text-brand-gold" />
+              <h3 className="mt-3 font-bold text-white">{r.title}</h3>
+              <p className="mt-1 leading-relaxed text-blue-100/90">{r.text}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
 
-                    <div className="w-full lg:w-1/2 space-y-4 text-center lg:text-left flex flex-col items-center lg:items-start">
-                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold leading-tight text-gray-900">
-                            Best publishing <br className="hidden md:block" />
-                            practices in <br className="hidden md:block" />
-                            one book
-                        </h1>
+function Testimonials({ testimonials }) {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const count = testimonials.length;
 
-                        <p className="text-gray-700 text-lg max-w-md">
-                            Start your learning journey by browsing millions of books from our library.
-                        </p>
-                    </div>
+  useEffect(() => {
+    if (count < 2 || paused || videoUrl) return undefined;
+    const timer = setInterval(() => setIndex((i) => (i + 1) % count), 7000);
+    return () => clearInterval(timer);
+  }, [count, paused, videoUrl]);
 
-                    <div className="w-full lg:w-1/2 mt-10 lg:mt-0 flex justify-center items-center lg:items-end perspective-1000">
-                        <div className="relative flex items-center justify-center">
+  useEffect(() => {
+    if (!videoUrl) return undefined;
+    const onKey = (e) => e.key === "Escape" && setVideoUrl(null);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [videoUrl]);
 
-                            <div className="w-32 h-44 sm:w-22 sm:h-50 md:w-48 md:h-64 lg:w-40 lg:h-52 xl:w-48 xl:h-64 rounded shadow-xl transform -rotate-12 -translate-x-8 md:-translate-x-12 translate-y-4 transition duration-500 hover:rotate-0 hover:z-30">
-                                <img
-                                    src="assets/image/books/index-1.png"
-                                    alt="Book 1"
-                                    className="w-full h-full object-cover rounded"
-                                />
-                            </div>
+  if (!count) return null;
 
-                            <div className="w-32 h-44 sm:w-22 sm:h-50 md:w-48 md:h-64 lg:w-40 lg:h-52 xl:w-48 xl:h-64 rounded shadow-2xl z-20 scale-110 md:scale-125 transition duration-500 hover:scale-135">
-                                <img
-                                    src="assets/image/books/index-2.png"
-                                    alt="Book 2"
-                                    className="w-full h-full object-cover rounded"
-                                />
-                            </div>
+  const current = testimonials[index % count];
+  const hasVideo = (current.is_video_testimonial === true || current.is_video_testimonial === 1) && current.video_url;
 
-                            <div className="w-32 h-44 sm:w-22 sm:h-50 md:w-48 md:h-64 lg:w-40 lg:h-52 xl:w-48 xl:h-64 rounded shadow-xl transform rotate-12 translate-x-8 md:translate-x-12 translate-y-4 transition duration-500 hover:rotate-0 hover:z-30">
-                                <img
-                                    src="assets/image/books/index-3.png"
-                                    alt="Book 3"
-                                    className="w-full h-full object-cover rounded"
-                                />
-                            </div>
+  return (
+    <section
+      className="bg-brand-mist py-16 lg:py-24 overflow-hidden"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className={WRAP}>
+        <div className="text-center">
+          <p className="text-brand-violet text-sm font-bold uppercase tracking-[0.2em]">Testimonials</p>
+          <h2 style={SERIF} className="reveal mt-4 text-4xl lg:text-5xl font-medium text-brand-deep tracking-tight">
+            In our authors' words
+          </h2>
+        </div>
 
-                        </div>
-                    </div>
-
+        <div className="page-stack mx-auto mt-10 max-w-4xl">
+          {/* Re-keyed so each new quote replays the page turn. */}
+          <figure key={current.id ?? index} className="page-turn flex flex-col min-h-[340px] bg-white rounded-2xl p-6 sm:p-10">
+            <Quote className="w-10 h-10 text-brand-violet/30" />
+            <blockquote
+              style={SERIF}
+              className={`mt-4 leading-snug text-brand-deep ${
+                (current.content || "").length > 280 ? "text-lg lg:text-xl" : "text-xl sm:text-2xl lg:text-3xl"
+              }`}
+            >
+              {current.content}
+            </blockquote>
+            <figcaption className="mt-auto pt-8 flex flex-wrap items-center gap-4">
+              <Avatar src={current.avatar_url} name={current.name} />
+              <div className="min-w-0">
+                <p className="font-bold text-brand-deep">{current.name}</p>
+                <p className="text-sm text-slate-600">{current.designation}</p>
+                <div className="mt-1 flex gap-0.5" aria-label={`${current.rating || 5} out of 5 stars`}>
+                  {Array.from({ length: current.rating || 5 }).map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-brand-gold text-brand-gold" />
+                  ))}
                 </div>
-            </header>
-
-            <section className="relative py-2 lg:py-5 px-6 lg:px-24 overflow-hidden bg-gray-50">
-
-                {/* Background elements */}
-                <div className="absolute top-10 left-5 w-72 h-72 bg-red-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-                <div className="absolute bottom-10 right-5 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float animation-delay-2000"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-2 bg-gradient-to-r from-process-start via-process-mid to-process-end opacity-5 rounded-full"></div>
-
-                <div className="relative">
-
-                    {/* Header */}
-                    <div className="text-center mb-10">
-                        <span className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-process-start to-process-mid text-gray-800 font-bold tracking-widest uppercase text-sm">
-                            <i className="fas fa-route mr-2"></i>
-                            Veritaz International Press
-                        </span>
-
-                        <h2 className="text-xl md:text-2xl lg:text-4xl font-black text-gray-900 mt-6 tracking-tight">
-                            Our Comprehensive Service Process
-                        </h2>
-
-                        <p className="text-gray-600 mt-3 text-sm lg:text-lg leading-relaxed text-justify">
-                            Our structured process guides you through each critical phase of academic achievement, ensuring comprehensive support at every step.
-                        </p>
-                    </div>
-
-                    {/* Grid */}
-                    <div className="grid gap-4 sm:gap-6 lg:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-
-                        {/* Card 01 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-blue-200 transition-colors leading-none">
-                                    01
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-book text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Textbook Publications
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                International publishing with ISBN. Full distribution support on Amazon and Flipkart for maximum author reach.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    National
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    International
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 02 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-orange-200 transition-colors leading-none">
-                                    02
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-500 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-gavel text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Patent Grant Support
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Expert assistance for National and International patent filing across 12 countries to protect your innovations.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    IPR Protection
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    12 Countries
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 03 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-purple-200 transition-colors leading-none">
-                                    03
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-users text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Educational Events
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Professional organization of International Conferences, FDPs, Workshops, and Academic Seminars.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Conferences
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Workshops
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 04 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-pink-200 transition-colors leading-none">
-                                    04
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-pink-500 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-graduation-cap text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Ph.D. Assistance
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Comprehensive end-to-end guidance for doctoral candidates, from topic selection to thesis completion.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Mentorship
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Research
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 05 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-teal-200 transition-colors leading-none">
-                                    05
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-teal-600 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-network-wired text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                IEEE Conference Publications
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Dedicated support for publishing high-standard papers in prestigious IEEE conferences globally.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Technical
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Global Standard
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 06 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-yellow-200 transition-colors leading-none">
-                                    06
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-microscope text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                SCI & Scopus Journal
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Achieve publication in top-tier indexed journals with our professional review and submission support.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-yellow-700 bg-yellow-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Scopus Indexed
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-yellow-700 bg-yellow-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    High Impact
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 07 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-indigo-200 transition-colors leading-none">
-                                    07
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-pen-nib text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Research Paper Support
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Expert drafting, formatting, and technical editing services to polish your research for submission.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Technical Writing
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Proofreading
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 08 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-emerald-200 transition-colors leading-none">
-                                    08
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-600 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-laptop-code text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Upskilling Programs
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Modern training modules designed to enhance professional skills and academic competencies.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Skill Development
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Certificate
-                                </span>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
-
-            <section className="overflow-hidden py-8">
-                <div className="relative z-10 px-4 lg:px-8">
-                    <div>
-                        <div className="flex flex-col lg:flex-row items-center">
-
-                            {/* LEFT CONTENT */}
-                            <div className="lg:w-1/2 mb-12 lg:mb-0">
-
-                                <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
-                                    <span className="text-black text-sm font-semibold uppercase tracking-wider">
-                                        Trusted by 500+ Authors
-                                    </span>
-                                </div>
-
-                                <h2 className="text-xl md:text-3xl lg:text-5xl font-bold text-gray-900 mb-2 lg:mb-6 leading-tight">
-                                    Transform Your{" "}
-                                    <span className="gradient-text">Knowledge</span>{" "}
-                                    Into Impact
-                                </h2>
-
-                                <p className="text-sm md:text-xl lg:text-xl text-gray-600 mb-8 leading-relaxed">
-                                    Veritaz International Press bridges the gap between innovative ideas and global recognition through comprehensive publishing, patent, and research solutions.
-                                </p>
-
-                                {/* Buttons */}
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <a
-                                        href="#publish-form"
-                                        className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover-lift flex items-center justify-center"
-                                    >
-                                        <i className="fas fa-pen-nib mr-3"></i>
-                                        Start Publishing Today
-                                    </a>
-
-                                    <a
-                                        href="contact.php"
-                                        className="px-4 py-2 bg-white text-gray-800 rounded-xl font-semibold text-lg border-2 border-gray-200 hover:border-blue-600 transition-all duration-300 hover-lift flex items-center justify-center"
-                                    >
-                                        <i className="fas fa-phone mr-3 text-blue-600"></i>
-                                        Contact Us
-                                    </a>
-                                </div>
-
-                                {/* Stats */}
-                                <div className="mt-2 lg:mt-12 md:mt-8 grid grid-cols-3 gap-4">
-                                    <div className="text-center">
-                                        <div className="text-lg md:text-xl lg:text-3xl font-bold text-blue-600 mb-2">
-                                            500+
-                                        </div>
-                                        <div className="text-gray-600 text-xs">Books Published</div>
-                                    </div>
-
-                                    <div className="text-center">
-                                        <div className="text-lg md:text-xl lg:text-3xl font-bold text-orange-500 mb-2">
-                                            200+
-                                        </div>
-                                        <div className="text-gray-600 text-xs">Patents Filed</div>
-                                    </div>
-
-                                    <div className="text-center">
-                                        <div className="text-lg md:text-xl lg:text-3xl font-bold text-purple-600 mb-2">
-                                            98%
-                                        </div>
-                                        <div className="text-gray-600 text-xs">Client Satisfaction</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* RIGHT FORM */}
-                            <div className="lg:w-1/2 lg:pl-12">
-                                <div className="relative">
-                                    <div className="relative bg-white rounded-2xl shadow-2xl p-8 book-shadow transform transition-transform duration-500">
-
-                                        {/* Badge */}
-                                        <div className="absolute -top-4 -right-4 w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-lg">
-                                            <i className="fas fa-award text-2xl"></i>
-                                        </div>
-
-                                        <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                                            Publish Your Book
-                                        </h3>
-
-                                        {/* FORM */}
-                                        <form id="web3form" className="space-y-4" noValidate>
-
-                                            <input
-                                                type="hidden"
-                                                name="access_key"
-                                                value="351a2b0f-5bed-4078-a9ce-dc3cdb628eb5"
-                                            />
-
-                                            <input
-                                                type="hidden"
-                                                name="subject"
-                                                value="New Book Publishing Inquiry"
-                                            />
-
-                                            <input
-                                                type="checkbox"
-                                                name="botcheck"
-                                                style={{ display: "none" }}
-                                            />
-
-                                            {/* Name */}
-                                            <div className="relative">
-                                                <i className="fas fa-user absolute left-4 top-4 text-gray-400"></i>
-                                                <input
-                                                    type="text"
-                                                    id="name"
-                                                    name="name"
-                                                    placeholder="Your Name"
-                                                    required
-                                                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-50"
-                                                />
-                                            </div>
-
-                                            {/* Email */}
-                                            <div className="relative">
-                                                <i className="fas fa-envelope absolute left-4 top-4 text-gray-400"></i>
-                                                <input
-                                                    type="email"
-                                                    id="email"
-                                                    name="email"
-                                                    placeholder="Email Address"
-                                                    required
-                                                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-50"
-                                                />
-                                            </div>
-
-                                            {/* Phone */}
-                                            <div className="relative">
-                                                <i className="fas fa-phone absolute left-4 top-4 text-gray-400"></i>
-                                                <input
-                                                    type="tel"
-                                                    id="phone"
-                                                    name="phone"
-                                                    placeholder="Phone Number"
-                                                    required
-                                                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-50"
-                                                />
-                                            </div>
-
-                                            {/* Message */}
-                                            <div className="relative">
-                                                <i className="fas fa-file-alt absolute left-4 top-4 text-gray-400"></i>
-                                                <input
-                                                    type="text"
-                                                    id="message"
-                                                    name="message"
-                                                    placeholder="Message"
-                                                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-50"
-                                                />
-                                            </div>
-
-                                            <button
-                                                type="submit"
-                                                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center"
-                                            >
-                                                <i className="fas fa-paper-plane mr-2"></i>
-                                                Send Inquiry
-                                            </button>
-
-                                            <p id="result" className="text-center text-sm mt-2"></p>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section className="bg-gray-100 py-20 px-4 overflow-hidden">
-                <div className="max-w-7xl mx-auto">
-
-                    {/* Header */}
-                    <div className="text-center mb-16 relative">
-                        <h4 className="text-gray-700 text-7xl font-bold opacity-10 absolute left-1/2 -translate-x-1/2 -top-16 select-none uppercase">
-                            Client
-                        </h4>
-
-                        <p className="text-gray-800 text-4xl font-black relative z-10 tracking-tight">
-                            OUR TESTIMONIALS
-                        </p>
-
-                        <div className="w-20 h-1 bg-teal-500 mx-auto mt-4 rounded-full"></div>
-                    </div>
-
-                    {/* Slider */}
-                    <div
-                        ref={bSliderRef}
-                        className="flex gap-8 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-12"
-                        style={{ scrollBehavior: "smooth", scrollbarWidth: "none", msOverflowStyle: "none" }}
-                    >
-                        {testimonials.map((test, index) => {
-                            // Normalize potential Boolean vs Binary Int values (e.g. true or 1) safely
-                            const hasVideo = test.is_video_testimonial === true || test.is_video_testimonial === 1;
-
-                            return (
-                                <div
-                                    key={index}
-                                    className="min-w-full md:min-w-full lg:min-w-[calc(50%-16px)] xl:min-w-[calc(33.333%-22px)] snap-start"
-                                >
-                                    <div className="bg-[#E7F2EF] rounded-3xl p-1 relative flex flex-col md:flex-row gap-3 items-center min-h-[220px] transition-transform hover:scale-[1.02] duration-300">
-
-                                        {/* Avatar Container with Conditional Hover Play Button Overlay */}
-                                        <div
-                                            onClick={() => hasVideo && openVideoModal(test.video_url)}
-                                            className={`w-24 h-24 bg-white/20 rounded-full flex-shrink-0 border-2 border-white/30 overflow-hidden relative ${hasVideo ? "group cursor-pointer" : ""
-                                                }`}
-                                        >
-                                            <img
-                                                src={test.avatar_url}
-                                                className="w-full h-full object-cover"
-                                                alt={test.name || "Client Avatar"}
-                                                onError={(e) => {
-                                                    e.target.src = "https://via.placeholder.com/100x100?text=User";
-                                                }}
-                                            />
-
-                                            {/* Conditional Hover Overlay Play Button */}
-                                            {hasVideo && (
-                                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    <svg className="w-8 h-8 text-white pl-1" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M8 5v14l11-7z" />
-                                                    </svg>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Text Details Box */}
-                                        <div className="text-black text-center md:text-left flex-1 px-2 md:px-0">
-                                            <h5 className="font-bold text-lg tracking-tight flex items-center justify-center md:justify-start gap-2">
-                                                {test.name}
-
-                                                {/* Conditional Inline "Watch Video" Button Pill */}
-                                                {hasVideo && (
-                                                    <button
-                                                        onClick={() => openVideoModal(test.video_url)}
-                                                        className="text-[10px] bg-red-500 text-white px-2 py-1 rounded-full flex items-center gap-1 hover:bg-red-600 transition-colors shadow-sm font-normal"
-                                                    >
-                                                        <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M8 5v14l11-7z" />
-                                                        </svg>{" "}
-                                                        Watch Video
-                                                    </button>
-                                                )}
-                                            </h5>
-
-                                            <p className="text-[11px] opacity-80 mb-2 font-semibold">
-                                                {test.designation}
-                                            </p>
-
-                                            <div className="flex justify-center md:justify-start gap-1 mb-3 text-yellow-500 text-xs">
-                                                {Array.from({ length: test.rating || 5 }).map((_, i) => (
-                                                    <span key={i}>★</span>
-                                                ))}
-                                            </div>
-
-                                            <p className="text-[11px] leading-relaxed opacity-90 line-clamp-4 text-justify">
-                                                {test.content}
-                                            </p>
-                                        </div>
-
-                                        {/* Speech Bubble Arrow Indicator styling */}
-                                        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[20px] border-t-[#E7F2EF]"></div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Controls */}
-                    <div className="flex flex-col items-center mt-12 gap-6">
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => scrollGrid("left")}
-                                className="p-3 rounded-full border border-white/10 text-black hover:bg-green-200 transition-all"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-
-                            <button
-                                onClick={() => scrollGrid("right")}
-                                className="p-3 rounded-full border border-white/10 text-black hover:bg-green-200 transition-all"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-                <div
-                    ref={modalRef}
-                    id="videoModal"
-                    className="fixed inset-0 bg-black/70 hidden opacity-0 transition-opacity flex items-center justify-center z-50"
-                    onClick={(e) => {
-                        if (e.target.id === "videoModal") closeVideoModal();
-                    }}
+              </div>
+              {hasVideo && (
+                <button
+                  onClick={() => setVideoUrl(current.video_url)}
+                  className="sm:ml-auto inline-flex items-center gap-2 h-11 px-5 rounded-full bg-brand-violet text-white text-sm font-bold hover:bg-brand-deep transition-colors"
                 >
-                    <video
-                        ref={videoRef}
-                        className="w-[90%] max-w-3xl rounded-xl"
-                        controls
-                    />
-                </div>
-            </section>
+                  <Play className="w-4 h-4 fill-white" />
+                  Watch Video
+                </button>
+              )}
+            </figcaption>
+          </figure>
+        </div>
 
-            <section className="py-5 px-4 lg:px-8">
-                <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-800 mb-10 text-center">
-                    Why Authors Choose Us
-                </h2>
+        {count > 1 && (
+          <div className="mt-10 flex items-center justify-center gap-3">
+            <button
+              onClick={() => setIndex((i) => (i - 1 + count) % count)}
+              aria-label="Previous testimonial"
+              className="w-12 h-12 rounded-full border border-brand-violet/30 text-brand-violet flex items-center justify-center hover:bg-brand-violet hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <span className="px-2 text-sm font-semibold text-slate-500 tabular-nums">
+              {(index % count) + 1} / {count}
+            </span>
+            <button
+              onClick={() => setIndex((i) => (i + 1) % count)}
+              aria-label="Next testimonial"
+              className="w-12 h-12 rounded-full border border-brand-violet/30 text-brand-violet flex items-center justify-center hover:bg-brand-violet hover:text-white transition-colors"
+            >
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+      </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-6 text-gray-700">
+      {videoUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Testimonial video"
+          className="fixed inset-0 z-[110] bg-black/75 flex items-center justify-center p-4"
+          onClick={(e) => e.target === e.currentTarget && setVideoUrl(null)}
+        >
+          <button
+            onClick={() => setVideoUrl(null)}
+            aria-label="Close video"
+            className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/25"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <video src={videoUrl} className="w-full max-w-3xl rounded-xl" controls autoPlay />
+        </div>
+      )}
+    </section>
+  );
+}
 
-                    {/* Left Column */}
-                    <div className="space-y-6">
+const fieldClass =
+  "w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20";
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Book will be published with <strong className="text-gray-900">ISBN</strong>.</p>
-                        </div>
+function InquiryForm() {
+  const [status, setStatus] = useState({ type: "idle", message: "" });
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Lowest Publication Fee.</p>
-                        </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const data = new FormData(form);
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>A Govt registered Company and Registered under MSME.</p>
-                        </div>
+    setStatus({ type: "loading", message: "Sending..." });
+    try {
+      const { error } = await supabase.from("veritaz_inquiries").insert({
+        name: data.get("name"),
+        email: data.get("email"),
+        phone: data.get("phone"),
+        message: data.get("message"),
+        form_type: "Book Publishing",
+      });
+      if (error) throw error;
+      setStatus({ type: "success", message: "Thank you! We'll be in touch within 24 hours." });
+      form.reset();
+    } catch (error) {
+      console.error("Inquiry failed:", error);
+      setStatus({ type: "error", message: "Something went wrong. Please try again or call us." });
+    }
+  };
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Complementary Books to each Author.</p>
-                        </div>
+  return (
+    // scroll-mt keeps the heading clear of the sticky navbar on the hero's anchor link.
+    <section id="publish-form" className="bg-gradient-to-br from-brand-violet to-brand-deep text-white py-16 lg:py-24 scroll-mt-40">
+      <div className={`${WRAP} grid lg:grid-cols-2 gap-12 lg:gap-20 items-center`}>
+        <div>
+          <h2 style={SERIF} className="text-4xl lg:text-6xl font-medium tracking-tight leading-tight">
+            Have a manuscript? <em className="text-brand-gold">Let's publish it.</em>
+          </h2>
+          <p className="mt-5 max-w-lg text-lg text-white/90 leading-relaxed">
+            Tell us about your book and our team will get back to you within 24 hours.
+          </p>
+          <ul className="mt-8 space-y-4 font-medium">
+            <li>
+              <a href="tel:+916380658876" className="inline-flex items-center gap-3 hover:text-brand-gold transition-colors">
+                <Phone className="w-5 h-5 text-brand-gold" />
+                +91 6380658876
+              </a>
+            </li>
+            <li>
+              <a href="mailto:info@veritazinternational.com" className="inline-flex items-center gap-3 hover:text-brand-gold transition-colors break-all">
+                <Mail className="w-5 h-5 text-brand-gold flex-shrink-0" />
+                info@veritazinternational.com
+              </a>
+            </li>
+            <li>
+              <a href="https://wa.me/916380658876" target="_blank" rel="noreferrer" className="inline-flex items-center gap-3 hover:text-brand-gold transition-colors">
+                <MessageCircle className="w-5 h-5 text-brand-gold" />
+                Join WhatsApp
+              </a>
+            </li>
+          </ul>
+        </div>
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Partnership with global distributors like Amazon, Flipkart etc.</p>
-                        </div>
+        <form onSubmit={handleSubmit} className="reveal bg-white text-slate-800 rounded-2xl p-6 sm:p-8 lg:p-10 space-y-4">
+          <h3 className="text-2xl font-bold text-brand-deep">Publish Your Book</h3>
+          <div>
+            <label htmlFor="home-name" className="block text-sm font-semibold mb-1.5">Your Name</label>
+            <input id="home-name" name="name" type="text" autoComplete="name" required className={fieldClass} />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="home-email" className="block text-sm font-semibold mb-1.5">Email Address</label>
+              <input id="home-email" name="email" type="email" autoComplete="email" required className={fieldClass} />
+            </div>
+            <div>
+              <label htmlFor="home-phone" className="block text-sm font-semibold mb-1.5">Phone Number</label>
+              <input id="home-phone" name="phone" type="tel" autoComplete="tel" required className={fieldClass} />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="home-message" className="block text-sm font-semibold mb-1.5">Message</label>
+            <textarea id="home-message" name="message" rows={3} className={`${fieldClass} h-auto py-3 resize-y`} />
+          </div>
+          <button
+            type="submit"
+            disabled={status.type === "loading"}
+            className="w-full h-14 rounded-full bg-brand-violet text-white font-bold hover:bg-brand-deep disabled:opacity-60 transition-colors"
+          >
+            {status.type === "loading" ? "Sending..." : "Send Inquiry"}
+          </button>
+          <p
+            role="status"
+            className={`min-h-5 text-center text-sm font-medium ${
+              status.type === "error" ? "text-red-600" : status.type === "success" ? "text-green-700" : "text-slate-500"
+            }`}
+          >
+            {status.type === "loading" ? "" : status.message}
+          </p>
+        </form>
+      </div>
+    </section>
+  );
+}
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Bestselling titles in Research and Engineering in Colleges.</p>
-                        </div>
+export default function Home() {
+  const [books, setBooks] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
+  const [booksReady, setBooksReady] = useState(false);
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>As per UGC and other accreditation bodies, it adds points to API and self-appraisal.</p>
-                        </div>
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      const [bookResult, testimonialResult] = await Promise.all([
+        supabase
+          .from("veritaz_books")
+          .select("id, title, authors, cover1")
+          .eq("status", "In Stock")
+          .order("id", { ascending: false })
+          .limit(24),
+        supabase.from("veritaz_testimonials").select("*").order("id", { ascending: true }),
+      ]);
 
-                    </div>
+      if (bookResult.error) console.error("Error fetching books:", bookResult.error);
+      else setBooks((bookResult.data || []).filter((b) => b.cover1 && b.title));
 
-                    {/* Right Column */}
-                    <div className="space-y-6">
+      if (testimonialResult.error) console.error("Error fetching testimonials:", testimonialResult.error);
+      else setTestimonials(testimonialResult.data || []);
+    };
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Publication certificate hardcopy will be provided to each author.</p>
-                        </div>
+    fetchHomeData().finally(() => setBooksReady(true));
+  }, []);
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Free Online Promotion and Distribution through Flipkart, Amazon, Publisher website etc.</p>
-                        </div>
+  useEffect(() => {
+    document.title = "Best Book Publication Company in India | Veritaz International";
+    setMeta('meta[name="description"]', { tag: "meta", attrs: { name: "description" }, prop: "content" },
+      "Publish textbooks, research papers, patents, copyrights and academic journals with Veritaz International. Trusted publication experts across India.");
+    setMeta('meta[name="keywords"]', { tag: "meta", attrs: { name: "keywords" }, prop: "content" },
+      "Textbook Publishing India, Patent Filing Services, ISBN Registration, Copyright Services, Book Publishing Company, Veritaz International Press, Academic Publishing");
+    setMeta('meta[name="robots"]', { tag: "meta", attrs: { name: "robots" }, prop: "content" }, "index, follow");
+    setMeta('link[rel="canonical"]', { tag: "link", attrs: { rel: "canonical" }, prop: "href" },
+      "https://www.veritazinternational.com/");
+  }, []);
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Publishing books in all regional languages.</p>
-                        </div>
+  const covers = useMemo(() => books.map((b) => b.cover1), [books]);
 
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>High-quality 80gsm paper with black & white/color printing and glossy lamination.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Personalized approach and exceptional 24/7 customer service.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Best seller in the market.</p>
-                        </div>
-
-                    </div>
-
-                </div>
-            </section>
-
-        </>
-    )
+  return (
+    <main style={{ fontFamily: "'Manrope', sans-serif" }}>
+      <Hero covers={covers} booksReady={booksReady} />
+      <Process />
+      <FromDraft />
+      <Shelf books={books.slice(0, 12)} />
+      <Reasons />
+      <Testimonials testimonials={testimonials} />
+      <InquiryForm />
+    </main>
+  );
 }

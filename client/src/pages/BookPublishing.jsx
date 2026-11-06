@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function BookPublishing() {
   const containerRef = useRef(null);
@@ -82,11 +83,11 @@ export default function BookPublishing() {
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Book Publication Services</h1>
             <p className="text-xl max-w-3xl mx-auto">
-              We help authors bring their manuscripts to life with professional publishing services for all genres and formats.
+              Turn your manuscript into a published book in three easy steps: professional formatting, official ISBN registration, and worldwide print and digital distribution.
             </p>
-            <button className="mt-8 bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
-              Get Started Today
-            </button>
+            <Link to="/contact" className="inline-block mt-8 bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+              Get Started Now
+            </Link>
           </div>
         </section>
 
@@ -96,6 +97,37 @@ export default function BookPublishing() {
             <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Our Publication Services</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+              {/* Edited Book Card */}
+              <div
+                className="book-card rounded-xl shadow-lg overflow-hidden md:col-span-2 lg:col-span-3 transition-all duration-300 hover:-translate-y-1"
+                style={{ background: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)' }}
+              >
+                <div className="p-6 flex flex-col md:flex-row items-center">
+                  <div className="md:w-2/3 mb-6 md:mb-0 md:pr-8">
+                    <div className="flex items-center mb-4">
+                      <div className="bg-white p-3 rounded-lg mr-4 shadow-sm">
+                        <i className="fas fa-edit text-2xl text-red-500"></i>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800">Edited Books</h3>
+                    </div>
+                    <p className="text-gray-700 mb-4">
+                      If you are collecting chapters or writing from different authors, we help you turn them into one complete, professionally published book.
+                    </p>
+                    <ul className="text-gray-700 mb-6 grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <li><i className="fas fa-check text-green-500 mr-2"></i> <strong>Author Communication:</strong> We handle tracking and gathering all author submissions.</li>
+                      <li><i className="fas fa-check text-green-500 mr-2"></i> <strong>Style Matching:</strong> We make sure all chapters follow the same formatting, fonts, and layout.</li>
+                      <li><i className="fas fa-check text-green-500 mr-2"></i> <strong>Book Organization:</strong> We arrange all chapters, pages, and indexing in proper order.</li>
+                      <li><i className="fas fa-check text-green-500 mr-2"></i> <strong>Official Rules:</strong> We ensure the final book meets all university and academic publishing standards.</li>
+                    </ul>
+                  </div>
+                  <div className="md:w-1/3 w-full">
+                    <a href="/edited-books" className="block w-full bg-white text-red-600 text-center py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+                      Learn More
+                    </a>
+                  </div>
+                </div>
+              </div>
 
               {/* Fiction Novels Card */}
               <div
@@ -110,7 +142,7 @@ export default function BookPublishing() {
                     <h3 className="text-xl font-bold text-gray-800">Fiction Novels</h3>
                   </div>
                   <p className="text-gray-700 mb-4">
-                    From fantasy to romance, we help fiction writers craft compelling narratives and bring their imaginative worlds to readers worldwide.
+                    Whether you write epic adventures, suspense, speculative fiction, or contemporary drama, we support authors across all story styles from raw manuscript to global release.
                   </p>
                   <ul className="text-gray-700 mb-6 space-y-2">
                     <li><i className="fas fa-check text-green-500 mr-2"></i> Professional editing</li>
@@ -136,12 +168,12 @@ export default function BookPublishing() {
                     <h3 className="text-xl font-bold text-gray-800">Thesis Books</h3>
                   </div>
                   <p className="text-gray-700 mb-4">
-                    Transform your academic research into a professionally published book that reaches both academic and general audiences.
+                    Convert your academic thesis or dissertation into a published book that scholars and everyday readers can easily find and read.
                   </p>
                   <ul className="text-gray-700 mb-6 space-y-2">
-                    <li><i className="fas fa-check text-green-500 mr-2"></i> Academic formatting</li>
-                    <li><i className="fas fa-check text-green-500 mr-2"></i> Peer review coordination</li>
-                    <li><i className="fas fa-check text-green-500 mr-2"></i> Library distribution</li>
+                    <li><i className="fas fa-check text-green-500 mr-2"></i> Academic Formatting</li>
+                    <li><i className="fas fa-check text-green-500 mr-2"></i> Editorial Review</li>
+                    <li><i className="fas fa-check text-green-500 mr-2"></i> Library Distribution</li>
                   </ul>
                   <a href="/thesis-books" className="block w-full bg-white text-blue-600 text-center py-2 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
                     Learn More
@@ -162,7 +194,7 @@ export default function BookPublishing() {
                     <h3 className="text-xl font-bold text-gray-800">Poetry Books</h3>
                   </div>
                   <p className="text-gray-700 mb-4">
-                    Celebrate the art of verse with beautifully designed poetry collections that honor the rhythm and emotion of your words.
+                    Celebrate your verse with beautifully published collections that honor the natural rhythm and emotion of your words.
                   </p>
                   <ul className="text-gray-700 mb-6 space-y-2">
                     <li><i className="fas fa-check text-green-500 mr-2"></i> Lyrical formatting</li>
@@ -188,7 +220,7 @@ export default function BookPublishing() {
                     <h3 className="text-xl font-bold text-gray-800">Short Stories</h3>
                   </div>
                   <p className="text-gray-700 mb-4">
-                    Whether standalone or in collections, we help short story writers publish impactful narratives that captivate readers.
+                    Whether publishing a single piece or a full story collection, we help writers create impactful books that captivate readers.
                   </p>
                   <ul className="text-gray-700 mb-6 space-y-2">
                     <li><i className="fas fa-check text-green-500 mr-2"></i> Collection compilation</li>
@@ -216,7 +248,7 @@ export default function BookPublishing() {
                     </a>
                   </div>
                   <p className="text-gray-700 mb-5 leading-relaxed">
-                    Document and disseminate the knowledge shared at academic and professional conferences with professionally published proceedings.
+                    Record and share the knowledge from your academic and professional conferences with professionally published books.
                   </p>
                   <ul className="text-gray-700 mb-6 space-y-2">
                     <li><i className="fas fa-check text-green-500 mr-2"></i> Rapid publication</li>
@@ -226,37 +258,6 @@ export default function BookPublishing() {
                   <a href="/conference-proceedings" className="block w-full bg-white text-center text-sky-500 py-3 rounded-xl font-semibold hover:bg-gray-100 transition duration-300 shadow-md hover:shadow-lg">
                     Learn More <i className="fas fa-arrow-right ml-2 text-sm"></i>
                   </a>
-                </div>
-              </div>
-
-              {/* Edited Book Card */}
-              <div
-                className="book-card rounded-xl shadow-lg overflow-hidden md:col-span-2 lg:col-span-3 transition-all duration-300 hover:-translate-y-1"
-                style={{ background: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)' }}
-              >
-                <div className="p-6 flex flex-col md:flex-row items-center">
-                  <div className="md:w-2/3 mb-6 md:mb-0 md:pr-8">
-                    <div className="flex items-center mb-4">
-                      <div className="bg-white p-3 rounded-lg mr-4 shadow-sm">
-                        <i className="fas fa-edit text-2xl text-red-500"></i>
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-800">Edited Books</h3>
-                    </div>
-                    <p className="text-gray-700 mb-4">
-                      As an editor or volume coordinator, bring together expert contributions into a cohesive, professionally published book.
-                    </p>
-                    <ul className="text-gray-700 mb-6 grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <li><i className="fas fa-check text-green-500 mr-2"></i> Contributor management</li>
-                      <li><i className="fas fa-check text-green-500 mr-2"></i> Consistency editing</li>
-                      <li><i className="fas fa-check text-green-500 mr-2"></i> Volume coordination</li>
-                      <li><i className="fas fa-check text-green-500 mr-2"></i> Academic standards compliance</li>
-                    </ul>
-                  </div>
-                  <div className="md:w-1/3 w-full">
-                    <a href="/edited-books" className="block w-full bg-white text-red-600 text-center py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
-                      Learn More
-                    </a>
-                  </div>
                 </div>
               </div>
 

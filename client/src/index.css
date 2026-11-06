@@ -1,1 +1,352 @@
 @import "tailwindcss";
+
+/* Brand palette, sampled from the logo (public/assets/image/veritaz-bg-Remove.png).
+   Change a value here and the navbar, footer and home page all follow. */
+@theme {
+  --color-brand-deep: #0848a8;      /* diamond outline: royal blue */
+  --color-brand-ink: #052f73;       /* royal blue, darkened for the footer */
+  --color-brand-bright: #0878e8;    /* right leaf: electric blue */
+  --color-brand-cyan: #28b8d8;      /* left leaf: cyan */
+  --color-brand-cyanlight: #7de3e8; /* cyan, lightened for labels on blue */
+  --color-brand-violet: #5858c8;    /* leaf tip: violet */
+  --color-brand-orchid: #c868e8;    /* diamond outline: orchid */
+  --color-brand-gold: #e6b84f;      /* globe: gold */
+  --color-brand-goldlight: #f8d888; /* globe: highlight */
+  --color-brand-mist: #e6f7fa;      /* cyan tint for light sections */
+  --color-brand-paper: #f4f2ff;     /* violet tint for light sections */
+}
+
+/* The gradient that runs around the logo's diamond and through its leaves. */
+.logo-rule {
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--color-brand-cyan),
+    var(--color-brand-bright),
+    var(--color-brand-violet),
+    var(--color-brand-orchid)
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Home page.
+
+   Layout below works with no animation at all. Motion is layered on top:
+   time-based effects sit under prefers-reduced-motion: no-preference, and
+   scroll-linked ones additionally need scroll-driven animation support
+   (not in Firefox), where they simply do not run and the content stays put.
+   --------------------------------------------------------------------------- */
+
+/* Hero: fan of covers */
+.book-fan {
+  --card: clamp(130px, 19vw, 250px);
+  position: relative;
+  height: calc(var(--card) * 1.2);
+  margin-top: 3.5rem;
+}
+.fan-card {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--card);
+  margin-left: calc(var(--card) / -2);
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 24px 48px rgb(5 47 115 / 0.45);
+  transform-origin: 50% 130%;
+  transform:
+    translateX(calc(var(--p) * 60%))
+    translateY(calc(var(--d) * 12px))
+    rotate(calc(var(--p) * 7deg));
+  transition: translate 0.3s ease;
+}
+.fan-card:hover {
+  translate: 0 -24px;
+}
+
+.orb {
+  position: absolute;
+  width: 46vw;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.45;
+  pointer-events: none;
+}
+.orb-cyan {
+  top: -20%;
+  left: -12%;
+  background: var(--color-brand-cyan);
+}
+.orb-orchid {
+  bottom: -30%;
+  right: -12%;
+  background: var(--color-brand-orchid);
+}
+
+/* Process: plain card grid until the pinned version below takes over */
+.process-pin {
+  padding-block: 4rem;
+}
+.process-sticky {
+  position: relative;
+}
+.process-track {
+  display: grid;
+  gap: 1.25rem;
+  width: min(100%, 1600px);
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+.process-card {
+  padding: 1.75rem;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 10px 30px rgb(8 72 168 / 0.08);
+}
+.process-bar {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .process-track {
+    grid-template-columns: repeat(3, 1fr);
+    padding-inline: 2.5rem;
+  }
+  .process-intro {
+    grid-column: 1 / -1;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Shelf */
+.shelf-window {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.shelf-belt {
+  display: flex;
+  gap: 1.5rem;
+  width: max-content;
+  padding-block: 1rem;
+  padding-inline: 0.75rem;
+}
+.shelf-book {
+  flex: none;
+  width: clamp(150px, 15vw, 210px);
+  transition: transform 0.3s ease;
+}
+.shelf-book:hover,
+.shelf-book:focus-visible {
+  transform: perspective(700px) rotateY(-10deg) translateY(-8px);
+}
+
+/* Why Authors Choose Us */
+.reason-card {
+  padding: 1.5rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.05);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+.reason-card:hover {
+  background: rgb(255 255 255 / 0.1);
+  border-color: var(--color-brand-gold);
+}
+
+/* Testimonials: two sheets of paper behind the current page */
+.page-stack {
+  position: relative;
+  perspective: 1400px;
+}
+.page-stack::before,
+.page-stack::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 10px 30px rgb(8 72 168 / 0.1);
+}
+.page-stack::before {
+  transform: rotate(-2deg) translateY(8px);
+  opacity: 0.6;
+}
+.page-stack::after {
+  transform: rotate(1.5deg) translateY(4px);
+  opacity: 0.8;
+}
+.page-turn {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 20px 40px rgb(8 72 168 / 0.12);
+  transform-origin: left center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shelf-book,
+  .fan-card {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes word-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.6em) rotate(3deg);
+    }
+  }
+  @keyframes soft-fade {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  @keyframes fan-open {
+    from {
+      transform: translateY(70px) rotate(calc(var(--p) * 1.5deg));
+    }
+  }
+  @keyframes orb-drift {
+    to {
+      transform: translate(6vw, 4vw) scale(1.15);
+    }
+  }
+  @keyframes belt {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: rotateY(-55deg);
+    }
+  }
+
+  .hero-word {
+    display: inline-block;
+    animation: word-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+    animation-delay: calc(var(--w) * 70ms);
+  }
+  .hero-fade {
+    animation: soft-fade 0.8s ease-out 0.55s backwards;
+  }
+  .book-fan:not(.is-ready) .fan-card {
+    opacity: 0;
+  }
+  .book-fan.is-ready .fan-card {
+    animation: fan-open 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+    animation-delay: calc(var(--d) * 90ms);
+  }
+  .orb {
+    animation: orb-drift 16s ease-in-out infinite alternate;
+  }
+  .shelf-window {
+    overflow-x: hidden;
+  }
+  .shelf-belt {
+    animation: belt 60s linear infinite;
+  }
+  .shelf-window:hover .shelf-belt,
+  .shelf-window:focus-within .shelf-belt {
+    animation-play-state: paused;
+  }
+  .page-turn {
+    animation: page-in 0.65s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes reveal-up {
+      from {
+        opacity: 0;
+        transform: translateY(48px) scale(0.97);
+      }
+    }
+    @keyframes fan-lift {
+      to {
+        transform: translateY(-70px) scale(1.14);
+      }
+    }
+    @keyframes process-pan {
+      to {
+        transform: translateX(calc(-100% + 100vw));
+      }
+    }
+    @keyframes process-fill {
+      from {
+        transform: scaleX(0);
+      }
+    }
+
+    .reveal {
+      animation: reveal-up auto linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+    .book-fan {
+      animation: fan-lift auto linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 600px;
+    }
+
+    /* Pinned sideways pan. 83px is the desktop navbar height. */
+    @media (min-width: 1024px) {
+      .process-pin {
+        height: 380vh;
+        padding-block: 0;
+        view-timeline: --process block;
+      }
+      .process-sticky {
+        position: sticky;
+        top: 83px;
+        height: calc(100vh - 83px);
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+      }
+      .process-track {
+        display: flex;
+        align-items: stretch;
+        gap: 1.5rem;
+        width: max-content;
+        margin: 0;
+        padding-inline: 2.5rem 6rem;
+        animation: process-pan auto linear both;
+        animation-timeline: --process;
+        animation-range: contain;
+      }
+      .process-intro {
+        flex: none;
+        align-self: center;
+        width: clamp(380px, 36vw, 560px);
+        margin: 0 3rem 0 0;
+      }
+      .process-card {
+        flex: none;
+        width: clamp(360px, 32vw, 500px);
+        padding: 2.5rem;
+        animation: none;
+      }
+      .process-bar {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 4px;
+        transform-origin: left;
+        background: linear-gradient(
+          90deg,
+          var(--color-brand-cyan),
+          var(--color-brand-violet),
+          var(--color-brand-orchid)
+        );
+        animation: process-fill auto linear both;
+        animation-timeline: --process;
+        animation-range: contain;
+      }
+    }
+  }
+}
