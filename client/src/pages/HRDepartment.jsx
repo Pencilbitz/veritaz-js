@@ -498,7 +498,7 @@ function Receipt({ data }) {
                       {label}
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="break-all font-mono text-base font-bold text-emerald-900">
+                      <span className="break-all tabular-nums text-base font-bold text-emerald-900">
                         {value}
                       </span>
                       <button

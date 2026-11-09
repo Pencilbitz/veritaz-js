@@ -15,7 +15,7 @@ import {
 import { supabase } from "../lib/supabase";
 
 const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 xl:px-10";
-const SERIF = { fontFamily: "'Fraunces', Georgia, serif" };
+const SERIF = { fontFamily: "var(--font-serif)" };
 
 const FALLBACK_COVERS = [
   "/assets/image/books/index-1.png",
@@ -640,7 +640,7 @@ export default function Home() {
   const covers = useMemo(() => books.map((b) => b.cover1), [books]);
 
   return (
-    <main style={{ fontFamily: "'Manrope', sans-serif" }}>
+    <main>
       <Hero covers={covers} booksReady={booksReady} />
       <Process />
       <FromDraft />

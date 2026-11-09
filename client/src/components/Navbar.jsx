@@ -148,7 +148,7 @@ export default function Navbar() {
   const hrActive = hrLinks.some((l) => location.pathname.startsWith(l.to)) || location.pathname === "/hr";
 
   return (
-    <header className="w-full sticky top-0 z-50 shadow-md shadow-brand-deep/10" style={{ fontFamily: "'Manrope', sans-serif" }}>
+    <header className="w-full sticky top-0 z-50 shadow-md shadow-brand-deep/10">
       <div className="logo-rule" />
 
       {/* ================= MAIN BAR ================= */}

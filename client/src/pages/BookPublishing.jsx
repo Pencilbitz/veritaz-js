@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 xl:px-10";
-const SERIF = { fontFamily: "'Fraunces', Georgia, serif" };
+const SERIF = { fontFamily: "var(--font-serif)" };
 
 const COVER_DIR = "/assets/image/publishing-covers";
 const coverColumns = [
@@ -386,7 +386,7 @@ export default function BookPublishing() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-white" style={{ fontFamily: "'Manrope', sans-serif" }}>
+    <main className="min-h-screen bg-white">
       <Hero />
       <Services />
       <Process />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   MdArrowBack, MdShare, MdStar, MdOutlineVisibility,
   MdOutlineBookmarkBorder, MdCheckCircle, MdLocalShipping,
@@ -8,6 +8,12 @@ import {
 } from 'react-icons/md';
 import { FaWhatsapp, FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
 import { supabase } from "../lib/supabase";
+
+const WRAP = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-20';
+const SERIF = { fontFamily: 'var(--font-serif)' };
+const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-deep';
+const CARD = 'rounded-2xl bg-white border border-brand-deep/10';
+const INPUT = 'w-full rounded-xl border border-brand-deep/10 bg-brand-snow px-4 py-3 text-sm font-medium text-brand-ink outline-none transition placeholder:text-slate-400 focus:border-brand-bright focus:bg-white focus:ring-4 focus:ring-brand-bright/15';
 
 export default function BookDetails() {
   const { slug } = useParams(); // Maps to the unique book title-id slug[cite: 3]
@@ -122,8 +128,23 @@ export default function BookDetails() {
   const [custLocation, setCustLocation] = useState("");
   const [custQty, setCustQty] = useState("1");
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
-  if (error || !book) return <div className="p-8 text-center text-red-500">{error || 'Book not found'}</div>;
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center bg-brand-snow">
+        <div className="flex flex-col items-center gap-4">
+          <span aria-hidden="true" className="h-11 w-11 animate-spin rounded-full border-4 border-brand-deep/15 border-t-brand-violet" />
+          <p className="font-semibold text-brand-ink">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  if (error || !book) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center bg-brand-snow px-4">
+        <p style={SERIF} className="text-3xl font-medium text-brand-ink">{error || 'Book not found'}</p>
+      </div>
+    );
+  }
 
   // Modern Native Share handler[cite: 3]
   const handleShare = async () => {
@@ -164,67 +185,98 @@ export default function BookDetails() {
     setIsOrderModalOpen(false);
   };
 
+  const authors = book.authors
+    ? book.authors.split(',').map((name) => name.trim()).filter(Boolean)
+    : [];
+
+  const productDetails = [
+    ['Publisher', book.publisher || 'Veritaz International Press'],
+    ['ISBN-13', book.isbn],
+    ['Edition', book.edition || '1st Edition'],
+    ['Item Weight', book.weight || '282 grams'],
+    ['Binding', book.binding || 'Paperback'],
+    ['Dimensions', book.dimensions || '7.0 x 9.4 inches'],
+    ['Language', book.language || 'English'],
+    ['Print Format', book.format || 'Single Color'],
+    ['Pages', book.pages || '151'],
+    ['Copyright', book.copyright || '2026'],
+  ];
+
+  const features = [
+    { Icon: MdLocalShipping, label: 'Free Shipping*', tile: 'bg-brand-mist text-brand-deep' },
+    { Icon: MdSupportAgent, label: '24/7 Support', tile: 'bg-brand-paper text-brand-violet' },
+    { Icon: MdVerifiedUser, label: 'Authentic', tile: 'bg-brand-gold/20 text-[#8a6413]' },
+    { Icon: MdCardGiftcard, label: 'Safe Wrap', tile: 'bg-brand-orchid/15 text-[#9a3fbf]' },
+  ];
+
   return (
-    <div className="bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-8 pb-12">
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-6">
-          <Link to="/book-store" className="hover:text-blue-600 transition-colors text-blue-600">
-            Book Store
-          </Link>
-          <span>&gt;</span>
-          <span className="text-blue-800">{book.title}</span>
-        </div>
+    <main className="min-h-screen bg-white text-slate-800">
+      {/* ── Book overview ─────────────────────────────────── */}
+      <section className="bg-white">
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className={`${WRAP} relative grid gap-10 py-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14 lg:py-16`}>
 
-          {/* Left Column - Images & Actions */}
-          <div className="lg:col-span-4 flex flex-col gap-4">
-            <div className="bg-[#f0f4f8] rounded-2xl p-6 flex flex-col items-center justify-center shadow-sm relative">
-              <img
-                src={book.cover1}
-                alt={book.title}
-                className="w-full max-w-[280px] object-cover rounded-md shadow-2xl mb-8"
-                onError={(e) => { e.target.src = 'https://placehold.co/300x400/EEE/31343C?text=No+Cover'; }}
-              />
+          {/* Cover showcase */}
+          <div className="lg:self-start">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-mist via-white to-brand-paper p-8 border border-brand-deep/10 sm:p-10">
+              <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/3 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-bright/15 blur-3xl" />
+              <button
+                type="button"
+                onClick={() => setIsLightboxOpen(true)}
+                aria-label="Open full preview"
+                className={`relative mx-auto block w-full max-w-[300px] ${FOCUS}`}
+              >
+                <img
+                  src={currentImage || book.cover1}
+                  alt={book.title}
+                  className="w-full rounded-md object-cover transition-transform duration-300 hover:-translate-y-1"
+                  onError={(e) => { e.target.src = 'https://placehold.co/300x400/EEE/31343C?text=No+Cover'; }}
+                />
+              </button>
 
-              <p className="text-sm font-semibold text-gray-800 mb-4">Book Preview</p>
+              <p className="relative mt-8 text-center text-xs font-bold uppercase tracking-widest text-slate-500">Book Preview</p>
 
-              {/* Image Previews */}
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <div
-                  className={`w-16 h-20 rounded border-2 overflow-hidden shadow-md cursor-pointer bg-white ${currentImage === book.cover1 ? 'border-blue-500' : 'border-transparent'}`}
+              {/* Front / back thumbnails */}
+              <div className="relative mt-3 flex items-center justify-center gap-3">
+                <button
+                  type="button"
                   onClick={() => setCurrentImage(book.cover1)}
+                  aria-label="Show front cover"
+                  className={`h-20 w-16 overflow-hidden rounded-md border-2 bg-white transition ${currentImage === book.cover1 ? 'border-brand-bright ring-2 ring-brand-bright/20' : 'border-transparent hover:border-brand-bright/40'}`}
                 >
-                  <img src={book.cover1} alt="Front Cover" className="w-full h-full object-cover" />
-                </div>
-                <div
-                  className={`w-16 h-20 rounded border-2 overflow-hidden shadow-md cursor-pointer bg-white ${currentImage === book.cover2 ? 'border-blue-500' : 'border-transparent'}`}
+                  <img src={book.cover1} alt="Front Cover" className="h-full w-full object-cover" />
+                </button>
+                <button
+                  type="button"
                   onClick={() => setCurrentImage(book.cover2 || book.cover1)}
+                  aria-label="Show back cover"
+                  className={`h-20 w-16 overflow-hidden rounded-md border-2 bg-white transition ${book.cover2 && currentImage === book.cover2 ? 'border-brand-bright ring-2 ring-brand-bright/20' : 'border-transparent hover:border-brand-bright/40'}`}
                 >
                   {book.cover2 ? (
-                    <img src={book.cover2} alt="Back Preview" className="w-full h-full object-cover" />
+                    <img src={book.cover2} alt="Back Preview" className="h-full w-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex flex-col">
-                      <div className="h-1/2 bg-gray-800 flex items-center justify-center text-[8px] text-white p-1 text-center">Full Preview</div>
-                      <div className="h-1/2 bg-white flex items-center justify-center">
-                        <div className="w-6 h-6 border border-gray-300 flex items-center justify-center text-[6px] text-gray-400">Barcode</div>
-                      </div>
-                    </div>
+                    <span className="flex h-full w-full flex-col">
+                      <span className="flex h-1/2 items-center justify-center bg-brand-ink p-1 text-center text-[8px] text-white">Full Preview</span>
+                      <span className="flex h-1/2 items-center justify-center bg-white">
+                        <span className="flex h-6 w-6 items-center justify-center border border-gray-300 text-[6px] text-gray-400">Barcode</span>
+                      </span>
+                    </span>
                   )}
-                </div>
+                </button>
               </div>
 
-              <div className="flex items-center gap-3 w-full">
+              <div className="relative mt-6 grid grid-cols-2 gap-3">
                 <button
+                  type="button"
                   onClick={() => setIsLightboxOpen(true)}
-                  className="flex-1 bg-white border border-gray-200 rounded-lg py-2.5 flex items-center justify-center gap-2 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors shadow-sm"
+                  className={`flex items-center justify-center gap-2 rounded-full border-2 border-brand-deep/15 bg-white py-2.5 text-sm font-bold text-brand-deep transition-colors hover:border-brand-deep hover:bg-brand-deep hover:text-white ${FOCUS}`}
                 >
                   <MdOutlineVisibility className="text-lg" /> Full Preview
                 </button>
                 <button
+                  type="button"
                   onClick={handleShare}
-                  className="flex-1 bg-white border border-gray-200 rounded-lg py-2.5 flex items-center justify-center gap-2 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors shadow-sm"
+                  className={`flex items-center justify-center gap-2 rounded-full border-2 border-brand-deep/15 bg-white py-2.5 text-sm font-bold text-brand-deep transition-colors hover:border-brand-deep hover:bg-brand-deep hover:text-white ${FOCUS}`}
                 >
                   <MdShare className="text-lg" /> Share
                 </button>
@@ -232,265 +284,203 @@ export default function BookDetails() {
             </div>
           </div>
 
-          {/* Right Column - Details */}
-          <div className="lg:col-span-8 flex flex-col gap-5">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              {/* Title & Badge */}
-              <div className="mb-6">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-green-50 text-green-700 text-xs font-bold mb-3">
-                  <MdOutlineMenuBook className="text-sm" /> Book Title
+          {/* Details */}
+          <div>
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-brand-ink sm:text-4xl">
+              {book.title}
+            </h1>
+
+            {/* Ratings */}
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center text-brand-gold">
+                  {[...Array(5)].map((_, i) => (
+                    <MdStar key={i} className={i < (book.ratings || 5) ? 'text-brand-gold' : 'text-brand-gold/40'} />
+                  ))}
                 </div>
-                <h1 className="text-2xl md:text-3xl font-extrabold text-[#1a2332] leading-snug">
-                  {book.title}
-                </h1>
+                <span className="font-bold text-brand-ink">{book.ratings || '5'}.0/5</span>
+                <span className="text-slate-500">(110 reviews)</span>
+              </div>
+              <span aria-hidden="true" className="hidden h-4 w-px bg-slate-300 sm:block" />
+              <div className="flex items-center gap-1.5">
+                <MdOutlineVisibility className="text-lg text-brand-bright" />
+                <span className="font-bold text-brand-ink">1,243</span>
+                <span className="text-slate-500">views</span>
+              </div>
+            </div>
+
+            {/* Authors, ISBN, edition */}
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <div className={`p-5 sm:row-span-2 ${CARD}`}>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-brand-mist text-brand-deep">
+                    <MdPeopleOutline className="text-xl" />
+                  </span>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Authors</p>
+                </div>
+                <ul className="mt-4 space-y-2">
+                  {authors.length > 0 ? authors.map((name, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-sm font-semibold text-brand-ink">
+                      <span aria-hidden="true" className="mt-1.5 h-1.5 w-1.5 flex-none rotate-45 rounded-[1px] bg-brand-violet" />
+                      {name}
+                    </li>
+                  )) : (
+                    <li className="text-sm font-semibold text-brand-ink">Unknown Author</li>
+                  )}
+                </ul>
               </div>
 
-              {/* Meta Info Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {/* Authors */}
-                <div className="bg-[#f8fafd] rounded-xl p-4 flex gap-3 border border-blue-50">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                    <MdPeopleOutline className="text-lg" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Authors</p>
-                    {book.authors ? book.authors.split(',').map((auth, idx) => (
-                      <p key={idx} className="text-sm font-semibold text-gray-800 mb-1">{auth.trim()}</p>
-                    )) : (
-                      <p className="text-sm font-semibold text-gray-800 mb-1">Unknown Author</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  {/* ISBN */}
-                  <div className="bg-[#f8fafd] rounded-xl p-4 flex items-center gap-3 border border-blue-50">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center shrink-0">
-                      <span className="font-bold font-mono text-xs">|||</span>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">ISBN-13</p>
-                      <p className="text-sm font-bold text-gray-800">{book.isbn}</p>
-                    </div>
-                  </div>
-                  {/* Edition */}
-                  <div className="bg-[#f8fafd] rounded-xl p-4 flex items-center gap-3 border border-blue-50">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center shrink-0">
-                      <MdOutlineBookmarkBorder className="text-lg" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">Edition</p>
-                      <p className="text-sm font-bold text-gray-800">{book.edition || `1st Edition, ${book.copyright || '2026'}`}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ratings Bar */}
-              <div className="flex items-center flex-wrap gap-4 py-3 px-4 border border-gray-200 rounded-xl mb-6">
-                <div className="flex items-center gap-1.5">
-                  <div className="flex items-center text-yellow-400">
-                    {[...Array(5)].map((_, i) => (
-                      <MdStar key={i} className={i < (book.ratings || 5) ? "text-yellow-400" : "text-yellow-400/50"} />
-                    ))}
-                  </div>
-                  <span className="text-sm font-bold text-gray-800 ml-1">{book.ratings || "5"}.0/5</span>
-                  <span className="text-xs text-gray-500">(110 reviews)</span>
-                </div>
-                <div className="w-px h-4 bg-gray-300 hidden sm:block"></div>
-                <div className="flex items-center gap-1.5 text-sm">
-                  <MdOutlineVisibility className="text-blue-500 text-lg" />
-                  <span className="font-bold text-gray-800">1,243</span>
-                  <span className="text-gray-500">views</span>
-                </div>
-              </div>
-
-              {/* Flipkart Link */}
-              {book.flipkart && (
-                <div className="mb-6">
-                  <a
-                    href={book.flipkart}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-3 px-5 py-3 bg-[#2874F0] hover:bg-[#1f63d6] text-white rounded-xl font-semibold shadow-md transition-all duration-200"
-                  >
-                    <img
-                      src="https://logos-world.net/wp-content/uploads/2020/11/Flipkart-Logo.png"
-                      alt="Flipkart"
-                      className="w-auto h-8"
-                    />
-                    Buy on Flipkart
-                  </a>
-                </div>
-              )}
-
-              {/* About this Book */}
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                    <span className="font-bold text-xs italic">i</span>
-                  </div>
-                  <h3 className="font-bold text-gray-800">About This Book</h3>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
-                    {book.about || book.features || book.description || 'No description provided for this book.'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Pricing Box */}
-              <div className="bg-[#f8fbf9] border border-green-100 rounded-xl p-5 mb-6 flex flex-col md:flex-row justify-between md:items-center gap-4">
+              <div className={`flex items-center gap-3 p-5 ${CARD}`}>
+                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-brand-paper text-brand-violet">
+                  <span className="text-xs font-bold tabular-nums">|||</span>
+                </span>
                 <div>
-                  <div className="flex items-baseline gap-3 mb-1">
-                    <span className="text-2xl font-extrabold text-gray-900">₹{book.price}</span>
-                    <span className="text-sm font-medium text-gray-400 line-through">₹{book.price ? Number(book.price) + 100 : "0"}</span>
-                    <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">SAVE ₹100</span>
-                  </div>
-                  <p className="text-xs text-gray-500">Inclusive of all taxes • Free shipping on orders</p>
-                </div>
-                <div className="flex flex-col md:items-end">
-                  <div className="flex items-center gap-1.5 text-sm font-bold text-green-700 mb-1">
-                    <MdCheckCircle className="text-lg" /> {book.status || 'In Stock'} • Ready to Ship
-                  </div>
-                  <p className="text-xs text-gray-500">Delivery in 4-5 business days</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500">ISBN-13</p>
+                  <p className="mt-0.5 text-sm font-bold tabular-nums text-brand-ink">{book.isbn}</p>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-3 mb-6">
+              <div className={`flex items-center gap-3 p-5 ${CARD}`}>
+                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-brand-gold/20 text-[#8a6413]">
+                  <MdOutlineBookmarkBorder className="text-xl" />
+                </span>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Edition</p>
+                  <p className="mt-0.5 text-sm font-bold text-brand-ink">{book.edition || `1st Edition, ${book.copyright || '2026'}`}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Price & stock */}
+            <div className="mt-6 flex flex-col gap-4 rounded-2xl bg-gradient-to-br from-brand-ink via-brand-deep to-brand-violet p-6 text-white md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <span className="text-3xl font-extrabold">₹{book.price}</span>
+                  <span className="text-sm font-medium text-white/60 line-through">₹{book.price ? Number(book.price) + 100 : '0'}</span>
+                  <span className="rounded-full bg-brand-gold px-2.5 py-0.5 text-xs font-bold text-brand-ink">SAVE ₹100</span>
+                </div>
+                <p className="mt-1.5 text-xs text-white/75">Inclusive of all taxes • Free shipping on orders</p>
+              </div>
+              <div className="md:text-right">
+                <p className="flex items-center gap-1.5 text-sm font-bold text-brand-goldlight md:justify-end">
+                  <MdCheckCircle className="text-lg" /> {book.status || 'In Stock'} • Ready to Ship
+                </p>
+                <p className="mt-1 text-xs text-white/75">Delivery in 4-5 business days</p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="mt-6 space-y-3">
+              <button
+                type="button"
+                onClick={() => setIsOrderModalOpen(true)}
+                className="flex w-full items-center justify-between rounded-full bg-[#25D366] px-6 py-4 font-bold text-white transition-colors hover:bg-[#1ebe5b] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#128C7E]"
+              >
+                <span className="flex items-center gap-2.5">
+                  <FaWhatsapp className="text-xl" />
+                  Order via WhatsApp
+                </span>
+                <MdArrowBack className="rotate-180 text-xl" />
+              </button>
+
+              <div className="grid gap-3 sm:grid-cols-2">
                 <button
-                  onClick={() => setIsOrderModalOpen(true)}
-                  className="w-full bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl py-3.5 px-4 font-bold flex items-center justify-between transition-colors shadow-sm"
+                  type="button"
+                  onClick={() => setIsContactModalOpen(true)}
+                  className={`flex items-center justify-center gap-2 rounded-full border-2 border-brand-deep/15 bg-white py-3 text-sm font-bold text-brand-deep transition-colors hover:border-brand-deep hover:bg-brand-deep hover:text-white ${FOCUS}`}
                 >
-                  <div className="flex items-center gap-2">
-                    <FaWhatsapp className="text-xl" />
-                    <span>Order via WhatsApp</span>
-                  </div>
-                  <MdArrowBack className="rotate-180" />
+                  <MdOutlineMenuBook /> Bulk/Institutional
                 </button>
-
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => setIsContactModalOpen(true)}
-                    className="flex-1 bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl py-2.5 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-                  >
-                    <MdOutlineMenuBook /> Bulk/Institutional
-                  </button>
-                  <button
-                    onClick={() => setIsLightboxOpen(true)}
-                    className="flex-1 bg-white border border-purple-200 text-purple-600 hover:bg-purple-50 rounded-xl py-2.5 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-                  >
-                    <MdOutlineVisibility /> Preview Sample
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsLightboxOpen(true)}
+                  className={`flex items-center justify-center gap-2 rounded-full border-2 border-brand-violet/20 bg-white py-3 text-sm font-bold text-brand-violet transition-colors hover:border-brand-violet hover:bg-brand-violet hover:text-white ${FOCUS}`}
+                >
+                  <MdOutlineVisibility /> Preview Sample
+                </button>
               </div>
 
-              {/* Trust Badges */}
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-semibold text-gray-500 pb-6 border-b border-gray-100">
-                <div className="flex items-center gap-1"><span className="text-green-600"><MdCheckCircle /></span> Secure WhatsApp Checkout</div>
-                <div className="w-1 h-1 rounded-full bg-gray-300 hidden sm:block"></div>
-                <div className="flex items-center gap-1"><span className="text-blue-600"><MdVerifiedUser /></span> 100% Genuine Books</div>
-                <div className="w-1 h-1 rounded-full bg-gray-300 hidden sm:block"></div>
-                <div className="flex items-center gap-1"><span className="text-orange-500"><MdArrowBack className="rotate-90" /></span> Easy Returns</div>
-              </div>
-
-              {/* Features Row */}
-              <div className="grid grid-cols-4 gap-2 pt-6">
-                <div className="flex flex-col items-center text-center gap-1.5">
-                  <MdLocalShipping className="text-blue-500 text-xl" />
-                  <span className="text-[10px] font-semibold text-gray-800 uppercase">Free Shipping*</span>
-                </div>
-                <div className="flex flex-col items-center text-center gap-1.5">
-                  <MdSupportAgent className="text-green-500 text-xl" />
-                  <span className="text-[10px] font-semibold text-gray-800 uppercase">24/7 Support</span>
-                </div>
-                <div className="flex flex-col items-center text-center gap-1.5">
-                  <MdVerifiedUser className="text-yellow-500 text-xl" />
-                  <span className="text-[10px] font-semibold text-gray-800 uppercase">Authentic</span>
-                </div>
-                <div className="flex flex-col items-center text-center gap-1.5">
-                  <MdCardGiftcard className="text-red-500 text-xl" />
-                  <span className="text-[10px] font-semibold text-gray-800 uppercase">Safe Wrap</span>
-                </div>
-              </div>
-
+              {book.flipkart && (
+                <a
+                  href={book.flipkart}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-3 rounded-full bg-[#2874F0] px-5 py-3 font-semibold text-white transition-colors hover:bg-[#1f63d6]"
+                >
+                  <img
+                    src="https://logos-world.net/wp-content/uploads/2020/11/Flipkart-Logo.png"
+                    alt="Flipkart"
+                    className="h-7 w-auto"
+                  />
+                  Buy on Flipkart
+                </a>
+              )}
             </div>
+
+            {/* Trust badges */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold text-slate-500">
+              <span className="flex items-center gap-1.5"><MdCheckCircle className="text-[#25D366]" /> Secure WhatsApp Checkout</span>
+              <span aria-hidden="true" className="hidden h-1 w-1 rounded-full bg-slate-300 sm:block" />
+              <span className="flex items-center gap-1.5"><MdVerifiedUser className="text-brand-bright" /> 100% Genuine Books</span>
+              <span aria-hidden="true" className="hidden h-1 w-1 rounded-full bg-slate-300 sm:block" />
+              <span className="flex items-center gap-1.5"><MdArrowBack className="rotate-90 text-brand-violet" /> Easy Returns</span>
+            </div>
+
+            {/* Features */}
+            <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {features.map(({ Icon, label, tile }) => (
+                <li key={label} className={`flex flex-col items-center gap-2 p-4 text-center ${CARD}`}>
+                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${tile}`}>
+                    <Icon className="text-xl" />
+                  </span>
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-brand-ink">{label}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
+      </section>
 
-        {/* Product Details Table */}
-        <div className="mt-6 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Product Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+      {/* ── About & product details ───────────────────────── */}
+      <section className="bg-white py-14 lg:py-20">
+        <div className={`${WRAP} grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-12`}>
+          <div>
+            <h2 style={SERIF} className="text-3xl font-medium tracking-tight text-brand-ink sm:text-4xl">About This Book</h2>
+            <p className="mt-6 whitespace-pre-wrap text-base leading-relaxed text-slate-600">
+              {book.about || book.features || book.description || 'No description provided for this book.'}
+            </p>
+          </div>
 
-            <div className="grid grid-cols-3 border-b border-gray-50 pb-3">
-              <div className="col-span-1 text-xs font-bold text-gray-500">Publisher</div>
-              <div className="col-span-2 text-sm text-gray-800">{book.publisher || "Veritaz International Press"}</div>
-            </div>
-
-            <div className="grid grid-cols-3 border-b border-gray-50 pb-3">
-              <div className="col-span-1 text-xs font-bold text-gray-500">ISBN-13</div>
-              <div className="col-span-2 text-sm text-gray-800">{book.isbn}</div>
-            </div>
-
-            <div className="grid grid-cols-3 border-b border-gray-50 pb-3">
-              <div className="col-span-1 text-xs font-bold text-gray-500">Edition</div>
-              <div className="col-span-2 text-sm text-gray-800">{book.edition || `1st Edition`}</div>
-            </div>
-
-            <div className="grid grid-cols-3 border-b border-gray-50 pb-3">
-              <div className="col-span-1 text-xs font-bold text-gray-500">Item Weight</div>
-              <div className="col-span-2 text-sm text-gray-800">{book.weight || "282 grams"}</div>
-            </div>
-
-            <div className="grid grid-cols-3 border-b border-gray-50 pb-3">
-              <div className="col-span-1 text-xs font-bold text-gray-500">Binding</div>
-              <div className="col-span-2 text-sm text-gray-800">{book.binding || "Paperback"}</div>
-            </div>
-
-            <div className="grid grid-cols-3 border-b border-gray-50 pb-3">
-              <div className="col-span-1 text-xs font-bold text-gray-500">Dimensions</div>
-              <div className="col-span-2 text-sm text-gray-800">{book.dimensions || "7.0 x 9.4 inches"}</div>
-            </div>
-
-            <div className="grid grid-cols-3 border-b border-gray-50 pb-3">
-              <div className="col-span-1 text-xs font-bold text-gray-500">Language</div>
-              <div className="col-span-2 text-sm text-gray-800">{book.language || "English"}</div>
-            </div>
-
-            <div className="grid grid-cols-3 border-b border-gray-50 pb-3">
-              <div className="col-span-1 text-xs font-bold text-gray-500">Print Format</div>
-              <div className="col-span-2 text-sm text-gray-800">{book.format || "Single Color"}</div>
-            </div>
-
-            <div className="grid grid-cols-3 border-b border-gray-50 pb-3">
-              <div className="col-span-1 text-xs font-bold text-gray-500">Pages</div>
-              <div className="col-span-2 text-sm text-gray-800">{book.pages || "151"}</div>
-            </div>
-
-            <div className="grid grid-cols-3 border-b border-gray-50 pb-3">
-              <div className="col-span-1 text-xs font-bold text-gray-500">Copyright</div>
-              <div className="col-span-2 text-sm text-gray-800">{book.copyright || "2026"}</div>
-            </div>
-
+          <div className={`p-6 sm:p-8 ${CARD}`}>
+            <h2 style={SERIF} className="text-2xl font-medium tracking-tight text-brand-ink">Product Details</h2>
+            <dl className="mt-5 divide-y divide-brand-deep/5">
+              {productDetails.map(([label, value]) => (
+                <div key={label} className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 py-3">
+                  <dt className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</dt>
+                  <dd className="text-sm font-medium text-brand-ink">{value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* 1. Fullscreen Preview Lightbox Component */}
       {isLightboxOpen && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-ink/90 p-4 backdrop-blur-sm" onClick={() => setIsLightboxOpen(false)}>
           <button
+            type="button"
             onClick={() => setIsLightboxOpen(false)}
-            className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition"
+            aria-label="Close preview"
+            className="absolute right-6 top-6 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
           >
             <MdClose size={24} />
           </button>
           <img
             src={currentImage || book.cover1}
             alt="Fullscreen preview"
-            className="max-w-full max-h-[90vh] object-contain rounded shadow-2xl"
+            className="max-h-[90vh] max-w-full rounded object-contain"
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
@@ -498,53 +488,56 @@ export default function BookDetails() {
       {/* 2. Order via WhatsApp Modal Component */}
       {isOrderModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setIsOrderModalOpen(false)}></div>
-          <div className="bg-white w-full max-w-md mx-auto rounded-2xl shadow-2xl z-50 overflow-hidden relative">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-              <h3 className="font-bold text-lg text-gray-900">Confirm Order Details</h3>
-              <button onClick={() => setIsOrderModalOpen(false)} className="text-gray-400 hover:text-red-500 transition">
-                <MdClose size={20} />
+          <div className="absolute inset-0 bg-brand-ink/60 backdrop-blur-sm" onClick={() => setIsOrderModalOpen(false)}></div>
+          <div role="dialog" aria-modal="true" aria-labelledby="order-title" className="relative z-50 mx-auto w-full max-w-md overflow-hidden rounded-3xl bg-white">
+            <div className="flex items-center justify-between bg-gradient-to-r from-brand-ink via-brand-deep to-brand-violet px-6 py-4 text-white">
+              <h3 id="order-title" className="text-lg font-bold">Confirm Order Details</h3>
+              <button type="button" onClick={() => setIsOrderModalOpen(false)} aria-label="Close" className="text-white/70 transition hover:text-white">
+                <MdClose size={22} />
               </button>
             </div>
 
             <div className="p-6">
-              <div className="flex items-center gap-3 mb-6 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100/60">
-                <img src={book.cover1} alt={book.title} className="w-12 h-16 object-cover rounded shadow-sm bg-white" onError={(e) => { e.target.src = "https://placehold.co/50x70?text=No+Cover" }} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-800 truncate">{book.title}</p>
-                  <p className="text-sm text-indigo-600 font-extrabold mt-0.5">₹{book.price}</p>
+              <div className="mb-6 flex items-center gap-3 rounded-2xl border border-brand-deep/10 bg-brand-snow p-3">
+                <img src={book.cover1} alt={book.title} className="h-16 w-12 rounded bg-white object-cover" onError={(e) => { e.target.src = "https://placehold.co/50x70?text=No+Cover" }} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-brand-ink">{book.title}</p>
+                  <p className="mt-0.5 text-sm font-extrabold text-brand-bright">₹{book.price}</p>
                 </div>
               </div>
 
               <form onSubmit={handleWhatsAppSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-gray-700 text-xs font-bold uppercase tracking-wider mb-2">Your Name</label>
+                  <label htmlFor="order-name" className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Your Name</label>
                   <input
+                    id="order-name"
                     type="text"
                     value={custName}
                     onChange={(e) => setCustName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className={INPUT}
                     placeholder="Enter full name"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 text-xs font-bold uppercase tracking-wider mb-2">Delivery City / Pincode</label>
+                  <label htmlFor="order-location" className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Delivery City / Pincode</label>
                   <input
+                    id="order-location"
                     type="text"
                     value={custLocation}
                     onChange={(e) => setCustLocation(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className={INPUT}
                     placeholder="City, State, Pincode"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 text-xs font-bold uppercase tracking-wider mb-2">Quantity</label>
+                  <label htmlFor="order-qty" className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Quantity</label>
                   <select
+                    id="order-qty"
                     value={custQty}
                     onChange={(e) => setCustQty(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                    className={INPUT}
                   >
                     <option value="1">1 Copy</option>
                     <option value="2">2 Copies</option>
@@ -553,7 +546,7 @@ export default function BookDetails() {
                   </select>
                 </div>
 
-                <button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md transition flex justify-center items-center gap-2 mt-2">
+                <button type="submit" className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] py-3.5 font-bold text-white transition hover:bg-[#1ebe5b]">
                   <span>Place Order on WhatsApp</span>
                   <FaWhatsapp size={16} />
                 </button>
@@ -566,29 +559,28 @@ export default function BookDetails() {
       {/* 3. Bulk Institutional Sales Inquiry Modal Component */}
       {isContactModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setIsContactModalOpen(false)}></div>
-          <div className="bg-white w-full max-w-sm mx-auto rounded-2xl shadow-2xl z-50 p-6 text-center relative">
-            <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-100">
+          <div className="absolute inset-0 bg-brand-ink/60 backdrop-blur-sm" onClick={() => setIsContactModalOpen(false)}></div>
+          <div role="dialog" aria-modal="true" aria-labelledby="bulk-title" className="relative z-50 mx-auto w-full max-w-sm rounded-3xl bg-white p-7 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-bright to-brand-violet text-white">
               <MdBusiness size={28} />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-1">Institutional Inquiry</h3>
-            <p className="text-gray-500 text-sm mb-6">For universities, corporate distributions, libraries, or global bulk batches, contact our management desk.</p>
+            <h3 id="bulk-title" style={SERIF} className="mb-1 text-2xl font-medium text-brand-ink">Institutional Inquiry</h3>
+            <p className="mb-6 text-sm text-slate-500">For universities, corporate distributions, libraries, or global bulk batches, contact our management desk.</p>
 
             <div className="space-y-3">
-              <a href="tel:+916380658876" className="flex items-center justify-center gap-2 w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-sm">
+              <a href="tel:+916380658876" className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-bright via-brand-deep to-brand-violet py-3 font-bold text-white transition hover:-translate-y-0.5">
                 <FaPhoneAlt size={16} /> Call Sales Desk
               </a>
-              <a href="mailto:info@veritazinternational.com" className="flex items-center justify-center gap-2 w-full border-2 border-gray-200 text-gray-700 font-bold py-2.5 rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition">
+              <a href="mailto:info@veritazinternational.com" className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-brand-deep/15 py-2.5 font-bold text-brand-deep transition hover:border-brand-deep">
                 <FaEnvelope size={16} /> Send Email Route
               </a>
             </div>
-            <button onClick={() => setIsContactModalOpen(false)} className="mt-4 text-sm text-gray-400 underline hover:text-gray-600 transition">
+            <button type="button" onClick={() => setIsContactModalOpen(false)} className="mt-4 text-sm text-slate-400 underline transition hover:text-slate-600">
               Close Context Window
             </button>
           </div>
         </div>
       )}
-
-    </div>
+    </main>
   );
 }

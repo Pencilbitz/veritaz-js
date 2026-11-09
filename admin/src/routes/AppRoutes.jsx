@@ -12,7 +12,8 @@ import Testimonials from '../pages/Testimonials';
 import AddTestimonial from '../pages/AddTestimonial';
 import Careers from '../pages/Careers';
 import AddCareer from '../pages/AddCareer';
-import MeetOurTeam from '../pages/MeetOurTeam';
+import UserEnquiries from '../pages/UserEnquiries';
+import TeamContacts from '../pages/TeamContacts';
 import ImportData from '../pages/ImportData';
 import Login from "../pages/Login";
 import Logout from "../pages/Logout";
@@ -63,7 +64,10 @@ const AppRoutes = () => {
         <Route path="careers/add" element={<AddCareer />} />
         <Route path="careers/edit/:id" element={<AddCareer />} />
 
-        <Route path="meet-our-team" element={<MeetOurTeam />} />
+        <Route path="enquiries" element={<UserEnquiries />} />
+        <Route path="team-contacts" element={<TeamContacts />} />
+        {/* Old combined page, kept so existing bookmarks still land somewhere. */}
+        <Route path="meet-our-team" element={<Navigate to="/admin/enquiries" replace />} />
 
         <Route path="import" element={<ImportData />} />
       </Route>

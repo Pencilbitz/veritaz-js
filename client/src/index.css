@@ -3,6 +3,12 @@
 /* Brand palette, sampled from the logo (public/assets/image/veritaz-bg-Remove.png).
    Change a value here and the navbar, footer and home page all follow. */
 @theme {
+  /* The site's two typefaces, loaded in index.html. Manrope is the default for
+     all text on every page; Fraunces is for display headings (font-serif, or
+     var(--font-serif) inline). */
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+
   --color-brand-deep: #0848a8;      /* diamond outline: royal blue */
   --color-brand-ink: #052f73;       /* royal blue, darkened for the footer */
   --color-brand-bright: #0878e8;    /* right leaf: electric blue */
@@ -349,6 +355,216 @@
         animation-range: contain;
       }
     }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Conference page.
+   --------------------------------------------------------------------------- */
+
+/* Tinted section: cyan glow from the top-left, orchid from the bottom-right,
+   the two ends of the logo's diamond, over blue-tinted near-white. */
+.conf-tint {
+  background:
+    radial-gradient(55% 70% at 0% 0%, rgb(40 184 216 / 0.14), transparent 70%),
+    radial-gradient(50% 70% at 100% 100%, rgb(200 104 232 / 0.13), transparent 70%),
+    var(--color-brand-snow);
+}
+
+/* Dot grid: a faint blue dot pattern on blue-tinted near-white. */
+.conf-dots {
+  background-color: var(--color-brand-snow);
+  background-image: radial-gradient(rgb(8 72 168 / 0.12) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+/* Hero: near-white with a soft blue glow top-right and a cyan one top-left. */
+.conf-hero {
+  background:
+    radial-gradient(45% 60% at 100% 0%, rgb(8 120 232 / 0.14), transparent 70%),
+    radial-gradient(35% 50% at 0% 0%, rgb(40 184 216 / 0.1), transparent 70%),
+    linear-gradient(180deg, #ffffff 0%, var(--color-brand-snow) 55%, #eef0ff 100%);
+}
+
+/* Blue glow swooping in from the top-right corner. */
+.conf-hero-swoosh {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(60vw, 820px);
+  height: 100%;
+  pointer-events: none;
+  mask-image: linear-gradient(to right, transparent, #000 45%);
+}
+
+/* Soft lavender-blue panel behind the poster that the light loops glow on. */
+.conf-panel {
+  position: absolute;
+  top: 0;
+  bottom: 70px;
+  left: -16%;
+  right: -16%;
+  border-radius: 48px;
+  pointer-events: none;
+  background: linear-gradient(160deg, #7fa8ff 0%, #a99cf0 45%, #6f9cff 100%);
+  opacity: 0.55;
+  filter: blur(30px);
+}
+
+/* Light lines behind the poster, wider than it so the curves show on both
+   sides. The poster and podium sit on top. */
+.conf-streaks {
+  position: absolute;
+  left: -26%;
+  top: -6%;
+  width: 152%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes conf-twinkle {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  .conf-sparkle {
+    animation: conf-twinkle 3s ease-in-out infinite;
+    animation-delay: calc(var(--s) * -0.7s);
+  }
+}
+
+/* Podium the poster stands on: a glass cylinder. A glossy lit top with a
+   glowing blue rim sits over a side that runs from bright blue at the rim to
+   frosted white, shaded darker at both ends so it reads as round. A glowing
+   ring and a soft light pool sit around its base. The poster's bottom edge
+   lands on the middle of the top. */
+.conf-podium {
+  --top-h: 64px;
+  --depth: 44px;
+  position: relative;
+  width: 108%;
+  height: calc(var(--top-h) + var(--depth) + 28px);
+  margin-top: calc(var(--top-h) / -2);
+}
+.conf-podium > span {
+  position: absolute;
+  border-radius: 50%;
+}
+.conf-podium-glow {
+  left: -10%;
+  right: -10%;
+  top: calc(var(--depth) + var(--top-h) * 0.2);
+  height: calc(var(--top-h) * 1.3);
+  background: radial-gradient(ellipse at center, rgb(88 120 255 / 0.6), rgb(200 104 232 / 0.25) 45%, transparent 70%);
+  filter: blur(10px);
+}
+.conf-podium-ring {
+  left: -5%;
+  right: -5%;
+  top: calc(var(--depth) - 2px);
+  height: calc(var(--top-h) + 12px);
+  border: 2px solid rgb(127 182 255 / 0.85);
+  box-shadow:
+    0 0 18px rgb(8 120 232 / 0.6),
+    inset 0 0 14px rgb(8 120 232 / 0.35);
+}
+.conf-podium .conf-podium-side {
+  left: 0;
+  right: 0;
+  top: calc(var(--top-h) / 2);
+  height: calc(var(--depth) + var(--top-h) / 2);
+  border-radius: 0 0 50% 50% / 0 0 calc(var(--top-h) / 2) calc(var(--top-h) / 2);
+  background:
+    linear-gradient(90deg, rgb(5 47 115 / 0.45), transparent 22%, rgb(255 255 255 / 0.3) 50%, transparent 78%, rgb(88 88 200 / 0.55)),
+    linear-gradient(180deg, #2a6cf0 0%, #6ea0ff 20%, #cfdcff 58%, #eef1ff 100%);
+  box-shadow: 0 20px 40px rgb(88 88 200 / 0.35);
+}
+.conf-podium-top {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--top-h);
+  background: radial-gradient(ellipse at 50% 30%, #ffffff 0%, #eef1ff 40%, #d6dcff 75%, #bcc6ff 100%);
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / 0.9),
+    inset 0 -10px 20px rgb(88 88 200 / 0.25),
+    0 0 0 2px #4b8dff,
+    0 0 24px rgb(8 120 232 / 0.7);
+}
+
+/* A soft beam of light rising from the podium behind the poster. */
+.conf-beam {
+  position: absolute;
+  left: 50%;
+  bottom: 60px;
+  width: 85%;
+  height: 80%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: linear-gradient(to top, rgb(127 182 255 / 0.5), rgb(200 104 232 / 0.12) 55%, transparent 85%);
+  clip-path: polygon(6% 100%, 94% 100%, 72% 0, 28% 0);
+  filter: blur(14px);
+}
+
+/* ---------------------------------------------------------------------------
+   Careers page.
+   --------------------------------------------------------------------------- */
+
+/* Hero photo: blurred into a soft backdrop. Scaled up a little so the blur
+   does not leave a pale fringe at the edges, which overflow: hidden then crops. */
+.careers-hero-photo {
+  filter: blur(2px);
+  transform: scale(1.03);
+}
+
+/* Light veil over the photo, tinted faintly blue-violet from the logo, so the
+   copy reads clearly anywhere on it. */
+.careers-hero-veil {
+  background:
+    radial-gradient(55% 65% at 50% 50%, rgb(247 249 253 / 0.6), transparent 100%),
+    linear-gradient(180deg, rgb(247 249 253 / 0.66), rgb(244 242 255 / 0.6));
+}
+
+/* ---------------------------------------------------------------------------
+   Contact page.
+   --------------------------------------------------------------------------- */
+
+/* The hanging telephone handset. */
+.contact-phone {
+  filter: drop-shadow(0 28px 36px rgb(88 88 200 / 0.35));
+}
+/* Comic speech bubbles beside the handset: spiky bursts whose outline is an
+   SVG drawn behind the text (see SpeechBubble in Contacts.jsx). Padding sizes
+   each burst around its text. Each bubble sets its own position and --tilt
+   inline; --d staggers the bobbing. */
+.speech-bubble {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.4rem 2.9rem 2.8rem;
+  color: var(--color-brand-ink);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  rotate: var(--tilt, 0deg);
+  filter: drop-shadow(0 8px 14px rgb(8 72 168 / 0.12));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes speech-bob {
+    to {
+      translate: 0 -8px;
+    }
+  }
+  .speech-bubble {
+    animation: speech-bob 2.4s ease-in-out infinite alternate;
+    animation-delay: calc(var(--d, 0) * -0.6s);
   }
 }
 

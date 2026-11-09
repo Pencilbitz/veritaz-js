@@ -42,13 +42,13 @@ const contacts = [
 
 export default function Footer() {
   return (
-    <footer className="bg-brand-ink text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>
+    <footer className="bg-brand-ink text-white">
       <div className="logo-rule" />
       <div className={`${WRAP} py-14 lg:py-20`}>
         {/* Statement */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-12 border-b border-white/15">
           <p
-            style={{ fontFamily: "'Fraunces', Georgia, serif" }}
+            style={{ fontFamily: "var(--font-serif)" }}
             className="max-w-3xl text-3xl sm:text-4xl lg:text-5xl font-medium leading-tight tracking-tight"
           >
             Empowering authors to share their stories and knowledge with the{" "}
