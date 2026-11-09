@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   ArrowRight,
   ArrowLeft,
-  Check,
   Phone,
   Mail,
   MessageCircle,
@@ -14,7 +13,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
-const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 xl:px-10";
+const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-20";
 const SERIF = { fontFamily: "var(--font-serif)" };
 
 const FALLBACK_COVERS = [
@@ -101,7 +100,7 @@ function CountUp({ value }) {
         observer.disconnect();
         const start = performance.now();
         const tick = (now) => {
-          const t = Math.min((now - start) / 1400, 1);
+          const t = Math.min(Math.max((now - start) / 1400, 0), 1);
           const eased = 1 - (1 - t) ** 3;
           el.textContent = `${Math.round(target * eased)}${suffix}`;
           if (t < 1) frame = requestAnimationFrame(tick);
@@ -144,77 +143,79 @@ function Avatar({ src, name }) {
 const HERO_WORDS = ["Where", "Great", "Writing", "Becomes", "a"];
 
 function Hero({ covers, booksReady }) {
-  const [loaded, setLoaded] = useState(0);
   const [gaveUp, setGaveUp] = useState(false);
 
-  // The fan waits for its images so the opening is not spent on empty space,
-  // but a slow network should not leave the hero bare, so stop waiting after a while.
+  // The cover columns wait for the book list, but a slow network should not
+  // leave the panel empty, so fall back to the bundled covers after a while.
   useEffect(() => {
     const timer = setTimeout(() => setGaveUp(true), 3000);
     return () => clearTimeout(timer);
   }, []);
 
-  const fan = useMemo(() => {
+  // Eight covers, set around a 3D ring.
+  const ring = useMemo(() => {
     if (!booksReady && !gaveUp) return [];
     const pool = covers.length ? covers : FALLBACK_COVERS;
-    return Array.from({ length: 5 }, (_, i) => pool[i % pool.length]);
+    return Array.from({ length: 8 }, (_, i) => pool[i % pool.length]);
   }, [covers, booksReady, gaveUp]);
 
-  const open = gaveUp || (fan.length > 0 && loaded >= fan.length);
-
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-brand-deep to-brand-violet text-white">
-      <span aria-hidden="true" className="orb orb-cyan" />
-      <span aria-hidden="true" className="orb orb-orchid" />
-
-      <div className={`${WRAP} relative pt-16 lg:pt-24 text-center`}>
-        <h1 style={SERIF} className="mx-auto max-w-5xl text-[2.6rem] sm:text-6xl xl:text-7xl leading-[1.08] font-medium tracking-tight">
-          {HERO_WORDS.map((word, i) => (
-            <span key={word}>
-              <span className="hero-word" style={{ "--w": i }}>{word}</span>{" "}
-            </span>
-          ))}
-          <em className="hero-word text-brand-gold" style={{ "--w": 5 }}>Printed</em>{" "}
-          <em className="hero-word text-brand-gold" style={{ "--w": 6 }}>Reality</em>
-        </h1>
-        <p className="hero-fade mx-auto mt-6 max-w-2xl text-lg text-white/90 leading-relaxed">
-          Seamless book creation through self-publishing, editing, cover design, ISBN &amp; patent
-          registration, printing, and eBook distribution.
-        </p>
-        <div className="hero-fade mt-9 flex flex-col sm:flex-row justify-center gap-3">
-          <a
-            href="#publish-form"
-            className="inline-flex items-center justify-center gap-2 h-14 px-8 rounded-full bg-brand-gold text-brand-deep font-bold hover:bg-brand-goldlight transition-colors"
-          >
-            Start Publishing Today
-            <ArrowRight className="w-5 h-5" />
-          </a>
-          <Link
-            to="/book-store"
-            className="inline-flex items-center justify-center h-14 px-8 rounded-full border border-white/40 font-semibold hover:bg-white/10 transition-colors"
-          >
-            Browse the Book Store
-          </Link>
+    <section className="relative overflow-hidden bg-gradient-to-br from-white via-brand-snow to-brand-paper">
+      <div className={`${WRAP} relative grid items-center gap-12 py-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16 lg:py-16`}>
+        <div className="text-center lg:text-left">
+          <h1 className="text-[2.4rem] sm:text-5xl xl:text-[3.75rem] leading-[1.1] font-extrabold tracking-tight text-brand-ink">
+            {HERO_WORDS.map((word, i) => (
+              <span key={word}>
+                <span className="hero-word" style={{ "--w": i }}>{word}</span>{" "}
+              </span>
+            ))}
+            <em className="hero-word not-italic text-brand-violet" style={{ "--w": 5 }}>Printed</em>{" "}
+            <em className="hero-word not-italic text-brand-violet" style={{ "--w": 6 }}>Reality</em>
+          </h1>
+          <p className="hero-fade mx-auto mt-6 max-w-xl text-lg text-slate-600 leading-relaxed lg:mx-0">
+            Seamless book creation through self-publishing, editing, cover design, ISBN &amp; patent
+            registration, printing, and eBook distribution.
+          </p>
+          <div className="hero-fade mt-9 flex flex-col sm:flex-row justify-center lg:justify-start gap-3">
+            <a
+              href="#publish-form"
+              className="inline-flex items-center justify-center gap-2 h-14 px-8 rounded-full bg-brand-deep text-white font-bold hover:bg-brand-ink transition-colors"
+            >
+              Start Publishing Today
+              <ArrowRight className="w-5 h-5" />
+            </a>
+            <Link
+              to="/book-store"
+              className="inline-flex items-center justify-center h-14 px-8 rounded-full border-2 border-brand-deep/20 font-semibold text-brand-deep hover:border-brand-deep transition-colors"
+            >
+              Browse the Book Store
+            </Link>
+          </div>
         </div>
 
-        {/* Decorative: the same titles are linked properly in the shelf below. */}
-        <div aria-hidden="true" className={`book-fan ${open ? "is-ready" : ""}`}>
-          {fan.map((src, i) => {
-            const offset = i - 2;
-            return (
-              <img
-                key={i}
-                src={src}
-                alt=""
-                className="fan-card"
-                style={{ "--p": offset, "--d": offset * offset, zIndex: 5 - Math.abs(offset) }}
-                onLoad={() => setLoaded((n) => n + 1)}
-                onError={(e) => {
-                  e.currentTarget.src = FALLBACK_COVERS[0];
-                }}
-              />
-            );
-          })}
+        {/* 3D ring of covers. It turns slowly on its own and turns further as
+            the page scrolls (see .ring-* in index.css). Decorative: the same
+            titles are linked in the shelf below. */}
+        <div aria-hidden="true" className="ring-stage">
+          <span className="ring-floor" />
+          <div className="ring-tilt">
+            <div className="ring-spin">
+              <div className="ring-scroll">
+                {ring.map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt=""
+                    className="ring-card"
+                    style={{ "--i": i }}
+                    onError={(e) => {
+                      e.currentTarget.src = FALLBACK_COVERS[0];
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -227,7 +228,8 @@ function Process() {
   return (
     <section className="process-pin bg-brand-paper">
       <div className="process-sticky">
-        <div className="process-track">
+        <div className="process-layout">
+          {/* The intro stays put while only the cards pan sideways beside it. */}
           <div className="process-intro">
             <h2 style={SERIF} className="text-5xl lg:text-7xl font-medium text-brand-deep tracking-tight leading-[1.05]">
               Inside Our Process
@@ -238,6 +240,8 @@ function Process() {
             </p>
           </div>
 
+          <div className="process-viewport">
+            <div className="process-track">
           {services.map((s, i) => (
             <article key={s.title} className="process-card reveal">
               <span style={SERIF} className="block text-6xl lg:text-8xl font-medium text-brand-violet/25">
@@ -249,6 +253,8 @@ function Process() {
               <p className="mt-3 text-slate-600 leading-relaxed">{s.text}</p>
             </article>
           ))}
+            </div>
+          </div>
         </div>
         <span aria-hidden="true" className="process-bar" />
       </div>
@@ -258,12 +264,12 @@ function Process() {
 
 function FromDraft() {
   return (
-    <section className="bg-gradient-to-r from-brand-deep to-brand-violet text-white py-20 lg:py-32">
+    <section className="bg-brand-snow text-brand-ink py-20 lg:py-32">
       <div className={`${WRAP} text-center`}>
         <h2 style={SERIF} className="reveal mx-auto max-w-4xl text-4xl lg:text-7xl font-medium tracking-tight leading-[1.05]">
           From Draft to Global Bookshelves
         </h2>
-        <p className="reveal mx-auto mt-6 max-w-2xl text-lg text-white/90 leading-relaxed">
+        <p className="reveal mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed">
           Veritaz International Press bridges the gap between innovative ideas and global
           recognition through complete publishing, patent protection, and academic support.
         </p>
@@ -271,10 +277,10 @@ function FromDraft() {
         <dl className="mx-auto mt-14 max-w-4xl grid sm:grid-cols-3 gap-8">
           {stats.map((s) => (
             <div key={s.label} className="reveal">
-              <dd style={SERIF} className="text-6xl lg:text-7xl font-medium text-brand-gold tabular-nums">
+              <dd style={SERIF} className="text-6xl lg:text-7xl font-medium text-brand-violet tabular-nums">
                 <CountUp value={s.value} />
               </dd>
-              <dt className="mt-2 font-medium text-white/90">{s.label}</dt>
+              <dt className="mt-2 font-medium text-slate-600">{s.label}</dt>
             </div>
           ))}
         </dl>
@@ -282,14 +288,14 @@ function FromDraft() {
         <div className="reveal mt-14 flex flex-col sm:flex-row justify-center gap-3">
           <a
             href="#publish-form"
-            className="inline-flex items-center justify-center gap-2 h-14 px-8 rounded-full bg-brand-gold text-brand-deep font-bold hover:bg-brand-goldlight transition-colors"
+            className="inline-flex items-center justify-center gap-2 h-14 px-8 rounded-full bg-brand-deep text-white font-bold hover:bg-brand-ink transition-colors"
           >
             Start Publishing Today
             <ArrowRight className="w-5 h-5" />
           </a>
           <Link
             to="/contact"
-            className="inline-flex items-center justify-center h-14 px-8 rounded-full border border-white/40 font-semibold hover:bg-white/10 transition-colors"
+            className="inline-flex items-center justify-center h-14 px-8 rounded-full border-2 border-brand-deep/20 font-semibold text-brand-deep hover:border-brand-deep transition-colors"
           >
             Contact us
           </Link>
@@ -353,25 +359,32 @@ function Shelf({ books }) {
   );
 }
 
+/** Why Authors Choose Us: the heading stays put on the left while the
+ *  numbered reasons run down two columns beside it. */
 function Reasons() {
   return (
-    <section className="bg-brand-ink text-white py-16 lg:py-28">
-      <div className={WRAP}>
-        <h2 style={SERIF} className="reveal text-4xl lg:text-6xl font-medium tracking-tight">
-          Why Authors Choose Us
-        </h2>
-        <ul className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+    <section className="bg-brand-paper py-16 lg:py-28">
+      <div className={`${WRAP} grid gap-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16`}>
+        <div className="lg:sticky lg:top-32 lg:self-start">
+          <h2 style={SERIF} className="reveal text-4xl lg:text-6xl font-medium tracking-tight leading-[1.05] text-brand-deep">
+            Why Authors Choose Us
+          </h2>
+          <span aria-hidden="true" className="mt-6 block h-1 w-20 rounded-full bg-brand-gold" />
+        </div>
+
+        <ol className="grid gap-x-10 sm:grid-cols-2">
           {reasons.map((r, i) => (
-            <li
-              key={r.title}
-              className={`reveal reason-card ${i === reasons.length - 1 ? "sm:col-span-2 lg:col-span-3" : ""}`}
-            >
-              <Check className="w-6 h-6 text-brand-gold" />
-              <h3 className="mt-3 font-bold text-white">{r.title}</h3>
-              <p className="mt-1 leading-relaxed text-blue-100/90">{r.text}</p>
+            <li key={r.title} className="reveal flex gap-4 border-t border-brand-violet/20 py-6">
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-white text-sm font-bold tabular-nums text-brand-violet">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <h3 className="font-bold text-brand-ink">{r.title}</h3>
+                <p className="mt-1 leading-relaxed text-slate-600">{r.text}</p>
+              </div>
             </li>
           ))}
-        </ul>
+        </ol>
       </div>
     </section>
   );
@@ -497,7 +510,7 @@ function Testimonials({ testimonials }) {
 }
 
 const fieldClass =
-  "w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20";
+  "w-full h-12 px-4 rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20";
 
 function InquiryForm() {
   const [status, setStatus] = useState({ type: "idle", message: "" });
@@ -527,38 +540,38 @@ function InquiryForm() {
 
   return (
     // scroll-mt keeps the heading clear of the sticky navbar on the hero's anchor link.
-    <section id="publish-form" className="bg-gradient-to-br from-brand-violet to-brand-deep text-white py-16 lg:py-24 scroll-mt-40">
+    <section id="publish-form" className="bg-white text-brand-ink py-16 lg:py-24 scroll-mt-40">
       <div className={`${WRAP} grid lg:grid-cols-2 gap-12 lg:gap-20 items-center`}>
         <div>
-          <h2 style={SERIF} className="text-4xl lg:text-6xl font-medium tracking-tight leading-tight">
-            Have a manuscript? <em className="text-brand-gold">Let's publish it.</em>
+          <h2 style={SERIF} className="text-4xl lg:text-6xl font-medium tracking-tight leading-tight text-brand-deep">
+            Have a manuscript? <em className="text-brand-violet">Let's publish it.</em>
           </h2>
-          <p className="mt-5 max-w-lg text-lg text-white/90 leading-relaxed">
+          <p className="mt-5 max-w-lg text-lg text-slate-600 leading-relaxed">
             Tell us about your book and our team will get back to you within 24 hours.
           </p>
           <ul className="mt-8 space-y-4 font-medium">
             <li>
-              <a href="tel:+916380658876" className="inline-flex items-center gap-3 hover:text-brand-gold transition-colors">
-                <Phone className="w-5 h-5 text-brand-gold" />
+              <a href="tel:+916380658876" className="inline-flex items-center gap-3 hover:text-brand-violet transition-colors">
+                <Phone className="w-5 h-5 text-brand-violet" />
                 +91 6380658876
               </a>
             </li>
             <li>
-              <a href="mailto:info@veritazinternational.com" className="inline-flex items-center gap-3 hover:text-brand-gold transition-colors break-all">
-                <Mail className="w-5 h-5 text-brand-gold flex-shrink-0" />
+              <a href="mailto:info@veritazinternational.com" className="inline-flex items-center gap-3 hover:text-brand-violet transition-colors break-all">
+                <Mail className="w-5 h-5 text-brand-violet flex-shrink-0" />
                 info@veritazinternational.com
               </a>
             </li>
             <li>
-              <a href="https://wa.me/916380658876" target="_blank" rel="noreferrer" className="inline-flex items-center gap-3 hover:text-brand-gold transition-colors">
-                <MessageCircle className="w-5 h-5 text-brand-gold" />
+              <a href="https://wa.me/916380658876" target="_blank" rel="noreferrer" className="inline-flex items-center gap-3 hover:text-brand-violet transition-colors">
+                <MessageCircle className="w-5 h-5 text-brand-violet" />
                 Join WhatsApp
               </a>
             </li>
           </ul>
         </div>
 
-        <form onSubmit={handleSubmit} className="reveal bg-white text-slate-800 rounded-2xl p-6 sm:p-8 lg:p-10 space-y-4">
+        <form onSubmit={handleSubmit} className="reveal bg-brand-snow text-slate-800 rounded-2xl border border-brand-deep/10 p-6 sm:p-8 lg:p-10 space-y-4">
           <h3 className="text-2xl font-bold text-brand-deep">Publish Your Book</h3>
           <div>
             <label htmlFor="home-name" className="block text-sm font-semibold mb-1.5">Your Name</label>

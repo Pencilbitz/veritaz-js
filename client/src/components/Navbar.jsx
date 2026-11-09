@@ -156,7 +156,7 @@ export default function Navbar() {
         <div className={`${WRAP} h-[72px] lg:h-20 flex items-center justify-between gap-4`}>
           <Logo />
 
-          <nav className="hidden lg:flex items-center gap-0.5 p-1 rounded-full bg-brand-paper" aria-label="Main">
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 p-1 rounded-full bg-brand-paper" aria-label="Main">
           {primaryLinks.map(({ to, label, end }) => (
             <NavLink key={to} to={to} end={end} className={({ isActive }) => navLabelClass(isActive)}>
               {label}

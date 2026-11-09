@@ -44,52 +44,50 @@
    (not in Firefox), where they simply do not run and the content stays put.
    --------------------------------------------------------------------------- */
 
-/* Hero: fan of covers */
-.book-fan {
-  --card: clamp(130px, 19vw, 250px);
+/* Hero: a ring of eight covers in 3D, seen from slightly above. Three nested
+   layers so each motion stays independent: .ring-tilt sets the viewing angle,
+   .ring-spin turns slowly over time, and .ring-scroll turns with the page
+   scroll. With no motion allowed it simply stands still. */
+.ring-stage {
+  --card: clamp(120px, 13vw, 170px);
+  --radius: calc(var(--card) * 1.35);
   position: relative;
-  height: calc(var(--card) * 1.2);
-  margin-top: 3.5rem;
+  display: grid;
+  place-items: center;
+  height: clamp(380px, 38vw, 520px);
+  perspective: 1500px;
 }
-.fan-card {
+.ring-floor {
   position: absolute;
-  top: 0;
+  bottom: 8%;
   left: 50%;
+  width: calc(var(--radius) * 2.4);
+  height: calc(var(--radius) * 0.55);
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(88 88 200 / 0.18), transparent);
+}
+.ring-tilt {
+  transform-style: preserve-3d;
+  transform: rotateX(-10deg);
+}
+.ring-spin,
+.ring-scroll {
+  position: relative;
   width: var(--card);
-  margin-left: calc(var(--card) / -2);
   aspect-ratio: 3 / 4;
+  transform-style: preserve-3d;
+}
+.ring-card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   border-radius: 6px;
-  box-shadow: 0 24px 48px rgb(5 47 115 / 0.45);
-  transform-origin: 50% 130%;
-  transform:
-    translateX(calc(var(--p) * 60%))
-    translateY(calc(var(--d) * 12px))
-    rotate(calc(var(--p) * 7deg));
-  transition: translate 0.3s ease;
-}
-.fan-card:hover {
-  translate: 0 -24px;
-}
-
-.orb {
-  position: absolute;
-  width: 46vw;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.45;
-  pointer-events: none;
-}
-.orb-cyan {
-  top: -20%;
-  left: -12%;
-  background: var(--color-brand-cyan);
-}
-.orb-orchid {
-  bottom: -30%;
-  right: -12%;
-  background: var(--color-brand-orchid);
+  transform: rotateY(calc(var(--i) * 45deg)) translateZ(var(--radius));
+  /* Covers turned away from the viewer would show mirrored; hide them. */
+  backface-visibility: hidden;
 }
 
 /* Process: plain card grid until the pinned version below takes over */
@@ -99,12 +97,17 @@
 .process-sticky {
   position: relative;
 }
-.process-track {
-  display: grid;
-  gap: 1.25rem;
+.process-layout {
   width: min(100%, 1600px);
   margin-inline: auto;
   padding-inline: 1rem;
+}
+.process-intro {
+  margin-bottom: 2rem;
+}
+.process-track {
+  display: grid;
+  gap: 1.25rem;
 }
 .process-card {
   padding: 1.75rem;
@@ -116,13 +119,11 @@
   display: none;
 }
 @media (min-width: 1024px) {
+  .process-layout {
+    padding-inline: 5rem;
+  }
   .process-track {
     grid-template-columns: repeat(3, 1fr);
-    padding-inline: 2.5rem;
-  }
-  .process-intro {
-    grid-column: 1 / -1;
-    margin-bottom: 1.5rem;
   }
 }
 
@@ -191,8 +192,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shelf-book,
-  .fan-card {
+  .shelf-book {
     transition: none;
   }
 }
@@ -210,9 +210,9 @@
       transform: translateY(16px);
     }
   }
-  @keyframes fan-open {
-    from {
-      transform: translateY(70px) rotate(calc(var(--p) * 1.5deg));
+  @keyframes ring-turn {
+    to {
+      transform: rotateY(-360deg);
     }
   }
   @keyframes orb-drift {
@@ -240,12 +240,8 @@
   .hero-fade {
     animation: soft-fade 0.8s ease-out 0.55s backwards;
   }
-  .book-fan:not(.is-ready) .fan-card {
-    opacity: 0;
-  }
-  .book-fan.is-ready .fan-card {
-    animation: fan-open 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
-    animation-delay: calc(var(--d) * 90ms);
+  .ring-spin {
+    animation: ring-turn 40s linear infinite;
   }
   .orb {
     animation: orb-drift 16s ease-in-out infinite alternate;
@@ -271,14 +267,9 @@
         transform: translateY(48px) scale(0.97);
       }
     }
-    @keyframes fan-lift {
-      to {
-        transform: translateY(-70px) scale(1.14);
-      }
-    }
     @keyframes process-pan {
       to {
-        transform: translateX(calc(-100% + 100vw));
+        transform: translateX(calc(-100% + 100vw - var(--intro-w)));
       }
     }
     @keyframes process-fill {
@@ -287,20 +278,30 @@
       }
     }
 
+    /* The ring turns half a revolution as the hero scrolls out of view. */
+    @keyframes ring-scroll-turn {
+      to {
+        transform: rotateY(-180deg);
+      }
+    }
+    .ring-scroll {
+      animation: ring-scroll-turn auto linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 700px;
+    }
+
     .reveal {
       animation: reveal-up auto linear backwards;
       animation-timeline: view();
       animation-range: entry 0% entry 80%;
     }
-    .book-fan {
-      animation: fan-lift auto linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 600px;
-    }
 
-    /* Pinned sideways pan. 83px is the desktop navbar height. */
+    /* Pinned sideways pan. 83px is the desktop navbar height. The intro is a
+       fixed column on the left; only the card track inside the viewport
+       beside it moves. */
     @media (min-width: 1024px) {
       .process-pin {
+        --intro-w: clamp(400px, 38vw, 600px);
         height: 380vh;
         padding-block: 0;
         view-timeline: --process block;
@@ -313,22 +314,39 @@
         align-items: center;
         overflow: hidden;
       }
+      .process-layout {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .process-intro {
+        flex: none;
+        width: var(--intro-w);
+        margin: 0;
+        padding: 0 3rem 0 5rem;
+      }
+      .process-viewport {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        mask-image: linear-gradient(to right, transparent, #000 3rem);
+      }
       .process-track {
         display: flex;
         align-items: stretch;
         gap: 1.5rem;
         width: max-content;
         margin: 0;
-        padding-inline: 2.5rem 6rem;
+        padding-inline: 3rem 5rem;
         animation: process-pan auto linear both;
         animation-timeline: --process;
         animation-range: contain;
-      }
-      .process-intro {
-        flex: none;
-        align-self: center;
-        width: clamp(380px, 36vw, 560px);
-        margin: 0 3rem 0 0;
       }
       .process-card {
         flex: none;
@@ -565,6 +583,25 @@
   .speech-bubble {
     animation: speech-bob 2.4s ease-in-out infinite alternate;
     animation-delay: calc(var(--d, 0) * -0.6s);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Our Company page.
+   --------------------------------------------------------------------------- */
+
+/* Photos with a sweeping curved left edge: the top-left corner is a tall
+   ellipse, so the edge starts well in from the left at the top and reaches
+   the left side at the bottom. */
+.oc-curve {
+  border-top-left-radius: 40% 100%;
+}
+
+/* The Technical Benefits panel curves over the photo beside it the same way. */
+@media (min-width: 1024px) {
+  .oc-panel {
+    border-top-left-radius: 16% 100%;
+    margin-left: -12%;
   }
 }
 

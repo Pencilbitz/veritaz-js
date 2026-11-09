@@ -258,24 +258,24 @@ export default function Contacts() {
 
               <div className="grid gap-6 md:grid-cols-2">
                 <Field id="first-name" label="First Name *" icon={User}>
-                  <input type="text" name="first_name" id="first-name" placeholder="John" required className={INPUT} />
+                  <input type="text" name="first_name" id="first-name" required className={INPUT} />
                 </Field>
                 <Field id="last-name" label="Last Name *" icon={User}>
-                  <input type="text" name="last_name" id="last-name" placeholder="Doe" required className={INPUT} />
+                  <input type="text" name="last_name" id="last-name" required className={INPUT} />
                 </Field>
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
                 <Field id="email" label="Email Address *" icon={Mail}>
-                  <input type="email" name="email" id="email" placeholder="john.doe@example.com" required className={INPUT} />
+                  <input type="email" name="email" id="email" required className={INPUT} />
                 </Field>
                 <Field id="phone" label="Phone Number" icon={Phone}>
-                  <input type="tel" name="phone" id="phone" placeholder="+91 9876541230" className={INPUT} />
+                  <input type="tel" name="phone" id="phone" className={INPUT} />
                 </Field>
               </div>
 
               <Field id="message" label="Your Message" icon={MessageSquare} multiline>
-                <textarea name="message" id="message" placeholder="Tell us how we can help you..." rows="5" required className={`${INPUT} resize-none`}></textarea>
+                <textarea name="message" id="message" rows="5" required className={`${INPUT} resize-none`}></textarea>
               </Field>
 
               <button
