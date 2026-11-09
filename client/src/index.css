@@ -14,6 +14,7 @@
   --color-brand-goldlight: #f8d888; /* globe: highlight */
   --color-brand-mist: #e6f7fa;      /* cyan tint for light sections */
   --color-brand-paper: #f4f2ff;     /* violet tint for light sections */
+  --color-brand-snow: #f7f9fd;      /* blue-tinted near-white for light sections */
 }
 
 /* The gradient that runs around the logo's diamond and through its leaves. */
@@ -346,6 +347,155 @@
         animation: process-fill auto linear both;
         animation-timeline: --process;
         animation-range: contain;
+      }
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Book Publishing page.
+   --------------------------------------------------------------------------- */
+
+.pub-cta-glow {
+  position: absolute;
+  right: -8%;
+  bottom: -60%;
+  width: 34rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-brand-orchid);
+  filter: blur(100px);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+
+/* Hero: wall of real covers. Sits under the copy on small screens and fills the
+   right of the hero from 1024px, tilted so it bleeds off the edges. */
+.pub-wall {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  height: 340px;
+  margin-top: 2.5rem;
+  padding-inline: 1rem;
+  overflow: hidden;
+}
+.pub-wall-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.pub-wall-column:nth-child(2) {
+  margin-top: -4rem;
+}
+.pub-wall-column img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 14px 30px rgb(2 20 56 / 0.5);
+}
+@media (min-width: 1024px) {
+  .pub-wall {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(42%, 640px);
+    height: auto;
+    margin: 0;
+    padding: 0;
+    gap: 1rem;
+    overflow: visible;
+    transform: rotate(-7deg) scale(1.2);
+    mask-image: linear-gradient(to right, transparent, #000 14%);
+  }
+  .pub-wall-column {
+    gap: 1rem;
+    margin-top: -5rem;
+  }
+  .pub-wall-column:nth-child(2) {
+    margin-top: -11rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes wall-rise {
+    from {
+      opacity: 0;
+      transform: translateY(60px);
+    }
+  }
+  .pub-wall-column {
+    animation: wall-rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+    animation-delay: calc(var(--c) * 120ms + 200ms);
+  }
+}
+
+/* Process: a faint dot grid on near-white, behind white cards. The rail starts
+   full, and only draws itself in where scroll-driven animation is available. */
+.pub-process {
+  background-color: var(--color-brand-snow);
+  background-image: radial-gradient(rgb(8 72 168 / 0.1) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+.pub-step-card {
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(8 72 168 / 0.06),
+    0 14px 34px rgb(8 72 168 / 0.08);
+  transition: box-shadow 0.25s ease;
+}
+.pub-step-card:hover {
+  box-shadow:
+    0 0 0 1px rgb(8 72 168 / 0.1),
+    0 22px 44px rgb(8 72 168 / 0.15);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pub-step-card {
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+  .pub-step-card:hover {
+    transform: translateY(-6px);
+  }
+
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes rail-draw-down {
+      from {
+        transform: scaleY(0);
+      }
+    }
+    @keyframes rail-draw-across {
+      from {
+        transform: scaleX(0);
+      }
+    }
+    .pub-rail-fill {
+      transform-origin: top;
+      animation: rail-draw-down auto linear both;
+      animation-timeline: view();
+      animation-range: cover 15% cover 65%;
+    }
+    .pub-step {
+      animation: reveal-up auto linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+    @media (min-width: 1024px) {
+      .pub-rail-fill {
+        transform-origin: left;
+        animation-name: rail-draw-across;
+        animation-range: entry 100% cover 60%;
+      }
+      /* Side by side the steps share one scroll position, so stagger them by hand. */
+      .pub-step {
+        animation-range:
+          entry calc(var(--i) * 18%)
+          entry calc(60% + var(--i) * 18%);
       }
     }
   }
