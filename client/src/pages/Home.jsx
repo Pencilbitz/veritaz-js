@@ -161,7 +161,7 @@ function Hero({ covers, booksReady }) {
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-white via-brand-snow to-brand-paper">
-      <div className={`${WRAP} relative grid items-center gap-12 py-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16 lg:py-16`}>
+      <div className={`${WRAP} relative grid items-center gap-8 pb-10 pt-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16 lg:pb-8 lg:pt-6`}>
         <div className="text-center lg:text-left">
           <h1 className="text-[2.4rem] sm:text-5xl xl:text-[3.75rem] leading-[1.1] font-extrabold tracking-tight text-brand-ink">
             {HERO_WORDS.map((word, i) => (
