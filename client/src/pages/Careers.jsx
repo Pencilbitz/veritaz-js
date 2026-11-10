@@ -92,7 +92,6 @@ const WHAT_TO_INCLUDE = [
 ];
 
 const WRAP = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-20';
-const SERIF = { fontFamily: "var(--font-serif)" };
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-deep';
 
 // Accent colours from the logo, cycled across repeated cards.
@@ -108,7 +107,7 @@ const CARD = 'rounded-2xl bg-white shadow-[0_0_0_1px_rgb(8_72_168/0.07),0_14px_3
 function SectionTitle({ children }) {
   return (
     <div className="mb-8 lg:mb-10">
-      <h2 style={SERIF} className="text-3xl font-medium tracking-tight text-brand-ink sm:text-4xl">
+      <h2 className="text-3xl font-bold tracking-tight text-brand-ink sm:text-4xl">
         {children}
       </h2>
       <span aria-hidden="true" className="logo-rule mt-4 block w-20 rounded-full" />

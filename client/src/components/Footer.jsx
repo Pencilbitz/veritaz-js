@@ -1,9 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Phone, Mail, MessageCircle, ArrowUpRight } from "lucide-react";
-import { FaLinkedinIn, FaFacebookF, FaInstagram } from "react-icons/fa";
+import { Phone, Mail, ArrowUpRight } from "lucide-react";
+import { FaLinkedinIn, FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 
-const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 xl:px-10";
+const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-20";
 
 const columns = [
   {
@@ -29,65 +29,65 @@ const columns = [
 ];
 
 const socials = [
-  { href: "https://www.linkedin.com/in/veritaz-international-press/", icon: FaLinkedinIn, label: "LinkedIn" },
-  { href: "https://www.facebook.com/profile.php?id=61583778217764", icon: FaFacebookF, label: "Facebook" },
-  { href: "https://www.instagram.com/veritazinternationalpress/", icon: FaInstagram, label: "Instagram" },
+  {
+    href: "https://www.linkedin.com/in/veritaz-international-press/",
+    icon: FaLinkedinIn,
+    label: "LinkedIn",
+    color: "text-[#0a66c2] hover:bg-[#0a66c2]",
+  },
+  {
+    href: "https://www.facebook.com/profile.php?id=61583778217764",
+    icon: FaFacebookF,
+    label: "Facebook",
+    color: "text-[#1877f2] hover:bg-[#1877f2]",
+  },
+  {
+    href: "https://www.instagram.com/veritazinternationalpress/",
+    icon: FaInstagram,
+    label: "Instagram",
+    color: "text-[#e4405f] hover:bg-[linear-gradient(45deg,#f58529,#dd2a7b,#8134af,#515bd4)]",
+  },
 ];
 
 const contacts = [
-  { href: "tel:+916380658876", icon: Phone, label: "+91 6380658876" },
-  { href: "mailto:info@veritazinternational.com", icon: Mail, label: "info@veritazinternational.com" },
-  { href: "https://wa.me/916380658876", icon: MessageCircle, label: "Join WhatsApp", external: true },
+  { href: "tel:+916380658876", icon: Phone, label: "+91 6380658876", iconClass: "text-brand-deep" },
+  { href: "mailto:info@veritazinternational.com", icon: Mail, label: "info@veritazinternational.com", iconClass: "text-brand-deep" },
+  { href: "https://wa.me/916380658876", icon: FaWhatsapp, label: "Join WhatsApp", iconClass: "text-[#1da851]", external: true },
 ];
 
 export default function Footer() {
   return (
-    <footer className="bg-brand-ink text-white">
-      <div className="logo-rule" />
-      <div className={`${WRAP} py-14 lg:py-20`}>
-        {/* Statement */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-12 border-b border-white/15">
-          <p
-            style={{ fontFamily: "var(--font-serif)" }}
-            className="max-w-3xl text-3xl sm:text-4xl lg:text-5xl font-medium leading-tight tracking-tight"
-          >
-            Empowering authors to share their stories and knowledge with the{" "}
-            <em className="text-brand-gold">world.</em>
-          </p>
-          <Link
-            to="/contact"
-            className="self-start lg:self-auto inline-flex items-center gap-2 h-14 px-8 rounded-full bg-brand-gold text-brand-deep font-bold hover:bg-brand-goldlight transition-colors whitespace-nowrap"
-          >
-            Get in Touch
-            <ArrowUpRight className="w-5 h-5" />
-          </Link>
-        </div>
-
-        {/* Columns */}
-        <div className="pt-12 grid grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr] gap-x-6 gap-y-10">
-          <div className="col-span-2 lg:col-span-1">
-            <Link to="/" className="inline-flex items-center gap-2.5">
-              <span className="w-11 h-11 rounded-lg bg-white flex items-center justify-center">
-                <img src="/assets/image/veritaz-bg-Remove.png" alt="" className="w-9 h-9 object-contain" />
-              </span>
+    <footer className="bg-[#e8f0fc] text-slate-700">
+      <div className="h-2 bg-brand-deep" />
+      <div className={`${WRAP} pt-14 lg:pt-20`}>
+        {/* Brand + link columns */}
+        <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <Link to="/" className="inline-flex items-center gap-3">
+              <img src="/assets/image/veritaz-bg-Remove.png" alt="" className="h-16 w-16 object-contain" />
               <span>
-                <span className="block text-xl font-extrabold tracking-wide uppercase leading-none">Veritaz</span>
-                <span className="block text-[9px] tracking-[0.2em] text-brand-gold uppercase font-semibold mt-1">
+                <span className="block text-3xl font-extrabold uppercase leading-none tracking-wide text-brand-deep">
+                  Veritaz
+                </span>
+                <span className="mt-1.5 block text-[11px] font-medium uppercase tracking-[0.3em] text-slate-500">
                   International Press
                 </span>
               </span>
             </Link>
-            <div className="mt-6 flex gap-2">
-              {socials.map(({ href, icon: Icon, label }) => (
+            <p className="mt-6 max-w-sm text-lg leading-relaxed text-slate-700">
+              Empowering authors to share their stories and knowledge with the world.
+            </p>
+            <div className="mt-6 flex gap-3">
+              {socials.map(({ href, icon: Icon, label, color }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noreferrer"
                   aria-label={label}
-                  className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-blue-100 hover:bg-brand-gold hover:border-brand-gold hover:text-brand-deep transition-colors"
+                  className={`flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-[0_0_0_1px_rgb(8_72_168/0.08)] transition-colors hover:text-white ${color}`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="h-5 w-5" />
                 </a>
               ))}
             </div>
@@ -95,11 +95,11 @@ export default function Footer() {
 
           {columns.map((col) => (
             <nav key={col.heading} aria-label={col.heading}>
-              <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-brand-gold">{col.heading}</h3>
-              <ul className="mt-4 space-y-3">
+              <h3 className="text-lg font-semibold text-slate-900">{col.heading}</h3>
+              <ul className="mt-6 space-y-4">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <Link to={link.to} className="text-blue-100/85 hover:text-white transition-colors">
+                    <Link to={link.to} className="text-lg text-slate-600 transition-colors hover:text-brand-deep">
                       {link.label}
                     </Link>
                   </li>
@@ -107,29 +107,37 @@ export default function Footer() {
               </ul>
             </nav>
           ))}
+        </div>
 
-          <div className="col-span-2 lg:col-span-1">
-            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-brand-gold">Contact Us</h3>
-            <ul className="mt-4 space-y-3">
-              {contacts.map(({ href, icon: Icon, label, external }) => (
+        {/* Contact row */}
+        <div className="mt-14 flex flex-col gap-6 border-y border-slate-300/70 py-8 lg:mt-20 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-10">
+            <h3 className="text-lg font-semibold text-slate-900">Contact Us</h3>
+            <ul className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:gap-x-10">
+              {contacts.map(({ href, icon: Icon, label, iconClass, external }) => (
                 <li key={label}>
                   <a
                     href={href}
                     {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
-                    className="inline-flex items-center gap-3 text-blue-100/85 hover:text-white transition-colors break-all"
+                    className="inline-flex items-center gap-3 break-all text-lg text-slate-600 transition-colors hover:text-brand-deep"
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0 text-brand-gold" />
+                    <Icon className={`h-5 w-5 flex-shrink-0 ${iconClass}`} />
                     {label}
                   </a>
                 </li>
               ))}
             </ul>
           </div>
+          <Link
+            to="/contact"
+            className="inline-flex items-center gap-2 self-start whitespace-nowrap font-semibold text-brand-deep transition-colors hover:text-brand-ink lg:self-auto"
+          >
+            Get in Touch
+            <ArrowUpRight className="h-5 w-5" />
+          </Link>
         </div>
-      </div>
 
-      <div className="border-t border-white/10">
-        <p className={`${WRAP} py-5 text-sm text-blue-100/60`}>
+        <p className="py-8 text-lg text-slate-600">
           &copy; {new Date().getFullYear()} Veritaz International Press. All rights reserved.
         </p>
       </div>

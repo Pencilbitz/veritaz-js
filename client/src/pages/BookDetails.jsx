@@ -10,7 +10,6 @@ import { FaWhatsapp, FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
 import { supabase } from "../lib/supabase";
 
 const WRAP = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-20';
-const SERIF = { fontFamily: 'var(--font-serif)' };
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-deep';
 const CARD = 'rounded-2xl bg-white border border-brand-deep/10';
 const INPUT = 'w-full rounded-xl border border-brand-deep/10 bg-brand-snow px-4 py-3 text-sm font-medium text-brand-ink outline-none transition placeholder:text-slate-400 focus:border-brand-bright focus:bg-white focus:ring-4 focus:ring-brand-bright/15';
@@ -141,7 +140,7 @@ export default function BookDetails() {
   if (error || !book) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-brand-snow px-4">
-        <p style={SERIF} className="text-3xl font-medium text-brand-ink">{error || 'Book not found'}</p>
+        <p className="text-3xl font-bold text-brand-ink">{error || 'Book not found'}</p>
       </div>
     );
   }
@@ -445,14 +444,14 @@ export default function BookDetails() {
       <section className="bg-white py-14 lg:py-20">
         <div className={`${WRAP} grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-12`}>
           <div>
-            <h2 style={SERIF} className="text-3xl font-medium tracking-tight text-brand-ink sm:text-4xl">About This Book</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-brand-ink sm:text-4xl">About This Book</h2>
             <p className="mt-6 whitespace-pre-wrap text-base leading-relaxed text-slate-600">
               {book.about || book.features || book.description || 'No description provided for this book.'}
             </p>
           </div>
 
           <div className={`p-6 sm:p-8 ${CARD}`}>
-            <h2 style={SERIF} className="text-2xl font-medium tracking-tight text-brand-ink">Product Details</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-brand-ink">Product Details</h2>
             <dl className="mt-5 divide-y divide-brand-deep/5">
               {productDetails.map(([label, value]) => (
                 <div key={label} className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 py-3">
@@ -564,7 +563,7 @@ export default function BookDetails() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-bright to-brand-violet text-white">
               <MdBusiness size={28} />
             </div>
-            <h3 id="bulk-title" style={SERIF} className="mb-1 text-2xl font-medium text-brand-ink">Institutional Inquiry</h3>
+            <h3 id="bulk-title" className="mb-1 text-2xl font-bold text-brand-ink">Institutional Inquiry</h3>
             <p className="mb-6 text-sm text-slate-500">For universities, corporate distributions, libraries, or global bulk batches, contact our management desk.</p>
 
             <div className="space-y-3">

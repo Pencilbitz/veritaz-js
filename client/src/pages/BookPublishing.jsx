@@ -14,16 +14,9 @@ import {
   SquarePen,
   Users,
 } from "lucide-react";
+import CtaBanner, { CtaButton } from "../components/CtaBanner";
 
 const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 xl:px-10";
-const SERIF = { fontFamily: "var(--font-serif)" };
-
-const COVER_DIR = "/assets/image/publishing-covers";
-const coverColumns = [
-  ["research", "computer-vision", "whispers-of-night"],
-  ["blue-economy", "digital-marketing", "development-economics"],
-  ["biochemistry", "intellectual-property", "green-marketing"],
-];
 
 const featuredService = {
   id: "edited-books",
@@ -148,39 +141,245 @@ function useCurrentSection(ids) {
   return current;
 }
 
-function Hero() {
+/** Hero book (decorative): "Foundation of Quantum Computing" lies closed with its
+ *  cover facing up, opens, and its pages turn one by one; at the last page it
+ *  closes and opens again. Each leaf has a front (right-hand page) and a back
+ *  (left-hand page once turned). Still and open on the first spread when the
+ *  visitor prefers reduced motion. */
+const HERO_COVER = "/assets/image/publishing-hero/quantum-computing-front.webp";
+const BOOK_TITLE = "Foundation of Quantum Computing";
+
+// Sample page text, for illustration only.
+const BOOK_PAGES = [
+  {
+    kind: "contents",
+    number: "v",
+    entries: [
+      ["1", "Introduction to Quantum Computing", "1"],
+      ["2", "Qubits and Superposition", "14"],
+      ["3", "Entanglement", "29"],
+      ["4", "Quantum Gates and Circuits", "41"],
+      ["5", "Quantum Algorithms", "58"],
+      ["6", "Error Correction", "77"],
+      ["7", "Quantum Hardware", "93"],
+    ],
+  },
+  {
+    kind: "chapter",
+    number: "1",
+    chapter: "Chapter 1",
+    heading: "Introduction to Quantum Computing",
+    paras: [
+      "Classical computers store information as bits, each either 0 or 1. Quantum computers use qubits, which follow the rules of quantum mechanics and can hold a blend of both states at once.",
+      "This chapter traces the ideas that led from early quantum theory to today's experimental machines, and sets out the vocabulary used throughout the book.",
+    ],
+  },
+  {
+    kind: "text",
+    number: "2",
+    running: "Introduction",
+    paras: [
+      "Three properties set quantum computation apart: superposition, entanglement and interference. Together they let a quantum algorithm explore many possibilities and amplify the useful ones.",
+    ],
+    figure: "Figure 1.1  A qubit on the Bloch sphere",
+    after: "Measuring a qubit gives a definite answer, so algorithms are designed to make the right answer the most likely outcome.",
+  },
+  {
+    kind: "chapter",
+    number: "14",
+    chapter: "Chapter 2",
+    heading: "Qubits and Superposition",
+    equation: "|ψ⟩ = α|0⟩ + β|1⟩",
+    paras: [
+      "A qubit's state is written as a combination of the basis states |0⟩ and |1⟩. The amplitudes α and β are complex numbers whose squared sizes add up to one.",
+    ],
+  },
+  {
+    kind: "text",
+    number: "15",
+    running: "Qubits and Superposition",
+    paras: [
+      "Superposition does not mean the qubit is secretly 0 or 1. Until it is measured, both possibilities contribute to how the state evolves.",
+      "Physical qubits can be built from trapped ions, superconducting circuits, photons or electron spins, each with its own strengths and sources of noise.",
+    ],
+  },
+  {
+    kind: "chapter",
+    number: "29",
+    chapter: "Chapter 3",
+    heading: "Entanglement",
+    paras: [
+      "When two qubits are entangled, measuring one immediately tells us about the other, however far apart they are. Entanglement is a resource that many quantum protocols depend on.",
+    ],
+  },
+  {
+    kind: "text",
+    number: "30",
+    running: "Entanglement",
+    paras: [
+      "The simplest entangled states are the Bell states. They are prepared with a Hadamard gate followed by a controlled-NOT, a circuit met again in Chapter 4.",
+      "Entanglement underpins quantum teleportation, superdense coding and several approaches to secure communication.",
+    ],
+  },
+];
+
+function BookPage({ page }) {
   return (
-    <section className="relative overflow-hidden bg-brand-ink text-white">
-      <span className="orb orb-cyan" aria-hidden="true" />
-      <span className="orb orb-orchid" aria-hidden="true" />
-      <div className={`${WRAP} relative z-10 pt-14 lg:flex lg:min-h-[560px] lg:items-center lg:py-16`}>
-        <div className="lg:max-w-[52%]">
-          <h1 style={SERIF} className="text-[2.6rem] sm:text-6xl xl:text-7xl leading-[1.08] font-medium tracking-tight">
-            Book Publication <em className="text-brand-gold">Services</em>
-          </h1>
-          <p className="hero-fade mt-6 max-w-2xl text-lg text-white/90 leading-relaxed">
-            Turn your manuscript into a published book in three easy steps: professional formatting, official ISBN registration, and worldwide print and digital distribution.
-          </p>
-          <Link
-            to="/contact"
-            className="hero-fade mt-9 inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 font-bold text-brand-ink transition-colors hover:bg-brand-goldlight focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-          >
-            Get Started Now
-            <ArrowRight size={18} aria-hidden="true" />
-          </Link>
+    <div className="pub-paper">
+      {page.kind === "contents" ? (
+        <>
+          <p className="pub-paper-h">Contents</p>
+          <ol className="pub-paper-toc">
+            {page.entries.map(([n, title, at]) => (
+              <li key={n}>
+                <span>{n}</span>
+                <span>{title}</span>
+                <span>{at}</span>
+              </li>
+            ))}
+          </ol>
+        </>
+      ) : (
+        <>
+          {page.running && (
+            <p className="pub-paper-run">
+              <span>{BOOK_TITLE}</span>
+              <span>{page.running}</span>
+            </p>
+          )}
+          {page.chapter && <p className="pub-paper-kicker">{page.chapter}</p>}
+          {page.heading && <p className="pub-paper-h">{page.heading}</p>}
+          {page.equation && <p className="pub-paper-eq">{page.equation}</p>}
+          {page.paras.map((t) => (
+            <p key={t.slice(0, 24)} className="pub-paper-p">{t}</p>
+          ))}
+          {page.figure && (
+            <figure className="pub-paper-fig">
+              <svg viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="44" />
+                <ellipse cx="60" cy="60" rx="44" ry="13" />
+                <line x1="60" y1="10" x2="60" y2="110" />
+                <line x1="60" y1="60" x2="88" y2="32" />
+                <circle cx="88" cy="32" r="3.5" className="pub-paper-dot" />
+              </svg>
+              <figcaption>{page.figure}</figcaption>
+            </figure>
+          )}
+          {page.after && <p className="pub-paper-p">{page.after}</p>}
+        </>
+      )}
+      <p className="pub-paper-num">{page.number}</p>
+    </div>
+  );
+}
+
+// Leaves from the top of the right-hand stack: the cover, then the paper leaves.
+// The last page lies under them all.
+const LEAVES = [
+  { cover: true },
+  { front: BOOK_PAGES[0], back: BOOK_PAGES[1] },
+  { front: BOOK_PAGES[2], back: BOOK_PAGES[3] },
+  { front: BOOK_PAGES[4], back: BOOK_PAGES[5] },
+];
+const LAST_PAGE = BOOK_PAGES[6];
+const TURN_MS = 1400;
+const STAGGER_MS = 160;
+
+function OpenBook() {
+  const reduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // How many leaves lie turned on the left. 0 = closed.
+  const [turned, setTurned] = useState(reduced ? 1 : 0);
+  const [closing, setClosing] = useState(false);
+
+  useEffect(() => {
+    if (reduced) return undefined;
+    let delay;
+    let next;
+    if (closing) {
+      delay = TURN_MS + LEAVES.length * STAGGER_MS + 1200; // closed: rest, then open again
+      next = () => {
+        setClosing(false);
+        setTurned(1);
+      };
+    } else if (turned === 0) {
+      delay = 900; // first view: closed, then open
+      next = () => setTurned(1);
+    } else if (turned < LEAVES.length) {
+      delay = turned === 1 ? 2600 : 3000;
+      next = () => setTurned((t) => t + 1);
+    } else {
+      delay = 3200; // last spread: rest, then close
+      next = () => {
+        setClosing(true);
+        setTurned(0);
+      };
+    }
+    const timer = setTimeout(next, delay);
+    return () => clearTimeout(timer);
+  }, [turned, closing, reduced]);
+
+  const open = turned > 0;
+
+  return (
+    <div className="pub-book-stage" aria-hidden="true">
+      <div className="pub-book">
+        <div className={`pub-book-shift ${open ? "is-open" : ""}`}>
+          {/* Back board and the block of pages under the right-hand stack */}
+          <span className="pub-book-board" />
+          <div className="pub-book-block">
+            <BookPage page={LAST_PAGE} />
+          </div>
+
+          {LEAVES.map((leaf, i) => {
+            const isTurned = i < turned;
+            // Turning right-to-left the leaf sits above the right stack, then above the left one; the
+            // z-index swaps at the half-way point, when the leaf stands on its edge.
+            const stagger = closing ? (LEAVES.length - 1 - i) * STAGGER_MS : 0;
+            return (
+              <div
+                key={i}
+                className={`pub-leaf ${leaf.cover ? "pub-leaf--cover" : ""} ${isTurned ? "is-turned" : ""}`}
+                style={{
+                  zIndex: isTurned ? 100 + i : 50 - i,
+                  transitionDelay: `${stagger}ms, ${stagger + TURN_MS / 2}ms`,
+                }}
+              >
+                <div className="pub-leaf-face pub-leaf-face--front">
+                  {leaf.cover ? <img src={HERO_COVER} alt="" decoding="async" /> : <BookPage page={leaf.front} />}
+                </div>
+                <div className="pub-leaf-face pub-leaf-face--back">
+                  {leaf.cover ? <span className="pub-endpaper" /> : <BookPage page={leaf.back} />}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="pub-wall" aria-hidden="true">
-        {coverColumns.map((column, index) => (
-          <div key={column[0]} className="pub-wall-column" style={{ "--c": index }}>
-            {column.map((cover) => (
-              <img key={cover} src={`${COVER_DIR}/${cover}.webp`} alt="" decoding="async" />
-            ))}
-          </div>
-        ))}
+function Hero() {
+  return (
+    <section className="pub-hero relative overflow-hidden bg-white" aria-labelledby="pub-title">
+      <div className={`${WRAP} relative z-10 pt-10 text-center lg:pt-12`}>
+        <h1 id="pub-title" className="mx-auto max-w-4xl text-4xl font-bold leading-[1.1] tracking-tight text-brand-ink sm:text-5xl xl:text-6xl">
+          Book Publication Services
+        </h1>
+        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
+          Turn your manuscript into a published book in three easy steps: professional formatting, official ISBN registration, and worldwide print and digital distribution.
+        </p>
+        <Link
+          to="/contact"
+          className="mt-8 inline-flex items-center gap-2 rounded-full bg-brand-deep px-7 py-3.5 font-bold text-white transition-colors hover:bg-brand-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-deep"
+        >
+          Get Started Now
+          <ArrowRight size={18} aria-hidden="true" />
+        </Link>
       </div>
-      <div className="logo-rule relative" />
+
+      <OpenBook />
+      <div className="logo-rule relative z-10" />
     </section>
   );
 }
@@ -213,7 +412,7 @@ function FeaturedService() {
         <span className="flex h-14 w-14 flex-none items-center justify-center rounded-xl bg-white text-brand-deep">
           <SquarePen size={26} aria-hidden="true" />
         </span>
-        <h3 style={SERIF} className="text-3xl font-medium tracking-tight sm:text-4xl">{title}</h3>
+        <h3 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h3>
       </div>
       <p className="mt-6 max-w-3xl text-lg text-white/90 leading-relaxed">{text}</p>
       <ul className="mt-8 grid gap-x-10 gap-y-6 border-t border-white/20 pt-8 sm:grid-cols-2">
@@ -238,7 +437,7 @@ function ServiceRow({ service }) {
           <Icon size={26} aria-hidden="true" />
         </span>
         <div>
-          <h3 style={SERIF} className="text-2xl font-medium tracking-tight text-brand-ink sm:text-[1.75rem]">
+          <h3 className="text-2xl font-bold tracking-tight text-brand-ink sm:text-[1.75rem]">
             {linkTitle ? (
               <a href={href} className="transition-colors hover:text-brand-violet focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-deep">{title}</a>
             ) : title}
@@ -264,7 +463,7 @@ function Services() {
     <section className="bg-white py-16 lg:py-24">
       <div className={`${WRAP} grid gap-10 lg:grid-cols-[280px_1fr] lg:gap-16 xl:grid-cols-[340px_1fr] xl:gap-24`}>
         <div className="self-start lg:sticky lg:top-28">
-          <h2 id="pub-services-title" style={SERIF} className="text-4xl font-medium leading-tight tracking-tight text-brand-ink lg:text-5xl">
+          <h2 id="pub-services-title" className="text-4xl font-bold leading-tight tracking-tight text-brand-ink lg:text-5xl">
             Our Publication Services
           </h2>
           <ContentsNav current={current} />
@@ -286,7 +485,7 @@ function Process() {
   return (
     <section className="pub-process py-16 lg:py-24">
       <div className={WRAP}>
-        <h2 style={SERIF} className="text-4xl font-medium tracking-tight text-brand-ink lg:text-5xl">
+        <h2 className="text-4xl font-bold tracking-tight text-brand-ink lg:text-5xl">
           Our Publication <em className="text-brand-violet">Process</em>
         </h2>
         <div className="relative mt-12 lg:mt-16">
@@ -299,7 +498,7 @@ function Process() {
             {steps.map(({ title, text, Icon, ring, stem, glow, tile }, index) => (
               <li key={title} className="pub-step flex gap-6 lg:flex-col lg:gap-0" style={{ "--i": index }}>
                 <span className={`ml-[9px] mt-[9px] flex h-[62px] w-[62px] flex-none rotate-45 items-center justify-center rounded-lg border-[3px] bg-white shadow-[0_0_24px] ${ring} ${glow}`}>
-                  <span style={SERIF} className="-rotate-45 text-2xl font-medium text-brand-ink">{index + 1}</span>
+                  <span className="-rotate-45 text-2xl font-bold text-brand-ink">{index + 1}</span>
                 </span>
                 <span aria-hidden="true" className={`ml-[39px] hidden h-12 w-[3px] lg:block ${stem}`} />
                 <div className={`pub-step-card flex-1 rounded-2xl border-t-[3px] p-6 ${ring}`}>
@@ -322,23 +521,17 @@ function CallToAction() {
   return (
     <section className="bg-white py-16 lg:py-24">
       <div className={WRAP}>
-        <div className="relative grid items-center gap-8 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-ink via-brand-deep to-brand-violet p-8 text-white sm:p-12 lg:grid-cols-[1fr_auto] lg:gap-16 lg:p-16">
-          <span className="pub-cta-glow" aria-hidden="true" />
-          <div className="relative">
-            <h2 style={SERIF} className="text-4xl font-medium tracking-tight lg:text-5xl">Ready to Publish Your Book?</h2>
-            <p className="mt-4 max-w-2xl text-lg text-white/90 leading-relaxed">
-              Join thousands of authors who have successfully published their works with our expert guidance and support.
-            </p>
-          </div>
-          <div className="relative flex flex-col gap-3 sm:flex-row lg:flex-col">
-            <button type="button" className="rounded-full bg-brand-gold px-7 py-3.5 font-bold text-brand-ink transition-colors hover:bg-brand-goldlight focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-              Start Your Publication Journey
-            </button>
-            <button type="button" className="rounded-full border-2 border-white/70 px-7 py-3.5 font-bold text-white transition-colors hover:bg-white hover:text-brand-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-              Request a Consultation
-            </button>
-          </div>
-        </div>
+        <CtaBanner
+          eyebrow="Publish with Veritaz"
+          title="Ready to Publish Your Book?"
+          text="Join thousands of authors who have successfully published their works with our expert guidance and support."
+          actions={
+            <>
+              <CtaButton>Start Your Publication Journey</CtaButton>
+              <CtaButton variant="secondary">Request a Consultation</CtaButton>
+            </>
+          }
+        />
       </div>
     </section>
   );

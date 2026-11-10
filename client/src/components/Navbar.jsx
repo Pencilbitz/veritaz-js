@@ -5,11 +5,10 @@ import {
   X,
   Phone,
   Mail,
-  MessageCircle,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-import { FaLinkedinIn, FaFacebookF, FaInstagram } from "react-icons/fa";
+import { FaLinkedinIn, FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { supabase } from "../lib/supabase";
 
 const PHONE_DISPLAY = "+91 6380658876";
@@ -49,7 +48,9 @@ const confSlugOf = (conf) => confNameOf(conf).replace(/\s+/g, "-").toLowerCase()
 
 const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 xl:px-10";
 const CTA_BUTTON = "bg-gradient-to-r from-brand-deep to-brand-violet text-white font-bold hover:opacity-90 transition-opacity";
-const ICON_BUTTON = "w-10 h-10 hidden xl:flex items-center justify-center rounded-full bg-brand-mist text-brand-deep hover:bg-brand-deep hover:text-white transition-colors";
+const ICON_BUTTON = "w-10 h-10 hidden xl:flex items-center justify-center rounded-full transition-colors";
+const WHATSAPP_BUTTON = `${ICON_BUTTON} bg-[#e7f9ee] text-[#1da851] hover:bg-[#25d366] hover:text-white`;
+const CALL_BUTTON = `${ICON_BUTTON} bg-brand-paper text-brand-violet hover:bg-brand-violet hover:text-white`;
 
 // Sits in the rounded tray; the current page is a solid pill.
 const navLabelClass = (active) =>
@@ -188,10 +189,10 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            <a href={WHATSAPP_HREF} target="_blank" rel="noreferrer" aria-label="Join WhatsApp" className={ICON_BUTTON}>
-              <MessageCircle className="w-5 h-5" />
+            <a href={WHATSAPP_HREF} target="_blank" rel="noreferrer" aria-label="Join WhatsApp" className={WHATSAPP_BUTTON}>
+              <FaWhatsapp className="w-5 h-5" aria-hidden="true" />
             </a>
-            <a href={PHONE_HREF} aria-label={`Call ${PHONE_DISPLAY}`} className={ICON_BUTTON}>
+            <a href={PHONE_HREF} aria-label={`Call ${PHONE_DISPLAY}`} className={CALL_BUTTON}>
               <Phone className="w-5 h-5" />
             </a>
             <Link
@@ -305,7 +306,7 @@ export default function Navbar() {
               {EMAIL}
             </a>
             <a href={WHATSAPP_HREF} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-[15px] font-medium">
-              <MessageCircle className="w-5 h-5" strokeWidth={1.75} />
+              <FaWhatsapp className="w-5 h-5 text-[#1da851]" aria-hidden="true" />
               Join WhatsApp
             </a>
             <Link

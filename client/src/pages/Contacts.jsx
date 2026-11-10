@@ -13,7 +13,6 @@ import {
 import { supabase } from "../lib/supabase";
 
 const WRAP = 'mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-20';
-const SERIF = { fontFamily: 'var(--font-serif)' };
 const FOCUS_LIGHT = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white';
 const INPUT =
   'w-full rounded-xl border border-brand-deep/10 bg-brand-snow py-3.5 pl-11 pr-4 font-medium text-brand-ink outline-none transition placeholder:text-slate-400 focus:border-brand-bright focus:bg-white focus:ring-4 focus:ring-brand-bright/15';
@@ -191,13 +190,13 @@ export default function Contacts() {
         <div className={`${WRAP} grid items-stretch gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10`}>
 
           {/* Contact information */}
-          <aside className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-ink via-brand-deep to-brand-violet p-8 text-white shadow-[0_24px_50px_rgb(5_47_115/0.3)] sm:p-12">
+          <aside className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-ink via-brand-deep to-brand-violet p-8 text-white sm:p-12">
             <span aria-hidden="true" className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand-cyan/30 blur-3xl" />
             <span aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-brand-orchid/30 blur-3xl" />
 
             <div className="relative">
-              <h2 style={SERIF} className="text-4xl font-medium tracking-tight">Contact</h2>
-              <h3 style={SERIF} className="text-4xl font-medium tracking-tight">Information</h3>
+              <h2 className="text-4xl font-bold tracking-tight">Contact</h2>
+              <h3 className="text-4xl font-bold tracking-tight">Information</h3>
 
               <p className="mt-6 leading-relaxed text-white/85">
                 Thank you for your interest in our services. Please fill out the form or contact us directly using the information below.
@@ -247,8 +246,8 @@ export default function Contacts() {
           </aside>
 
           {/* Form */}
-          <div className="relative rounded-3xl bg-white p-8 shadow-[0_0_0_1px_rgb(8_72_168/0.06),0_24px_50px_rgb(8_72_168/0.1)] sm:p-12">
-            <h3 style={SERIF} className="text-3xl font-medium tracking-tight text-brand-ink">Send us a message</h3>
+          <div className="relative rounded-3xl border border-brand-deep/10 bg-white p-8 sm:p-12">
+            <h3 className="text-3xl font-bold tracking-tight text-brand-ink">Send us a message</h3>
             <p className="mt-2 text-slate-600">Fill out the form below and our team will get back to you within 24 hours.</p>
 
             <form id="web3form" onSubmit={handleFormSubmit} className="mt-10 space-y-6" noValidate>
@@ -281,7 +280,7 @@ export default function Contacts() {
               <button
                 type="submit"
                 disabled={formStatus.type === 'loading'}
-                className="flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-brand-bright via-brand-deep to-brand-violet py-4 text-sm font-bold uppercase tracking-[0.2em] text-white shadow-[0_14px_30px_rgb(8_72_168/0.3)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-deep disabled:pointer-events-none disabled:opacity-70"
+                className="flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-brand-bright via-brand-deep to-brand-violet py-4 text-sm font-bold uppercase tracking-[0.2em] text-white transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-deep disabled:pointer-events-none disabled:opacity-70"
               >
                 Send Message
                 <Send size={16} aria-hidden="true" />

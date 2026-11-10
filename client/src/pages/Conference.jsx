@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import {
@@ -6,38 +7,48 @@ import {
   Award,
   BadgeCheck,
   BookMarked,
-  Building2,
   CalendarCheck,
   CalendarDays,
-  Clock,
   Download,
   FileText,
   Globe,
   Info,
-  Landmark,
-  MapPin,
+  Lock,
+  Mail,
   Phone,
+  RotateCcw,
   ShieldCheck,
-  Ticket,
+  X,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-20";
-const SERIF = { fontFamily: "var(--font-serif)" };
-
-// Light sections alternate between plain white and a soft logo-colour wash.
-const TONES = ["bg-white", "conf-tint"];
-
-// Accent colours from the logo, cycled across repeated cards.
-const ACCENTS = [
-  { bar: "bg-brand-cyan", border: "border-brand-cyan", text: "text-[#0d7f99]", tile: "bg-brand-cyan text-brand-ink" },
-  { bar: "bg-brand-bright", border: "border-brand-bright", text: "text-brand-bright", tile: "bg-brand-bright text-white" },
-  { bar: "bg-brand-violet", border: "border-brand-violet", text: "text-brand-violet", tile: "bg-brand-violet text-white" },
-  { bar: "bg-brand-orchid", border: "border-brand-orchid", text: "text-[#9a3fbf]", tile: "bg-brand-orchid text-brand-ink" },
-];
-
-const CARD = "rounded-2xl bg-white shadow-[0_0_0_1px_rgb(8_72_168/0.07),0_14px_34px_rgb(8_72_168/0.08)]";
+const EMAIL = "info@veritazinternational.com";
 const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-4";
+const KICKER = "text-xs font-semibold uppercase tracking-[0.08em] text-slate-500";
+
+// Brand tints. Repeated items cycle through them; each content block's tag has its own.
+const TONE = {
+  blue: { bg: "bg-[#e8f0fc]", ink: "text-[#0848a8]", solid: "group-hover:bg-[#0848a8]", hover: "hover:bg-[#e8f0fc]", inkHover: "group-hover:text-[#0848a8]" },
+  cyan: { bg: "bg-[#e0f5fa]", ink: "text-[#0d7f99]", solid: "group-hover:bg-[#0d7f99]", hover: "hover:bg-[#e0f5fa]", inkHover: "group-hover:text-[#0d7f99]" },
+  violet: { bg: "bg-[#efebfd]", ink: "text-[#5858c8]", solid: "group-hover:bg-[#5858c8]", hover: "hover:bg-[#efebfd]", inkHover: "group-hover:text-[#5858c8]" },
+  gold: { bg: "bg-[#fdf1df]", ink: "text-[#8a6413]", solid: "group-hover:bg-[#8a6413]", hover: "hover:bg-[#fdf1df]", inkHover: "group-hover:text-[#8a6413]" },
+  teal: { bg: "bg-[#e0f4f1]", ink: "text-[#0f7a6b]", solid: "group-hover:bg-[#0f7a6b]", hover: "hover:bg-[#e0f4f1]", inkHover: "group-hover:text-[#0f7a6b]" },
+  rose: { bg: "bg-[#fde8f0]", ink: "text-[#c0306a]", solid: "group-hover:bg-[#c0306a]", hover: "hover:bg-[#fde8f0]", inkHover: "group-hover:text-[#c0306a]" },
+};
+const TONE_LIST = [TONE.blue, TONE.cyan, TONE.violet, TONE.gold, TONE.teal, TONE.rose];
+
+const initials = (name = "") =>
+  name
+    .replace(/^((Dr|Prof|Mrs|Ms|Mr)\.?\s+)+/i, "")
+    .split(/\s+/)
+    .filter((w) => /^[A-Za-z]/.test(w))
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
 
 /** Decorative backdrop for the hero: a blue glow swooping in from the top-right. */
 function HeroBackdrop() {
@@ -112,41 +123,329 @@ function PosterStreaks() {
   );
 }
 
-function SectionTitle({ eyebrow, title, center = false, dark = false }) {
-  return (
-    <div className={`mb-10 lg:mb-12 ${center ? "text-center" : ""}`}>
-      {eyebrow && (
-        <p className={`mb-3 text-xs font-bold uppercase tracking-[0.2em] ${dark ? "text-brand-cyanlight" : "text-brand-bright"}`}>
-          {eyebrow}
-        </p>
-      )}
-      <h2 style={SERIF} className={`text-3xl font-medium tracking-tight sm:text-4xl lg:text-5xl ${dark ? "text-white" : "text-brand-ink"}`}>
-        {title}
-      </h2>
-      <span aria-hidden="true" className={`logo-rule mt-5 block w-20 rounded-full ${center ? "mx-auto" : ""}`} />
-    </div>
-  );
-}
+/** Hero globe for conferences without a poster: a drawn sphere whose meridians
+ *  narrow and widen as it turns, with an orbit ring around it. It turns slowly
+ *  on its own and speeds up while the page is scrolled, then eases back. Still
+ *  when the visitor prefers reduced motion. */
+const GLOBE_R = 78;
+const MERIDIANS = [0, 30, 60, 90, 120, 150];
+const PARALLELS = [-52, -26, 0, 26, 52];
 
-function PanelHeader({ title, accent }) {
+function SpinningGlobe() {
+  const meridianRefs = useRef([]);
+  const orbitRef = useRef(null);
+
+  useEffect(() => {
+    const draw = (deg) => {
+      MERIDIANS.forEach((offset, i) => {
+        const el = meridianRefs.current[i];
+        if (el) el.setAttribute("rx", (GLOBE_R * Math.abs(Math.cos(((deg + offset) * Math.PI) / 180))).toFixed(2));
+      });
+      if (orbitRef.current) orbitRef.current.style.transform = `rotateX(74deg) rotateZ(${(deg * 0.6) % 360}deg)`;
+    };
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      draw(20);
+      return undefined;
+    }
+
+    const BASE = 18; // degrees per second when idle
+    const MAX_BOOST = 420;
+    let angle = 0;
+    let boost = 0;
+    let last = performance.now();
+    let lastY = window.scrollY;
+    let frame;
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      boost = Math.min(MAX_BOOST, boost + Math.abs(y - lastY) * 1.6);
+      lastY = y;
+    };
+    const tick = (now) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      boost *= Math.exp(-dt * 2.5);
+      angle = (angle + (BASE + boost) * dt) % 360;
+      draw(angle);
+      frame = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    frame = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
   return (
-    <div className="mb-6 flex items-center justify-between gap-4 border-b border-brand-deep/10 pb-4">
-      <div className="flex items-center gap-3">
-        <span aria-hidden="true" className={`h-7 w-1.5 rounded-full ${accent}`} />
-        <h3 className="text-lg font-bold uppercase tracking-tight text-brand-ink">{title}</h3>
-      </div>
-      <span className="hidden rounded-full border border-brand-deep/10 bg-white px-3 py-1 text-[11px] font-bold text-slate-500 sm:block">
-        Format: Digital PDF
+    <div aria-hidden="true" className="conf-globe relative z-10">
+      <svg viewBox="0 0 200 200" className="conf-globe-svg h-full w-full" focusable="false">
+        <defs>
+          <radialGradient id="confGlobeSphere" cx="38%" cy="32%" r="72%">
+            <stop offset="0%" stopColor="#e9f8fc" />
+            <stop offset="45%" stopColor="#29a6db" />
+            <stop offset="100%" stopColor="#064bae" />
+          </radialGradient>
+          <radialGradient id="confGlobeShine" cx="34%" cy="28%" r="30%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity=".75" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </radialGradient>
+          <clipPath id="confGlobeClip">
+            <circle cx="100" cy="100" r={GLOBE_R} />
+          </clipPath>
+        </defs>
+        <circle cx="100" cy="100" r={GLOBE_R} fill="url(#confGlobeSphere)" />
+        <g clipPath="url(#confGlobeClip)" fill="none" stroke="#ffffff" strokeOpacity=".55" strokeWidth="1.2">
+          {PARALLELS.map((y) => (
+            <ellipse
+              key={y}
+              cx="100"
+              cy={100 + y}
+              rx={Math.sqrt(GLOBE_R * GLOBE_R - y * y)}
+              ry={Math.max(4, 14 - Math.abs(y) / 6)}
+            />
+          ))}
+          {MERIDIANS.map((offset, i) => (
+            <ellipse
+              key={offset}
+              ref={(el) => {
+                meridianRefs.current[i] = el;
+              }}
+              cx="100"
+              cy="100"
+              rx={GLOBE_R * Math.abs(Math.cos((offset * Math.PI) / 180))}
+              ry={GLOBE_R}
+            />
+          ))}
+        </g>
+        <circle cx="100" cy="100" r={GLOBE_R} fill="url(#confGlobeShine)" />
+        <circle cx="100" cy="100" r={GLOBE_R} fill="none" stroke="#ffffff" strokeOpacity=".7" strokeWidth="1.5" />
+      </svg>
+      <span ref={orbitRef} className="conf-orbit">
+        <span />
+        <span />
       </span>
     </div>
   );
 }
+
+/** Full-screen poster viewer with zoom. Opens fitted to the screen; zoom with the
+ *  buttons, + / − keys, Ctrl + scroll or a double-click; drag (or scroll) to move
+ *  round a zoomed poster. Esc, the close button or a click on the backdrop closes it. */
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 4;
+const clampZoom = (z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(z * 100) / 100));
+const stepZoom = (dir) => (z) => clampZoom(dir > 0 ? z * 1.25 : z / 1.25);
+
+function PosterViewer({ src, alt, onClose }) {
+  const [zoom, setZoom] = useState(1);
+  const [fit, setFit] = useState(null); // poster size that fits the screen at 100%
+  const scrollRef = useRef(null);
+  const closeRef = useRef(null);
+  const drag = useRef(null);
+
+  const zoomIn = () => setZoom(stepZoom(1));
+  const zoomOut = () => setZoom(stepZoom(-1));
+
+  const measure = (img) => {
+    const w = img.naturalWidth || 1;
+    const h = img.naturalHeight || 1;
+    const scale = Math.min((window.innerWidth * 0.92) / w, (window.innerHeight - 120) / h);
+    setFit({ w: w * scale, h: h * scale });
+  };
+
+  useEffect(() => {
+    closeRef.current?.focus();
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      else if (e.key === "+" || e.key === "=") setZoom(stepZoom(1));
+      else if (e.key === "-" || e.key === "_") setZoom(stepZoom(-1));
+      else if (e.key === "0") setZoom(1);
+    };
+    // Ctrl + wheel zooms. Registered natively so preventDefault can stop the browser zooming the page.
+    const el = scrollRef.current;
+    const onWheel = (e) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      setZoom((z) => clampZoom(e.deltaY < 0 ? z * 1.1 : z / 1.1));
+    };
+    window.addEventListener("keydown", onKey);
+    el?.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      document.body.style.overflow = overflow;
+      window.removeEventListener("keydown", onKey);
+      el?.removeEventListener("wheel", onWheel);
+    };
+  }, [onClose]);
+
+  const onPointerDown = (e) => {
+    if (zoom <= 1 || e.button !== 0) return;
+    const el = scrollRef.current;
+    drag.current = { x: e.clientX, y: e.clientY, left: el.scrollLeft, top: el.scrollTop, moved: false };
+    el.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e) => {
+    const d = drag.current;
+    if (!d) return;
+    const el = scrollRef.current;
+    if (Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) > 3) d.moved = true;
+    el.scrollLeft = d.left - (e.clientX - d.x);
+    el.scrollTop = d.top - (e.clientY - d.y);
+  };
+  const onPointerUp = () => {
+    setTimeout(() => {
+      drag.current = null;
+    }, 0);
+  };
+
+  const btn = `flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15 disabled:opacity-40 disabled:hover:bg-transparent ${FOCUS} focus-visible:outline-white`;
+
+  return createPortal(
+    <div role="dialog" aria-modal="true" aria-label={alt} className="fixed inset-0 z-[1000] flex flex-col bg-slate-950/90 backdrop-blur-sm">
+      <div className="flex flex-none items-center justify-end gap-1 p-3 sm:p-4">
+        <div className="mr-auto flex items-center gap-1 rounded-full bg-white/10 p-1">
+          <button type="button" onClick={zoomOut} disabled={zoom <= ZOOM_MIN} aria-label="Zoom out" className={btn}>
+            <ZoomOut size={20} />
+          </button>
+          <span className="w-14 text-center text-sm font-semibold tabular-nums text-white" aria-live="polite">
+            {Math.round(zoom * 100)}%
+          </span>
+          <button type="button" onClick={zoomIn} disabled={zoom >= ZOOM_MAX} aria-label="Zoom in" className={btn}>
+            <ZoomIn size={20} />
+          </button>
+          <button type="button" onClick={() => setZoom(1)} disabled={zoom === 1} aria-label="Reset zoom" className={btn}>
+            <RotateCcw size={18} />
+          </button>
+        </div>
+        <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className={`${btn} bg-white/10`}>
+          <X size={22} />
+        </button>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className={`flex min-h-0 flex-1 overflow-auto px-4 pb-6 ${zoom > 1 ? "cursor-grab active:cursor-grabbing" : ""}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget && !drag.current?.moved) onClose();
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        <img
+          src={src}
+          alt={alt}
+          draggable={false}
+          onLoad={(e) => measure(e.currentTarget)}
+          onDoubleClick={() => setZoom((z) => (z > 1 ? 1 : 2))}
+          className="m-auto max-w-none flex-none select-none rounded-md bg-white shadow-2xl"
+          style={fit ? { width: fit.w * zoom, height: fit.h * zoom } : { maxHeight: "calc(100vh - 120px)", maxWidth: "92vw" }}
+        />
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+/** Small coloured label above each block heading. */
+function Tag({ tone, white = false, children }) {
+  return (
+    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] ${white ? "bg-white" : tone.bg} ${tone.ink}`}>
+      {children}
+    </span>
+  );
+}
+
+/** A titled block in the main column; every block after the first sits below a rule. */
+function Block({ id, tag, tone, title, children, first }) {
+  return (
+    <section
+      id={`conf-${id}`}
+      aria-labelledby={`conf-${id}-h`}
+      className={`reveal scroll-mt-28 ${first ? "" : "mt-14 border-t border-slate-200 pt-14 lg:mt-16 lg:pt-16"}`}
+    >
+      <div className="mb-8">
+        <Tag tone={tone}>{tag}</Tag>
+        <h2 id={`conf-${id}-h`} className="mt-3 text-2xl font-bold tracking-tight text-brand-ink lg:text-3xl">
+          {title}
+        </h2>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/** About text: the first sentence as a lead-in, the rest as body text. */
+function AboutText({ text }) {
+  const m = String(text).match(/^(.+?[.!?])\s+([\s\S]*)$/);
+  return (
+    <>
+      <p className="text-xl font-medium leading-relaxed text-brand-ink">{m ? m[1] : text}</p>
+      {m && <p className="mt-4 whitespace-pre-line leading-relaxed text-slate-600">{m[2]}</p>}
+    </>
+  );
+}
+
+/** Speaker photo on a tinted square; initials if there is no photo or it fails to load. */
+function SpeakerPhoto({ src, name, tone }) {
+  const [failed, setFailed] = useState(!src);
+  return (
+    <div className={`mb-4 aspect-square overflow-hidden rounded-2xl transition duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_14px_30px_rgb(8_72_168/0.15)] ${tone.bg}`}>
+      {failed ? (
+        <span aria-hidden="true" className={`flex h-full w-full items-center justify-center text-4xl font-bold ${tone.ink}`}>
+          {initials(name)}
+        </span>
+      ) : (
+        <img src={src} alt={name} loading="lazy" className="h-full w-full object-cover" onError={() => setFailed(true)} />
+      )}
+    </div>
+  );
+}
+
+/** Two-column directory of people with coloured initials. */
+function Directory({ people }) {
+  return (
+    <ul className="grid gap-x-6 sm:grid-cols-2">
+      {people.map((p, idx) => {
+        const t = TONE_LIST[idx % TONE_LIST.length];
+        return (
+          <li key={idx} className={`group flex items-start gap-4 rounded-xl px-3 py-4 transition-colors ${t.hover}`}>
+            <span aria-hidden="true" className={`flex h-10 w-10 flex-none items-center justify-center rounded-full text-sm font-bold transition-colors group-hover:text-white ${t.bg} ${t.ink} ${t.solid}`}>
+              {initials(p.name)}
+            </span>
+            <span className="min-w-0">
+              <span className="block font-semibold text-brand-ink">{p.name}</span>
+              {p.designation && <span className={`block text-sm font-medium ${t.ink}`}>{p.designation}</span>}
+              {(p.institution || p.location) && (
+                <span className="block text-sm text-slate-500">
+                  {p.institution}
+                  {p.location && ` (${p.location})`}
+                </span>
+              )}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 
 export default function Conference() {
   const { confname } = useParams();
   const [conference, setConference] = useState(null);
   const [loading, setLoading] = useState(true);
   const [failedPoster, setFailedPoster] = useState(null);
+  const [posterOpen, setPosterOpen] = useState(false);
+  const [posterLoaded, setPosterLoaded] = useState(null);
+  // The time the page opened, for deciding whether registration has closed.
+  const [now] = useState(() => Date.now());
+  const closePoster = useCallback(() => setPosterOpen(false), []);
 
   useEffect(() => {
     const fetchConference = async () => {
@@ -268,7 +567,7 @@ export default function Conference() {
   if (!conference || conference.message) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-brand-snow px-4">
-        <h2 style={SERIF} className="text-4xl font-medium tracking-tight text-brand-ink">Conference Not Found</h2>
+        <h2 className="text-4xl font-bold tracking-tight text-brand-ink">Conference Not Found</h2>
       </div>
     );
   }
@@ -304,7 +603,6 @@ export default function Conference() {
   const parsedCertificates = parseJSONField(conference.certificatesdownload);
 
   const dates = conference.dates || {};
-  const hasDeadlines = Boolean(dates.abstractSubmission || dates.fullPaperSubmission);
   // Real posters are photos; an SVG in the poster field is a generated QR code
   // (e.g. ICMARD), which should not be shown as the hero artwork.
   const posterIsQr = /\.svg$/i.test((conference.poster || "").split(/[?#]/)[0]);
@@ -316,21 +614,195 @@ export default function Conference() {
 
   const shortDate = (d) => new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
   const longDate = (d) => new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-  const numericDate = (d) => new Date(d).toLocaleDateString('en-GB').replace(/\//g, '-');
 
-  // Each light section that is actually shown takes the next tone, so the page
-  // keeps alternating however many sections a conference has. A section with its
-  // own background passes it in; it still uses up a turn in the alternation.
-  let toneIndex = 0;
-  const nextTone = (override) => {
-    const tone = TONES[toneIndex++ % TONES.length];
-    return override || tone;
-  };
+  // Registration closes once the conference day is over (from the next day, local time).
+  const registrationClosed = (() => {
+    if (!dates.conferenceDate) return false;
+    const end = new Date(dates.conferenceDate);
+    if (Number.isNaN(end.getTime())) return false;
+    end.setHours(23, 59, 59, 999);
+    return now > end.getTime();
+  })();
+  const closedPill = "inline-flex cursor-not-allowed select-none items-center justify-center gap-2.5 rounded-full border-2 border-red-600 bg-red-50 font-bold text-red-600";
 
-  const deadlines = [
-    { value: dates.abstractSubmission, label: "Abstract Submission Deadline", bar: "bg-brand-gold", tile: "bg-brand-gold/20 text-[#8a6413]" },
-    { value: dates.fullPaperSubmission, label: "Full Paper Submission Deadline", bar: "bg-brand-cyan", tile: "bg-brand-cyan/15 text-[#0d7f99]" },
+  // Key Details timeline: the deadlines, then the conference date (filled dot).
+  const timeline = [
+    { value: dates.abstractSubmission, label: "Abstract Submission Deadline", dot: "border-[#0d7f99] bg-white" },
+    { value: dates.fullPaperSubmission, label: "Full Paper Submission Deadline", dot: "border-[#5858c8] bg-white" },
+    { value: dates.conferenceDate, label: "Event Date", dot: "border-brand-deep bg-brand-deep" },
   ].filter((d) => d.value);
+  const feeRows = Object.entries(conference.fees || {}).filter(([, val]) => val);
+  const hasSidebar = timeline.length > 0 || feeRows.length > 0 || Boolean(conference.registerlink);
+
+  // Main-column blocks, in order; each is shown only when the conference has content for it.
+  const blocks = [];
+
+  if (conference.about) {
+    blocks.push({
+      id: "about",
+      tag: "About",
+      tone: TONE.blue,
+      title: "About the Conference",
+      children: <AboutText text={conference.about} />,
+    });
+  }
+
+  if (hasProceedings || hasCertificates) {
+    blocks.push({
+      id: "downloads",
+      tag: "Downloads",
+      tone: TONE.cyan,
+      title: "Conference Downloads",
+      children: (
+        <>
+          {hasProceedings && (
+            <div className="flex flex-col gap-5 rounded-2xl bg-[#e8f0fc] p-6 transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgb(8_72_168/0.12)] sm:flex-row sm:items-center sm:gap-6 lg:p-8">
+              <span aria-hidden="true" className="flex h-16 w-16 flex-none items-center justify-center rounded-xl bg-brand-deep text-white">
+                <FileText size={28} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand-deep">Official Research Compilation</p>
+                <h3 className="mt-1 text-xl font-bold text-brand-ink">Conference Proceedings</h3>
+                {conference.isbn && <p className="mt-1 text-sm text-slate-600">ISBN {conference.isbn}</p>}
+              </div>
+              <a
+                href={conference.proceedingsdownload}
+                download
+                className={`inline-flex h-12 flex-none items-center justify-center gap-2 rounded-full bg-brand-deep px-6 font-bold text-white transition-colors hover:bg-brand-ink ${FOCUS} focus-visible:outline-brand-deep`}
+              >
+                <Download size={18} aria-hidden="true" />
+                Download Proceedings
+              </a>
+            </div>
+          )}
+
+          {hasCertificates && (
+            <div className={hasProceedings ? "mt-8" : ""}>
+              <h3 className={KICKER}>Download Certificates</h3>
+              <ul className="mt-3">
+                {parsedCertificates.map((track, idx) => {
+                  const t = TONE_LIST[(idx + 1) % TONE_LIST.length];
+                  return (
+                    <li key={idx} className={`group -mx-3 flex items-center gap-4 rounded-xl border-t border-slate-200 px-3 py-4 transition-colors last:border-b ${t.hover}`}>
+                      <span aria-hidden="true" className={`flex h-9 w-9 flex-none items-center justify-center rounded-full transition-colors group-hover:text-white ${t.bg} ${t.ink} ${t.solid}`}>
+                        <Award size={18} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-semibold text-brand-ink">{track.name || `Track 0${idx + 1}`}</span>
+                        <span className="block text-sm text-slate-500">Conference Session Track</span>
+                      </span>
+                      <a
+                        href={track.file}
+                        download
+                        className={`inline-flex min-h-11 items-center gap-2 whitespace-nowrap font-semibold text-brand-deep hover:underline ${FOCUS} focus-visible:outline-brand-deep`}
+                      >
+                        <Download size={16} aria-hidden="true" />
+                        Download PDF
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-semibold text-brand-ink">
+                <span className={`${KICKER} inline-flex items-center gap-2`}>
+                  <Info size={15} aria-hidden="true" />
+                  Verification Details
+                </span>
+                {conference.conferencestatus && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <BadgeCheck size={17} aria-hidden="true" className="text-emerald-600" />
+                    <span className="sr-only">Status: </span>
+                    {conference.conferencestatus}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck size={17} aria-hidden="true" className="text-brand-deep" />
+                  <span className="sr-only">Security: </span>
+                  Verified Records
+                </span>
+                {conference.conferencevalidity && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <CalendarCheck size={17} aria-hidden="true" className="text-brand-deep" />
+                    <span className="sr-only">Validity: </span>
+                    {conference.conferencevalidity}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      ),
+    });
+  }
+
+  if (hasData(conference.topics)) {
+    blocks.push({
+      id: "tracks",
+      tag: "Topics",
+      tone: TONE.violet,
+      title: "Conference Topics & Tracks",
+      children: (
+        <ol className="grid gap-2 sm:grid-cols-2 sm:gap-x-6">
+          {conference.topics.map((topic, i) => {
+            const t = TONE_LIST[i % TONE_LIST.length];
+            return (
+              <li key={i} className={`group flex items-center gap-4 rounded-xl border border-slate-200 bg-white py-3 pl-3 pr-4 transition duration-300 hover:-translate-y-0.5 hover:border-transparent ${t.hover}`}>
+                <span aria-hidden="true" className={`flex h-11 w-11 flex-none items-center justify-center rounded-lg font-bold tabular-nums transition-colors group-hover:text-white ${t.bg} ${t.ink} ${t.solid}`}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className={`font-semibold leading-snug text-brand-ink transition-colors ${t.inkHover}`}>{topic}</span>
+              </li>
+            );
+          })}
+        </ol>
+      ),
+    });
+  }
+
+  if (hasData(conference.speakers)) {
+    blocks.push({
+      id: "keynotes",
+      tag: "Expert Insights",
+      tone: TONE.gold,
+      title: "Keynote Speakers",
+      children: (
+        <ul className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
+          {conference.speakers.map((speaker, idx) => {
+            const t = TONE_LIST[idx % TONE_LIST.length];
+            return (
+              <li key={idx} className="group">
+                <SpeakerPhoto src={speaker.image ? getAssetUrl(speaker.image) : ""} name={speaker.name} tone={t} />
+                <h3 className={`font-bold text-brand-ink transition-colors ${t.inkHover}`}>{speaker.name}</h3>
+                <p className={`mt-1 text-sm font-semibold ${t.ink}`}>{speaker.designation}</p>
+                <p className="mt-1 text-sm text-slate-500">{speaker.institution}</p>
+              </li>
+            );
+          })}
+        </ul>
+      ),
+    });
+  }
+
+  if (hasAdvisory) {
+    blocks.push({
+      id: "advisory",
+      tag: "People",
+      tone: TONE.teal,
+      title: "Advisory Committee",
+      children: <Directory people={conference.advisorycommittee} />,
+    });
+  }
+
+  if (hasData(conference.globalexperts)) {
+    blocks.push({
+      id: "experts",
+      tag: "Advisory Committee",
+      tone: TONE.rose,
+      title: "Meet Our Global Experts",
+      children: <Directory people={conference.globalexperts} />,
+    });
+  }
 
   return (
     <div className="min-h-screen bg-white text-slate-800">
@@ -343,12 +815,12 @@ export default function Conference() {
         <div className={`${WRAP} relative z-10 grid items-center gap-12 py-12 sm:py-16 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:py-16 xl:gap-16`}>
           <div>
             {conference.type && (
-              <span className="inline-block rounded-full bg-brand-gold px-4 py-1 text-xs font-extrabold uppercase tracking-wider text-brand-ink shadow-[0_6px_16px_rgb(230_184_79/0.35)] sm:text-sm">
+              <span className="inline-block rounded-full bg-brand-gold px-4 py-1 text-xs font-extrabold uppercase tracking-wider text-brand-ink sm:text-sm">
                 {conference.type}
               </span>
             )}
             <h1 className="mt-5 font-extrabold tracking-tight">
-              <span className="inline-block rounded-full border border-brand-deep/15 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-brand-deep shadow-sm backdrop-blur sm:text-sm">
+              <span className="inline-block rounded-full border border-brand-deep/15 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-brand-deep backdrop-blur sm:text-sm">
                 International E-Conference on
               </span>
               <span className="mt-4 block bg-gradient-to-r from-brand-bright via-brand-deep to-brand-violet bg-clip-text pb-1 text-[1.75rem] leading-[1.15] text-transparent sm:text-4xl lg:text-[2.5rem] xl:text-[2.75rem]">
@@ -366,17 +838,17 @@ export default function Conference() {
 
             <ul className="mt-8 flex flex-wrap gap-3">
               {dates.conferenceDate && (
-                <li className="flex items-center gap-2.5 rounded-full border border-brand-bright/20 bg-white/80 px-4 py-2 text-sm font-semibold text-brand-ink shadow-[0_6px_18px_rgb(8_72_168/0.08)] backdrop-blur">
+                <li className="flex items-center gap-2.5 rounded-full border border-brand-bright/20 bg-white/80 px-4 py-2 text-sm font-semibold text-brand-ink backdrop-blur">
                   <CalendarDays size={18} aria-hidden="true" className="text-brand-bright" />
                   {shortDate(dates.conferenceDate)}
                 </li>
               )}
-              <li className="flex items-center gap-2.5 rounded-full border border-brand-bright/20 bg-white/80 px-4 py-2 text-sm font-semibold text-brand-ink shadow-[0_6px_18px_rgb(8_72_168/0.08)] backdrop-blur">
+              <li className="flex items-center gap-2.5 rounded-full border border-brand-bright/20 bg-white/80 px-4 py-2 text-sm font-semibold text-brand-ink backdrop-blur">
                 <Globe size={18} aria-hidden="true" className="text-brand-bright" />
                 Online Mode
               </li>
               {conference.isbn && (
-                <li className="flex items-center gap-2.5 rounded-full border border-brand-bright/20 bg-white/80 px-4 py-2 text-sm font-semibold text-brand-ink shadow-[0_6px_18px_rgb(8_72_168/0.08)] backdrop-blur">
+                <li className="flex items-center gap-2.5 rounded-full border border-brand-bright/20 bg-white/80 px-4 py-2 text-sm font-semibold text-brand-ink backdrop-blur">
                   <BookMarked size={18} aria-hidden="true" className="text-brand-violet" />
                   ISBN: {conference.isbn}
                 </li>
@@ -385,12 +857,18 @@ export default function Conference() {
 
             {(conference.registerlink || conference.brochuredownload) && (
               <div className="mt-9 flex flex-wrap gap-4">
-                {conference.registerlink && (
+                {conference.registerlink && registrationClosed && (
+                  <span aria-disabled="true" className={`${closedPill} px-7 py-3.5`}>
+                    <Lock size={18} aria-hidden="true" />
+                    Registration Closed
+                  </span>
+                )}
+                {conference.registerlink && !registrationClosed && (
                   <a
                     href={conference.registerlink}
                     target="_blank"
                     rel="noreferrer"
-                    className={`inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-brand-bright via-brand-deep to-brand-violet px-7 py-3.5 font-bold text-white shadow-[0_14px_30px_rgb(8_72_168/0.35)] transition-transform hover:-translate-y-0.5 ${FOCUS} focus-visible:outline-brand-deep`}
+                    className={`inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-brand-bright via-brand-deep to-brand-violet px-7 py-3.5 font-bold text-white transition-transform hover:-translate-y-0.5 ${FOCUS} focus-visible:outline-brand-deep`}
                   >
                     Register Now
                     <ArrowRight size={18} aria-hidden="true" />
@@ -411,377 +889,200 @@ export default function Conference() {
           </div>
 
           <figure className={`conf-stage relative mx-auto flex w-full max-w-[480px] flex-col items-center ${showPoster ? "" : "lg:mt-16 lg:self-end"}`}>
-            <span aria-hidden="true" className="conf-panel" />
-            <span aria-hidden="true" className="conf-beam" />
-            <PosterStreaks />
+            {/* Panel and light lines sit behind posters only; the globe stands on the plain hero. */}
+            {showPoster && <span aria-hidden="true" className="conf-panel" />}
+            <span aria-hidden="true" className={showPoster ? "conf-beam" : "conf-spotlight"} />
+            {showPoster && <PosterStreaks />}
 
             {showPoster ? (
-              <img
-                src={conference.poster}
-                alt="Conference Poster"
-                className="relative z-10 h-auto max-h-[440px] w-auto max-w-[82%] rounded-md object-contain shadow-[0_30px_60px_rgb(5_47_115/0.35)] xl:max-h-[520px]"
-                onError={() => setFailedPoster(conference.poster)}
-              />
+              <button
+                type="button"
+                onClick={() => setPosterOpen(true)}
+                aria-label="Zoom in on the conference poster"
+                className={`group relative z-10 flex max-w-[82%] cursor-zoom-in justify-center rounded-md ${FOCUS} focus-visible:outline-brand-deep`}
+              >
+                <img
+                  src={conference.poster}
+                  alt="Conference Poster"
+                  className="h-auto max-h-[440px] w-auto max-w-full rounded-md object-contain shadow-[0_30px_60px_rgb(5_47_115/0.35)] transition-transform duration-300 group-hover:scale-[1.02] xl:max-h-[520px]"
+                  onLoad={() => setPosterLoaded(conference.poster)}
+                  onError={() => setFailedPoster(conference.poster)}
+                />
+                <span
+                  aria-hidden="true"
+                  className={`absolute bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-brand-deep text-white shadow-lg transition duration-300 group-hover:scale-110 ${posterLoaded === conference.poster ? "opacity-100" : "opacity-0"}`}
+                >
+                  <ZoomIn size={20} />
+                </span>
+              </button>
             ) : (
-              <img
-                src="/assets/image/conference/conference-hero-globe.png"
-                alt=""
-                width="1719"
-                height="915"
-                className="relative z-10 h-auto w-[96%] translate-y-4 drop-shadow-[0_24px_30px_rgb(5_47_115/0.3)]"
-              />
+              <SpinningGlobe />
             )}
 
-            <span aria-hidden="true" className="conf-podium">
-              <span className="conf-podium-glow" />
-              <span className="conf-podium-ring" />
-              <span className="conf-podium-side" />
-              <span className="conf-podium-top" />
-            </span>
+            {!showPoster && (
+              <span aria-hidden="true" className="conf-gpodium">
+                <span className="conf-gpodium-tier conf-gpodium-tier--top" />
+                <span className="conf-gpodium-tier conf-gpodium-tier--base" />
+              </span>
+            )}
           </figure>
         </div>
         <div className="logo-rule relative z-10" />
       </header>
 
-      {/* About & key dates */}
-      {(conference.about || hasDeadlines) && (
-        <section className={`${nextTone()} py-16 lg:py-24`}>
-          <div className={`${WRAP} grid gap-10 ${hasDeadlines && conference.about ? "lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-16" : ""}`}>
-            {conference.about && (
-              <div className={`reveal ${hasDeadlines ? "" : "max-w-4xl"}`}>
-                {dates.conferenceDate && (
-                  <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-violet/20 bg-brand-paper px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-brand-violet">
-                    <CalendarDays size={14} aria-hidden="true" />
-                    Event Date: {longDate(dates.conferenceDate)}
-                  </span>
-                )}
-                <SectionTitle title="About the Conference" />
-                <p className="whitespace-pre-line text-justify text-lg leading-relaxed text-slate-600">
-                  {conference.about}
-                </p>
-              </div>
-            )}
-
-            {hasDeadlines && (
-              <div className={`grid gap-4 self-start ${conference.about ? "" : "sm:grid-cols-2"}`}>
-                {deadlines.map((d) => (
-                  <div key={d.label} className={`reveal relative overflow-hidden p-6 ${CARD}`}>
-                    <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1.5 ${d.bar}`} />
-                    <div className="flex items-center gap-4">
-                      <span className={`flex h-12 w-12 flex-none items-center justify-center rounded-xl ${d.tile}`}>
-                        <Clock size={22} aria-hidden="true" />
-                      </span>
-                      <div>
-                        <p className="tabular-nums text-2xl font-black text-brand-ink">{numericDate(d.value)}</p>
-                        <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">{d.label}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+      {posterOpen && showPoster && (
+        <PosterViewer src={conference.poster} alt="Conference Poster" onClose={closePoster} />
       )}
 
-      {/* Proceedings & certificates, always on the dot grid */}
-      {(hasProceedings || hasCertificates) && (
-        <section className={`${nextTone("conf-dots")} py-16 lg:py-24`}>
-          <div className={WRAP}>
-            <div className={`grid gap-10 ${hasProceedings && hasCertificates ? "lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] xl:gap-14" : ""}`}>
-
-              {hasProceedings && (
-                <div className={hasCertificates ? "" : "mx-auto w-full max-w-xl"}>
-                  <PanelHeader title="Conference Downloads" accent="bg-brand-bright" />
-                  <div className="reveal relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-deep to-brand-violet p-7 text-white shadow-[0_20px_40px_rgb(8_72_168/0.25)]">
-                    <span aria-hidden="true" className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand-cyan/30 blur-2xl" />
-                    <div className="relative flex items-start gap-4">
-                      <span className="flex h-14 w-14 flex-none items-center justify-center rounded-xl bg-white text-brand-deep">
-                        <FileText size={26} aria-hidden="true" />
-                      </span>
-                      <div>
-                        <h4 style={SERIF} className="text-2xl font-medium tracking-tight">Conference Proceedings</h4>
-                        <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-brand-goldlight">Official Research Compilation</p>
-                      </div>
-                    </div>
-                    <a
-                      href={conference.proceedingsdownload}
-                      download
-                      className={`relative mt-8 flex items-center justify-center gap-2 rounded-full bg-brand-gold py-3 text-sm font-bold text-brand-ink transition-colors hover:bg-brand-goldlight ${FOCUS} focus-visible:outline-white`}
-                    >
-                      <Download size={17} aria-hidden="true" />
-                      Download Proceedings
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {hasCertificates && (
-                <div>
-                  <PanelHeader title="Download Certificates" accent="bg-brand-orchid" />
-                  <div className={`grid gap-5 sm:grid-cols-2 ${hasProceedings ? "xl:grid-cols-3" : "lg:grid-cols-3"}`}>
-                    {parsedCertificates.map((track, idx) => {
-                      const accent = ACCENTS[idx % ACCENTS.length];
-                      return (
-                        <div key={idx} className={`reveal flex flex-col justify-between border-t-[3px] p-5 ${accent.border} ${CARD}`}>
-                          <div className="mb-5 flex items-start gap-4">
-                            <span className={`flex h-12 w-12 flex-none items-center justify-center rounded-xl ${accent.tile}`}>
-                              <Award size={22} aria-hidden="true" />
-                            </span>
-                            <div>
-                              <h4 className="text-base font-bold text-brand-ink">{track.name || `Track 0${idx + 1}`}</h4>
-                              <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">Conference Session Track</p>
-                            </div>
-                          </div>
-                          <a
-                            href={track.file}
-                            download
-                            className={`flex items-center justify-center gap-2 rounded-full border-2 border-brand-deep/15 py-2.5 text-xs font-bold text-brand-deep transition-colors hover:border-brand-deep hover:bg-brand-deep hover:text-white ${FOCUS} focus-visible:outline-brand-deep`}
-                          >
-                            <Download size={15} aria-hidden="true" />
-                            Download PDF
-                          </a>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+      {/* Body: content blocks on the left, Key Details sidebar on the right */}
+      <section className="bg-brand-snow py-16 lg:py-24" aria-label="Conference details">
+        <div className={`${WRAP} grid items-start gap-10 lg:grid-cols-12 lg:gap-x-8`}>
+          {blocks.length > 0 && (
+            <div className="min-w-0 lg:col-span-7">
+              {blocks.map((b, i) => (
+                <Block key={b.id} {...b} first={i === 0} />
+              ))}
             </div>
+          )}
 
-            {/* Verification details */}
-            {hasCertificates && (
-              <div className="mt-12 border-t border-brand-deep/10 pt-8">
-                <h4 className="mb-5 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-ink">
-                  <Info size={17} aria-hidden="true" className="text-brand-bright" />
-                  Verification Details
-                </h4>
-                <div className="grid gap-4 text-sm sm:grid-cols-3">
-                  {conference.conferencestatus && (
-                    <div className={`flex items-center gap-4 p-4 ${CARD}`}>
-                      <span className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                        <BadgeCheck size={20} aria-hidden="true" />
-                      </span>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Status</p>
-                        <p className="font-bold text-emerald-700">{conference.conferencestatus}</p>
-                      </div>
-                    </div>
-                  )}
-                  <div className={`flex items-center gap-4 p-4 ${CARD}`}>
-                    <span className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-brand-paper text-brand-violet">
-                      <ShieldCheck size={20} aria-hidden="true" />
-                    </span>
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Security</p>
-                      <p className="font-bold text-brand-violet">Verified Records</p>
-                    </div>
-                  </div>
-                  {conference.conferencevalidity && (
-                    <div className={`flex items-center gap-4 p-4 ${CARD}`}>
-                      <span className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-brand-mist text-brand-deep">
-                        <CalendarCheck size={20} aria-hidden="true" />
-                      </span>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Validity</p>
-                        <p className="font-bold text-brand-deep">{conference.conferencevalidity}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Topics & tracks */}
-      {hasData(conference.topics) && (
-        <section className={`${nextTone()} py-16 lg:py-24`}>
-          <div className={WRAP}>
-            <SectionTitle title="Conference Topics & Tracks" />
-            <ol className="grid gap-4 md:grid-cols-2 md:gap-x-6">
-              {conference.topics.map((topic, i) => {
-                const accent = ACCENTS[i % ACCENTS.length];
-                return (
-                  <li key={i} className={`reveal group flex items-center gap-5 p-4 transition-shadow hover:shadow-[0_0_0_1px_rgb(8_72_168/0.12),0_20px_40px_rgb(8_72_168/0.14)] ${CARD}`}>
-                    <span className={`ml-1.5 flex h-10 w-10 flex-none rotate-45 items-center justify-center rounded-lg border-[3px] bg-white ${accent.border}`}>
-                      <span className="-rotate-45 text-sm font-extrabold text-brand-ink">{String(i + 1).padStart(2, "0")}</span>
-                    </span>
-                    <p className="font-semibold leading-snug text-slate-700">{topic}</p>
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-        </section>
-      )}
-
-      {/* Registration fees & payment */}
-      {hasData(conference.fees) && (
-        <section id="Register" className={`${nextTone()} scroll-mt-24 py-16 lg:py-24`}>
-          <div className={`${WRAP} grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-stretch`}>
-            <div className={`reveal p-6 sm:p-10 ${CARD}`}>
-              <h2 style={SERIF} className="flex items-center gap-3 text-2xl font-medium tracking-tight text-brand-ink sm:text-3xl">
-                <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-brand-gold text-brand-ink">
-                  <Ticket size={22} aria-hidden="true" />
-                </span>
-                Registration Fees (Per Paper)
-              </h2>
-              <div className="mt-8 overflow-x-auto">
-                <table className="w-full border-collapse text-left">
-                  <thead>
-                    <tr className="border-b-2 border-brand-deep/10">
-                      <th className="pb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Participant Category</th>
-                      <th className="pb-3 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Fee Standard</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-brand-deep/5">
-                    {Object.entries(conference.fees).map(([key, val], idx) => {
-                      if (!val) return null;
-                      const accent = ACCENTS[idx % ACCENTS.length];
-                      return (
-                        <tr key={key} className="transition-colors hover:bg-brand-snow">
-                          <td className="py-4 pr-4 font-semibold capitalize text-slate-700">
-                            <span className="flex items-center gap-3">
-                              <span aria-hidden="true" className={`h-2.5 w-2.5 rotate-45 rounded-[2px] ${accent.bar}`} />
-                              {key.replace(/([A-Z])/g, ' $1')}
-                            </span>
-                          </td>
-                          <td className="py-4 text-right tabular-nums text-lg font-extrabold text-brand-deep">₹ {val}/-</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="reveal relative flex flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-ink via-brand-deep to-brand-violet p-7 text-center text-white shadow-[0_20px_40px_rgb(5_47_115/0.3)] sm:p-8">
-              <span aria-hidden="true" className="absolute -bottom-16 -right-16 h-56 w-56 rounded-full bg-brand-orchid/40 blur-3xl" />
-              <h3 style={SERIF} className="relative text-2xl font-medium tracking-tight">Secure Checkout</h3>
-
-              {hasData(conference.bankdetails) ? (
-                <div className="relative w-full rounded-xl border border-white/15 bg-white/10 p-5 text-left">
-                  <p className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-brand-gold">
-                    <Landmark size={15} aria-hidden="true" />
-                    Direct Bank Remittance
-                  </p>
-                  <dl className="space-y-2 tabular-nums text-xs text-white/85">
-                    {conference.bankdetails.bankName && <div className="flex justify-between gap-4"><dt className="font-sans font-bold text-white">Bank:</dt><dd className="text-right">{conference.bankdetails.bankName}</dd></div>}
-                    {conference.bankdetails.accountName && <div className="flex justify-between gap-4"><dt className="font-sans font-bold text-white">Name:</dt><dd className="text-right">{conference.bankdetails.accountName}</dd></div>}
-                    {conference.bankdetails.accountNo && <div className="flex justify-between gap-4"><dt className="font-sans font-bold text-white">A/C No:</dt><dd className="text-right">{conference.bankdetails.accountNo}</dd></div>}
-                    {conference.bankdetails.ifscCode && <div className="flex justify-between gap-4"><dt className="font-sans font-bold text-white">IFSC:</dt><dd className="text-right">{conference.bankdetails.ifscCode}</dd></div>}
-                  </dl>
-                </div>
-              ) : (
-                <div className="relative rounded-2xl bg-white p-3 shadow-lg">
-                  <img
-                    src="/assets/image/conference/ICGMRFT-QR%2031-Mar-2026.jpg"
-                    alt="Conference Registration QR Code"
-                    className="h-40 w-40 rounded-lg object-contain"
-                  />
-                </div>
-              )}
-
-              {conference.registerlink && (
-                <a
-                  href={conference.registerlink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`relative block w-full rounded-full bg-brand-gold px-6 py-3.5 text-xs font-black uppercase tracking-wider text-brand-ink transition-colors hover:bg-brand-goldlight ${FOCUS} focus-visible:outline-white`}
-                >
-                  Link to Register
-                </a>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Keynote speakers */}
-      {hasData(conference.speakers) && (
-        <section className={`${nextTone()} py-16 lg:py-24`}>
-          <div className={WRAP}>
-            <SectionTitle eyebrow="Expert Insights" title="Keynote Speakers" center />
-            <div className="flex flex-wrap justify-center gap-6">
-              {conference.speakers.map((speaker, idx) => {
-                const accent = ACCENTS[idx % ACCENTS.length];
-                return (
-                  <div key={idx} className={`reveal w-full p-6 text-center sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)] ${CARD}`}>
-                    {speaker.image && (
-                      <div className="mx-auto mb-5 h-28 w-28 rounded-full bg-gradient-to-br from-brand-cyan via-brand-violet to-brand-orchid p-[3px]">
-                        <img
-                          src={getAssetUrl(speaker.image)}
-                          alt={speaker.name}
-                          className="h-full w-full rounded-full border-4 border-white bg-white object-cover"
-                          onError={(e) => {
-                            // Fallback to a placeholder icon if the local image fails entirely
-                            e.target.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-                          }}
-                        />
-                      </div>
+          {hasSidebar && (
+            <aside
+              aria-label="Key details"
+              className={`order-first min-w-0 lg:order-none lg:self-stretch ${blocks.length > 0 ? "lg:col-span-4 lg:col-start-9" : "lg:col-span-6"}`}
+            >
+              <div className="lg:sticky lg:top-28">
+                <section aria-labelledby="conf-kd" className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_30px_rgb(8_72_168/0.08)]">
+                  <div className="bg-[#e8f0fc] p-6">
+                    <h2 id="conf-kd" className="text-xl font-bold text-brand-ink">Key Details</h2>
+                    {timeline.length > 0 && (
+                      <ol className="mt-5">
+                        {timeline.map((d, i) => (
+                          <li key={d.label} className="relative pb-5 pl-9 last:pb-0">
+                            {i < timeline.length - 1 && (
+                              <span aria-hidden="true" className="absolute bottom-0 left-[11px] top-6 w-0.5 bg-brand-deep/15" />
+                            )}
+                            <span aria-hidden="true" className={`absolute left-0 top-0 h-6 w-6 rounded-full border-2 ${d.dot}`} />
+                            <span className="block text-sm text-slate-600">{d.label}</span>
+                            <strong className="block tabular-nums text-brand-ink">{longDate(d.value)}</strong>
+                          </li>
+                        ))}
+                      </ol>
                     )}
-                    <h3 className="text-lg font-bold text-brand-ink">{speaker.name}</h3>
-                    <p className={`mb-2 mt-1 text-sm font-semibold ${accent.text}`}>{speaker.designation}</p>
-                    <p className="text-xs leading-snug text-slate-500">{speaker.institution}</p>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
 
-      {/* Conveners & advisory committee */}
-      {(hasOrganizers || hasAdvisory) && (
-        <section className="relative overflow-hidden bg-gradient-to-b from-brand-paper via-white to-brand-mist py-16 lg:py-24">
-          <div className="logo-rule absolute inset-x-0 top-0" aria-hidden="true" />
-          <div className={`${WRAP} relative space-y-14`}>
+                  {(feeRows.length > 0 || conference.registerlink) && (
+                    <div className="space-y-4 p-6">
+                      {feeRows.length > 0 && (
+                        <div>
+                          <h3 className={KICKER}>Registration Fees (Per Paper)</h3>
+                          <ul className="mt-3 space-y-2">
+                            {feeRows.map(([key, val]) => (
+                              <li key={key} className="flex justify-between gap-4 rounded-lg bg-brand-snow px-3 py-2 text-sm">
+                                <span className="capitalize text-slate-700">{key.replace(/([A-Z])/g, " $1")}</span>
+                                <strong className="tabular-nums text-brand-deep">₹ {val}/-</strong>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {conference.registerlink && registrationClosed && (
+                        <span aria-disabled="true" className={`${closedPill} h-12 w-full`}>
+                          <Lock size={18} aria-hidden="true" />
+                          Registration Closed
+                        </span>
+                      )}
+                      {conference.registerlink && !registrationClosed && (
+                        <a
+                          href={conference.registerlink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-deep font-bold text-white transition-colors hover:bg-brand-ink ${FOCUS} focus-visible:outline-brand-deep`}
+                        >
+                          Link to Register
+                          <ArrowRight size={18} aria-hidden="true" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {feeRows.length > 0 && (
+                    <div className="border-t border-slate-200 bg-brand-snow p-6">
+                      <h3 className={KICKER}>Secure Checkout · Direct Bank Remittance</h3>
+                      {hasData(conference.bankdetails) ? (
+                        <dl className="mt-2 text-sm">
+                          {[
+                            ["Bank", conference.bankdetails.bankName],
+                            ["Name", conference.bankdetails.accountName],
+                            ["A/C No", conference.bankdetails.accountNo],
+                            ["IFSC", conference.bankdetails.ifscCode],
+                          ]
+                            .filter(([, v]) => v)
+                            .map(([k, v]) => (
+                              <div key={k} className="flex justify-between gap-4 border-t border-slate-200 py-3 first:border-t-0">
+                                <dt className="text-slate-500">{k}</dt>
+                                <dd className="break-all text-right font-semibold tabular-nums text-brand-ink">{v}</dd>
+                              </div>
+                            ))}
+                        </dl>
+                      ) : (
+                        <img
+                          src="/assets/image/conference/ICGMRFT-QR%2031-Mar-2026.jpg"
+                          alt="Conference Registration QR Code"
+                          className="mt-3 h-40 w-40 rounded-lg bg-white object-contain p-2 shadow-sm"
+                        />
+                      )}
+                    </div>
+                  )}
+                </section>
+              </div>
+            </aside>
+          )}
+        </div>
+      </section>
+
+      {/* Need assistance: the conveners and the enquiries email */}
+      <section className="bg-white py-16 lg:py-24" aria-labelledby="conf-help">
+        <div className={WRAP}>
+          <div className={`grid items-center gap-8 rounded-3xl bg-[#e0f4f1] p-6 sm:p-10 lg:p-12 ${hasOrganizers ? "lg:grid-cols-12 lg:gap-x-8" : ""}`}>
+            <div className={hasOrganizers ? "lg:col-span-4" : "max-w-2xl"}>
+              <Tag tone={TONE.teal} white>Contact</Tag>
+              <h2 id="conf-help" className="mt-3 text-2xl font-bold tracking-tight text-brand-ink lg:text-3xl">Need Assistance?</h2>
+              <p className="mt-3 leading-relaxed text-slate-600">
+                Contact the conveners for submissions, enquiries or registration.
+              </p>
+              <a
+                href={`mailto:${EMAIL}?subject=${encodeURIComponent(conference.conferencename || "Conference enquiry")}`}
+                className="mt-5 inline-flex min-h-11 items-center gap-2 break-all rounded-full bg-white px-5 font-semibold text-brand-deep shadow-sm transition-colors hover:bg-brand-deep hover:text-white"
+              >
+                <Mail size={18} aria-hidden="true" className="flex-none" />
+                {EMAIL}
+              </a>
+            </div>
 
             {hasOrganizers && (
-              <div>
-                <h3 style={SERIF} className="mb-6 flex items-center gap-3 text-2xl font-medium tracking-tight text-brand-ink sm:text-3xl">
-                  <span aria-hidden="true" className="h-3 w-3 flex-none rotate-45 rounded-[3px] bg-brand-gold" />
-                  Conference Conveners
-                </h3>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="lg:col-span-7 lg:col-start-6">
+                <h3 className={`${KICKER} mb-3`}>Conference Conveners</h3>
+                <ul className="overflow-hidden rounded-2xl bg-white shadow-[0_6px_20px_rgb(15_122_107/0.10)]">
                   {conference.organizingcommittee.map((member, idx) => {
-                    const accent = ACCENTS[idx % ACCENTS.length];
+                    const t = TONE_LIST[(idx + 1) % TONE_LIST.length];
                     return (
-                      <div key={idx} className={`reveal relative overflow-hidden p-5 pl-7 transition-shadow hover:shadow-[0_0_0_1px_rgb(8_72_168/0.12),0_20px_40px_rgb(8_72_168/0.14)] ${CARD}`}>
-                        <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1.5 ${accent.bar}`} />
-                        <p className="font-bold text-brand-ink">{member.name}</p>
-                        <p className={`mt-1 text-[11px] font-bold uppercase tracking-wide ${accent.text}`}>{member.role || "Convener"}</p>
+                      <li key={idx} className={`flex flex-wrap items-center gap-4 border-t border-slate-100 px-5 py-4 transition-colors first:border-t-0 sm:flex-nowrap ${t.hover}`}>
+                        <span aria-hidden="true" className={`flex h-11 w-11 flex-none items-center justify-center rounded-full text-sm font-bold ${t.bg} ${t.ink}`}>
+                          {initials(member.name)}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-semibold text-brand-ink">{member.name}</span>
+                          <span className={`block text-[11px] font-semibold uppercase tracking-wider ${t.ink}`}>{member.role || "Convener"}</span>
+                        </span>
                         {member.mobile && (
-                          <p className="mt-3 flex items-center gap-2 tabular-nums text-sm text-slate-600">
-                            <Phone size={14} aria-hidden="true" className="text-brand-deep" />
+                          <a
+                            href={`tel:${String(member.mobile).replace(/[^\d+]/g, "")}`}
+                            className="ml-[60px] inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-slate-200 px-4 font-semibold tabular-nums text-brand-deep transition-colors hover:border-brand-deep hover:bg-[#e8f0fc] sm:ml-0"
+                          >
+                            <Phone size={16} aria-hidden="true" />
                             {member.mobile}
-                          </p>
+                          </a>
                         )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {hasAdvisory && (
-              <div className={hasOrganizers ? "border-t border-brand-deep/10 pt-14" : ""}>
-                <h3 style={SERIF} className="mb-6 flex items-center gap-3 text-2xl font-medium tracking-tight text-brand-ink sm:text-3xl">
-                  <span aria-hidden="true" className="h-3 w-3 flex-none rotate-45 rounded-[3px] bg-brand-violet" />
-                  Advisory Committee
-                </h3>
-                <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {conference.advisorycommittee.map((member, idx) => {
-                    const accent = ACCENTS[idx % ACCENTS.length];
-                    return (
-                      <li key={idx} className={`reveal relative overflow-hidden p-5 pl-7 transition-shadow hover:shadow-[0_0_0_1px_rgb(8_72_168/0.12),0_20px_40px_rgb(8_72_168/0.14)] ${CARD}`}>
-                        <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1.5 ${accent.bar}`} />
-                        <p className="font-bold text-brand-ink">{member.name}</p>
-                        <p className="mt-1 text-[11px] uppercase leading-relaxed tracking-wide text-slate-500">
-                          {member.designation && `${member.designation}, `}{member.institution}{member.location && ` (${member.location})`}
-                        </p>
                       </li>
                     );
                   })}
@@ -789,38 +1090,8 @@ export default function Conference() {
               </div>
             )}
           </div>
-        </section>
-      )}
-
-      {/* Global experts */}
-      {hasData(conference.globalexperts) && (
-        <section className={`${nextTone()} py-16 lg:py-24`}>
-          <div className={WRAP}>
-            <SectionTitle eyebrow="Advisory Committee" title="Meet Our Global Experts" center />
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {conference.globalexperts.map((exp, idx) => {
-                const accent = ACCENTS[idx % ACCENTS.length];
-                return (
-                  <div key={idx} className={`reveal relative overflow-hidden border-t-[3px] p-6 transition-shadow hover:shadow-[0_0_0_1px_rgb(8_72_168/0.12),0_20px_40px_rgb(8_72_168/0.14)] ${accent.border} ${CARD}`}>
-                    <h3 className="text-lg font-bold text-brand-ink">{exp.name}</h3>
-                    <p className={`mb-4 mt-0.5 text-sm font-semibold ${accent.text}`}>{exp.designation}</p>
-                    <p className="mb-1.5 flex items-start gap-2 text-sm text-slate-600">
-                      <Building2 size={16} aria-hidden="true" className="mt-0.5 flex-none text-slate-400" />
-                      {exp.institution}
-                    </p>
-                    {exp.location && (
-                      <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                        <MapPin size={14} aria-hidden="true" className="flex-none text-slate-400" />
-                        {exp.location}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
+        </div>
+      </section>
 
     </div>
   );

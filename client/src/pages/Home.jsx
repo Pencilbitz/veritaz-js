@@ -14,7 +14,6 @@ import {
 import { supabase } from "../lib/supabase";
 
 const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-20";
-const SERIF = { fontFamily: "var(--font-serif)" };
 
 const FALLBACK_COVERS = [
   "/assets/image/books/index-1.png",
@@ -231,7 +230,7 @@ function Process() {
         <div className="process-layout">
           {/* The intro stays put while only the cards pan sideways beside it. */}
           <div className="process-intro">
-            <h2 style={SERIF} className="text-5xl lg:text-7xl font-medium text-brand-deep tracking-tight leading-[1.05]">
+            <h2 className="text-5xl lg:text-7xl font-bold text-brand-deep tracking-tight leading-[1.05]">
               Inside Our Process
             </h2>
             <p className="mt-5 max-w-md text-lg text-slate-600 leading-relaxed">
@@ -244,10 +243,10 @@ function Process() {
             <div className="process-track">
           {services.map((s, i) => (
             <article key={s.title} className="process-card reveal">
-              <span style={SERIF} className="block text-6xl lg:text-8xl font-medium text-brand-violet/25">
+              <span className="block text-6xl lg:text-8xl font-bold text-brand-violet/25">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <h3 style={SERIF} className="mt-4 text-2xl lg:text-3xl font-medium text-brand-deep">
+              <h3 className="mt-4 text-2xl lg:text-3xl font-bold text-brand-deep">
                 {s.title}
               </h3>
               <p className="mt-3 text-slate-600 leading-relaxed">{s.text}</p>
@@ -264,9 +263,9 @@ function Process() {
 
 function FromDraft() {
   return (
-    <section className="bg-brand-snow text-brand-ink py-20 lg:py-32">
+    <section className="bg-brand-snow text-brand-ink pt-12 pb-20 lg:pt-16 lg:pb-32">
       <div className={`${WRAP} text-center`}>
-        <h2 style={SERIF} className="reveal mx-auto max-w-4xl text-4xl lg:text-7xl font-medium tracking-tight leading-[1.05]">
+        <h2 className="reveal mx-auto max-w-3xl text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1]">
           From Draft to Global Bookshelves
         </h2>
         <p className="reveal mx-auto mt-6 max-w-2xl text-lg text-slate-600 leading-relaxed">
@@ -277,7 +276,7 @@ function FromDraft() {
         <dl className="mx-auto mt-14 max-w-4xl grid sm:grid-cols-3 gap-8">
           {stats.map((s) => (
             <div key={s.label} className="reveal">
-              <dd style={SERIF} className="text-6xl lg:text-7xl font-medium text-brand-violet tabular-nums">
+              <dd className="text-6xl lg:text-7xl font-bold text-brand-violet tabular-nums">
                 <CountUp value={s.value} />
               </dd>
               <dt className="mt-2 font-medium text-slate-600">{s.label}</dt>
@@ -337,7 +336,7 @@ function Shelf({ books }) {
   return (
     <section className="bg-white py-16 lg:py-24 overflow-hidden">
       <div className={`${WRAP} flex flex-wrap items-end justify-between gap-4 mb-10`}>
-        <h2 style={SERIF} className="reveal text-4xl lg:text-5xl font-medium text-brand-deep tracking-tight">
+        <h2 className="reveal text-4xl lg:text-5xl font-bold text-brand-deep tracking-tight">
           From our shelves
         </h2>
         <Link to="/book-store" className="inline-flex items-center gap-2 font-bold text-brand-violet hover:gap-3 transition-all">
@@ -345,14 +344,16 @@ function Shelf({ books }) {
           <ArrowRight className="w-5 h-5" />
         </Link>
       </div>
-      <div className="shelf-window">
-        <div className="shelf-belt">
-          {books.map((book) => (
-            <ShelfBook key={book.id} book={book} />
-          ))}
-          {books.map((book) => (
-            <ShelfBook key={`copy-${book.id}`} book={book} hidden />
-          ))}
+      <div className={WRAP}>
+        <div className="shelf-window">
+          <div className="shelf-belt">
+            {books.map((book) => (
+              <ShelfBook key={book.id} book={book} />
+            ))}
+            {books.map((book) => (
+              <ShelfBook key={`copy-${book.id}`} book={book} hidden />
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -366,7 +367,7 @@ function Reasons() {
     <section className="bg-brand-paper py-16 lg:py-28">
       <div className={`${WRAP} grid gap-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16`}>
         <div className="lg:sticky lg:top-32 lg:self-start">
-          <h2 style={SERIF} className="reveal text-4xl lg:text-6xl font-medium tracking-tight leading-[1.05] text-brand-deep">
+          <h2 className="reveal text-4xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-brand-deep">
             Why Authors Choose Us
           </h2>
           <span aria-hidden="true" className="mt-6 block h-1 w-20 rounded-full bg-brand-gold" />
@@ -423,7 +424,7 @@ function Testimonials({ testimonials }) {
       <div className={WRAP}>
         <div className="text-center">
           <p className="text-brand-violet text-sm font-bold uppercase tracking-[0.2em]">Testimonials</p>
-          <h2 style={SERIF} className="reveal mt-4 text-4xl lg:text-5xl font-medium text-brand-deep tracking-tight">
+          <h2 className="reveal mt-4 text-4xl lg:text-5xl font-bold text-brand-deep tracking-tight">
             In our authors' words
           </h2>
         </div>
@@ -433,7 +434,6 @@ function Testimonials({ testimonials }) {
           <figure key={current.id ?? index} className="page-turn flex flex-col min-h-[340px] bg-white rounded-2xl p-6 sm:p-10">
             <Quote className="w-10 h-10 text-brand-violet/30" />
             <blockquote
-              style={SERIF}
               className={`mt-4 leading-snug text-brand-deep ${
                 (current.content || "").length > 280 ? "text-lg lg:text-xl" : "text-xl sm:text-2xl lg:text-3xl"
               }`}
@@ -543,7 +543,7 @@ function InquiryForm() {
     <section id="publish-form" className="bg-white text-brand-ink py-16 lg:py-24 scroll-mt-40">
       <div className={`${WRAP} grid lg:grid-cols-2 gap-12 lg:gap-20 items-center`}>
         <div>
-          <h2 style={SERIF} className="text-4xl lg:text-6xl font-medium tracking-tight leading-tight text-brand-deep">
+          <h2 className="text-4xl lg:text-6xl font-bold tracking-tight leading-tight text-brand-deep">
             Have a manuscript? <em className="text-brand-violet">Let's publish it.</em>
           </h2>
           <p className="mt-5 max-w-lg text-lg text-slate-600 leading-relaxed">
