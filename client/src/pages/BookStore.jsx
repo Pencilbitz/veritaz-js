@@ -253,7 +253,7 @@ function Tooltip({ side, children }) {
 
 function Pagination({ page, totalPages, onChange }) {
   const arrow =
-    "inline-flex h-11 items-center gap-1.5 rounded-full border border-brand-deep/15 bg-white px-4 text-sm font-bold text-brand-deep shadow-sm transition-colors hover:border-brand-deep hover:bg-brand-deep hover:text-white disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-deep";
+    "inline-flex h-11 items-center gap-1.5 rounded-full border border-brand-deep/15 bg-white px-4 text-sm font-bold text-brand-deep transition-colors hover:border-brand-deep hover:bg-brand-deep hover:text-white disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-deep";
 
   return (
     <nav aria-label="Book pages" className="mt-14 flex flex-wrap items-center justify-center gap-2">
@@ -276,8 +276,8 @@ function Pagination({ page, totalPages, onChange }) {
                 aria-label={`Page ${p}`}
                 className={`h-11 min-w-11 rounded-full px-3 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-deep ${
                   p === page
-                    ? "bg-gradient-to-r from-brand-bright via-brand-deep to-brand-violet text-white shadow-[0_8px_20px_rgb(8_72_168/0.3)]"
-                    : "bg-white text-brand-ink shadow-sm hover:bg-brand-mist"
+                    ? "bg-gradient-to-r from-brand-bright via-brand-deep to-brand-violet text-white"
+                    : "border border-brand-deep/15 bg-white text-brand-ink hover:bg-brand-mist"
                 }`}
               >
                 {p}

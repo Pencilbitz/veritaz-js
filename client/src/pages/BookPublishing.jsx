@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import {
-  ArrowRight,
   BookOpen,
   Check,
   Feather,
@@ -369,13 +367,6 @@ function Hero() {
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
           Turn your manuscript into a published book in three easy steps: professional formatting, official ISBN registration, and worldwide print and digital distribution.
         </p>
-        <Link
-          to="/contact"
-          className="mt-8 inline-flex items-center gap-2 rounded-full bg-brand-deep px-7 py-3.5 font-bold text-white transition-colors hover:bg-brand-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-deep"
-        >
-          Get Started Now
-          <ArrowRight size={18} aria-hidden="true" />
-        </Link>
       </div>
 
       <OpenBook />

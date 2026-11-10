@@ -855,9 +855,9 @@ export default function Conference() {
               )}
             </ul>
 
-            {(conference.registerlink || conference.brochuredownload) && (
+            {(conference.registerlink || conference.brochuredownload || registrationClosed) && (
               <div className="mt-9 flex flex-wrap gap-4">
-                {conference.registerlink && registrationClosed && (
+                {registrationClosed && (
                   <span aria-disabled="true" className={`${closedPill} px-7 py-3.5`}>
                     <Lock size={18} aria-hidden="true" />
                     Registration Closed
@@ -970,7 +970,7 @@ export default function Conference() {
                     )}
                   </div>
 
-                  {(feeRows.length > 0 || conference.registerlink) && (
+                  {(feeRows.length > 0 || conference.registerlink || registrationClosed) && (
                     <div className="space-y-4 p-6">
                       {feeRows.length > 0 && (
                         <div>
@@ -985,7 +985,7 @@ export default function Conference() {
                           </ul>
                         </div>
                       )}
-                      {conference.registerlink && registrationClosed && (
+                      {registrationClosed && (
                         <span aria-disabled="true" className={`${closedPill} h-12 w-full`}>
                           <Lock size={18} aria-hidden="true" />
                           Registration Closed
