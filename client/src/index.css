@@ -1,11 +1,28 @@
 @import "tailwindcss";
 
+/* `short:` applies on wide but low screens (a laptop with browser chrome),
+   where the one-screen home sections tighten up to still fit. */
+@custom-variant short (@media (min-width: 1024px) and (max-height: 760px));
+
 /* Brand palette, sampled from the logo (public/assets/image/veritaz-bg-Remove.png).
    Change a value here and the navbar, footer and home page all follow. */
 @theme {
-  /* The site uses one typeface, Manrope (loaded in index.html), for all text
-     on every page. */
+  /* Manrope (loaded in index.html) is the text face on every page. The home
+     page also sets its headings in Bricolage Grotesque via `font-display`. */
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  /* "Night press" palette (home page): night ink lit by the logo's cyan,
+     violet and orchid. Chosen to stand apart from the sister sites: DH Sparrow
+     is navy and gold on icy white, Pencilbitz is green and indigo. */
+  --color-vz-night: #0c0a24;   /* dark bands */
+  --color-vz-night2: #17123d;  /* raised tile on a light band */
+  --color-vz-ink: #17133d;     /* headings and text on light */
+  --color-vz-violet: #5b3ee6;  /* accent on light (6.4:1 on white) */
+  --color-vz-cyan: #3fd0e8;    /* accent on dark */
+  --color-vz-orchid: #d27af0;  /* accent on dark */
+  --color-vz-paper: #f5f3fb;   /* light band */
+  --color-vz-line: #e2ddf0;    /* hairlines on light */
 
   --color-brand-deep: #0848a8;      /* diamond outline: royal blue */
   --color-brand-ink: #052f73;       /* royal blue, darkened for the footer */
@@ -34,172 +51,965 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Home page.
+   Navbar (components/Navbar.jsx), in the home page's "night press" look.
 
-   Layout below works with no animation at all. Motion is layered on top:
-   time-based effects sit under prefers-reduced-motion: no-preference, and
-   scroll-linked ones additionally need scroll-driven animation support
-   (not in Firefox), where they simply do not run and the content stays put.
+   At the top of the page it is a full-width night bar lit by the logo's cyan
+   and orchid. Once the page scrolls, the same bar lifts into a floating pill
+   with a gradient rim. The header keeps one fixed height throughout, so the
+   page under it never jumps. Only properties no Tailwind class on these
+   elements sets live here: these rules are unlayered, so they would win.
    --------------------------------------------------------------------------- */
-
-/* Hero: a ring of eight covers in 3D, seen from slightly above. Three nested
-   layers so each motion stays independent: .ring-tilt sets the viewing angle,
-   .ring-spin turns slowly over time, and .ring-scroll turns with the page
-   scroll. With no motion allowed it simply stands still. */
-.ring-stage {
-  --card: clamp(120px, 13vw, 170px);
-  --radius: calc(var(--card) * 1.35);
-  position: relative;
-  display: grid;
-  place-items: center;
-  height: clamp(320px, 30vw, 430px);
-  perspective: 1500px;
-}
-.ring-floor {
-  position: absolute;
-  bottom: 8%;
-  left: 50%;
-  width: calc(var(--radius) * 2.4);
-  height: calc(var(--radius) * 0.55);
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(88 88 200 / 0.18), transparent);
-}
-.ring-tilt {
-  transform-style: preserve-3d;
-  transform: rotateX(-10deg);
-}
-.ring-spin,
-.ring-scroll {
-  position: relative;
-  width: var(--card);
-  aspect-ratio: 3 / 4;
-  transform-style: preserve-3d;
-}
-.ring-card {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 6px;
-  transform: rotateY(calc(var(--i) * 45deg)) translateZ(var(--radius));
-  /* Covers turned away from the viewer would show mirrored; hide them. */
-  backface-visibility: hidden;
-}
-
-/* Process: plain card grid until the pinned version below takes over */
-.process-pin {
-  padding-block: 4rem;
-}
-.process-sticky {
-  position: relative;
-}
-.process-layout {
-  width: min(100%, 1600px);
-  margin-inline: auto;
-  padding-inline: 1rem;
-}
-.process-intro {
-  margin-bottom: 2rem;
-}
-.process-track {
-  display: grid;
-  gap: 1.25rem;
-}
-.process-card {
-  padding: 1.75rem;
-  border-radius: 1rem;
-  background: #fff;
-  box-shadow: 0 10px 30px rgb(8 72 168 / 0.08);
-}
-.process-bar {
-  display: none;
+.vz-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 72px;
 }
 @media (min-width: 1024px) {
-  .process-layout {
-    padding-inline: 5rem;
-  }
-  .process-track {
-    grid-template-columns: repeat(3, 1fr);
+  .vz-nav {
+    height: 80px;
   }
 }
 
-/* Shelf */
-.shelf-window {
-  overflow-x: auto;
-  scrollbar-width: none;
+.vz-nav-island {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  background-color: var(--color-vz-night);
+  background-image:
+    radial-gradient(38% 160% at 0% 0%, rgb(63 208 232 / 0.24), transparent 70%),
+    radial-gradient(34% 160% at 100% 0%, rgb(210 122 240 / 0.22), transparent 70%),
+    radial-gradient(45% 140% at 50% 140%, rgb(91 62 230 / 0.45), transparent 70%);
+  transition:
+    inset 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+    border-radius 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.45s ease;
 }
-.shelf-belt {
-  display: flex;
-  gap: 1.5rem;
-  width: max-content;
-  padding-block: 1rem;
-  padding-inline: 0.75rem;
+/* Hairline in the logo's sweep along the bottom edge (top of page only). */
+.vz-nav-island::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    rgb(63 208 232 / 0.55) 20%,
+    rgb(139 141 255 / 0.7) 50%,
+    rgb(210 122 240 / 0.55) 80%,
+    transparent
+  );
+  transition: opacity 0.3s ease;
 }
-.shelf-book {
-  flex: none;
-  width: clamp(150px, 15vw, 210px);
-  transition: transform 0.3s ease;
-}
-.shelf-book:hover,
-.shelf-book:focus-visible {
-  transform: perspective(700px) rotateY(-10deg) translateY(-8px);
-}
-
-/* Why Authors Choose Us */
-.reason-card {
-  padding: 1.5rem;
-  border: 1px solid rgb(255 255 255 / 0.14);
-  border-radius: 1rem;
-  background: rgb(255 255 255 / 0.05);
-  transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-.reason-card:hover {
-  background: rgb(255 255 255 / 0.1);
-  border-color: var(--color-brand-gold);
-}
-
-/* Testimonials: two sheets of paper behind the current page */
-.page-stack {
-  position: relative;
-  perspective: 1400px;
-}
-.page-stack::before,
-.page-stack::after {
+/* Gradient rim around the floating pill (scrolled only). */
+.vz-nav-island::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 1rem;
-  background: #fff;
-  box-shadow: 0 10px 30px rgb(8 72 168 / 0.1);
+  padding: 1px;
+  border-radius: inherit;
+  background-image: linear-gradient(100deg, rgb(63 208 232 / 0.7), rgb(139 141 255 / 0.5) 50%, rgb(210 122 240 / 0.7));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
 }
-.page-stack::before {
-  transform: rotate(-2deg) translateY(8px);
-  opacity: 0.6;
+.vz-nav[data-scrolled] .vz-nav-island {
+  inset: 8px max(10px, calc((100% - 1440px) / 2)) 0;
+  border-radius: 9999px;
+  box-shadow:
+    0 18px 40px -14px rgb(12 10 36 / 0.65),
+    0 0 32px -8px rgb(91 62 230 / 0.45);
 }
-.page-stack::after {
-  transform: rotate(1.5deg) translateY(4px);
-  opacity: 0.8;
+.vz-nav[data-scrolled] .vz-nav-island::before {
+  opacity: 1;
 }
-.page-turn {
+.vz-nav[data-scrolled] .vz-nav-island::after {
+  opacity: 0;
+}
+
+.vz-nav-inner {
+  height: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  transition: padding 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@media (min-width: 640px) {
+  .vz-nav-inner {
+    padding-inline: 1.5rem;
+  }
+}
+@media (min-width: 1280px) {
+  .vz-nav-inner {
+    padding-inline: 2.5rem;
+  }
+}
+/* In the pill, the end buttons sit concentric with its rounded ends. */
+.vz-nav[data-scrolled] .vz-nav-inner {
+  padding-inline: 0.75rem 0.6rem;
+}
+
+/* Logo on a white tile, so the blue diamond reads on the night bar. */
+.vz-nav-logo {
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.25),
+    0 8px 20px -6px rgb(63 208 232 / 0.55);
+}
+
+/* Glass tray holding the links, and the gradient pill that slides between
+   them: it rests on the current page and follows the pointer or keyboard. */
+.vz-nav-tray {
+  position: relative;
+  padding: 4px;
+  border-radius: 9999px;
+  background-color: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+}
+.vz-nav-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: 0;
+  border-radius: 9999px;
+  background-image: linear-gradient(100deg, #1460d8, #5b3ee6 55%, #9a3cc8);
+  box-shadow:
+    0 6px 18px -4px rgb(91 62 230 / 0.8),
+    inset 0 1px 0 rgb(255 255 255 / 0.22);
+  opacity: 0;
+  pointer-events: none;
+}
+.vz-nav-tray[data-ready] .vz-nav-pill {
+  transition:
+    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.25s ease;
+}
+.vz-nav-link {
   position: relative;
   z-index: 1;
-  box-shadow: 0 20px 40px rgb(8 72 168 / 0.12);
-  transform-origin: left center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 2.5rem;
+  padding-inline: 0.6rem;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: rgb(255 255 255 / 0.72);
+  transition: color 0.2s ease;
+}
+@media (min-width: 1280px) {
+  .vz-nav-link {
+    padding-inline: 1.05rem;
+    font-size: 15px;
+  }
+}
+.vz-nav-link:hover,
+.vz-nav-link[aria-current="page"],
+.vz-nav-link[data-active],
+.group\/dd:hover > .vz-nav-link,
+.group\/dd:focus-within > .vz-nav-link {
+  color: #fff;
+}
+.vz-nav-link:focus-visible {
+  outline: 2px solid var(--color-vz-cyan);
+  outline-offset: 2px;
+}
+
+/* Dropdown card: night glass with a soft glow, matching the bar. */
+.vz-nav-panel {
+  background-color: #120e32;
+  background-image: radial-gradient(70% 60% at 100% 0%, rgb(210 122 240 / 0.12), transparent 70%);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.1),
+    0 30px 60px -20px rgb(0 0 0 / 0.7);
+}
+/* The feature tile in the Conferences card, with the logo's diamond. */
+.vz-nav-feature {
+  background-image: linear-gradient(150deg, #1460d8, #5b3ee6 55%, #9a3cc8);
+}
+.vz-nav-feature::after {
+  content: "";
+  position: absolute;
+  right: -56px;
+  bottom: -64px;
+  width: 140px;
+  aspect-ratio: 1;
+  rotate: 45deg;
+  border: 1px solid rgb(255 255 255 / 0.35);
+  box-shadow: 0 0 0 16px rgb(255 255 255 / 0.07);
+  pointer-events: none;
+}
+/* Small diamond bullet before each conference. */
+.vz-nav-bullet {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  rotate: 45deg;
+  border: 1.5px solid var(--color-vz-cyan);
+  transition: background-color 0.2s ease;
+}
+.group:hover .vz-nav-bullet {
+  background-color: var(--color-vz-cyan);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shelf-book {
+  .vz-nav-island,
+  .vz-nav-island::before,
+  .vz-nav-inner,
+  .vz-nav-tray[data-ready] .vz-nav-pill {
     transition: none;
   }
 }
 
+/* Full-screen phone menu: fades in, then its rows rise one after another. */
+.vz-menu {
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
+}
+.vz-menu[data-open] {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
 @media (prefers-reduced-motion: no-preference) {
-  @keyframes word-rise {
+  .vz-menu-item {
+    opacity: 0;
+    translate: 0 18px;
+    transition:
+      opacity 0.4s ease,
+      translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .vz-menu[data-open] .vz-menu-item {
+    opacity: 1;
+    translate: 0 0;
+    transition-delay: calc(var(--i) * 45ms + 80ms);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Scroll reveal, shared by the Home, Publishing, Conference and Careers pages.
+   Decorative only: where scroll-driven animation is missing, or the visitor
+   asks for less motion, content simply sits in place.
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes reveal-up {
+      from {
+        opacity: 0;
+        transform: translateY(48px) scale(0.97);
+      }
+    }
+    .reveal {
+      animation: reveal-up auto linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Home page: "night press".
+
+   Night-ink bands lit by the logo's cyan -> violet -> orchid sweep, a display
+   grotesque for headings, square corners, ruled hairline grids and the logo's
+   diamond as a recurring shape. Layout works with no animation at all; motion
+   is layered on under prefers-reduced-motion: no-preference.
+   --------------------------------------------------------------------------- */
+
+/* The logo's colour sweep, as text and as a thin rule. */
+.vz-gradient-text {
+  /* Room below the baseline so background-clip does not cut descenders. */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  background-image: linear-gradient(90deg, #3fd0e8, #8b8dff 50%, #d27af0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* The same sweep in deeper tones, for large text on white (cyan alone is too
+   pale there). */
+.vz-gradient-text-deep {
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  background-image: linear-gradient(90deg, #1460d8, #5b3ee6 50%, #9a3cc8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.vz-rule {
+  background-image: linear-gradient(90deg, #3fd0e8, #5b3ee6 55%, #d27af0);
+}
+
+/* Night band: ink base with soft glows in the logo colours. */
+.vz-aurora {
+  background-color: var(--color-vz-night);
+  background-image:
+    radial-gradient(45% 55% at 8% 0%, rgb(63 208 232 / 0.18), transparent 70%),
+    radial-gradient(40% 50% at 92% 8%, rgb(210 122 240 / 0.16), transparent 70%),
+    radial-gradient(70% 55% at 50% 100%, rgb(91 62 230 / 0.3), transparent 72%);
+}
+
+/* Faint drafting grid, like patent drawing paper, fading out at the edges. */
+.vz-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(75% 65% at 50% 30%, #000 30%, transparent);
+}
+
+
+/* Primary button: the sweep slides from blue-violet to violet-orchid on hover. */
+.vz-btn-primary {
+  background-image: linear-gradient(100deg, #1460d8, #5b3ee6 50%, #9a3cc8);
+  background-size: 200% 100%;
+  transition: background-position 0.4s ease;
+}
+.vz-btn-primary:hover {
+  background-position: 100% 0;
+}
+
+/* Icon tile on light bands; fills with the sweep when its card is hovered. */
+.vz-icon {
+  background-color: var(--color-vz-paper);
+  color: var(--color-vz-violet);
+  box-shadow: inset 0 0 0 1px var(--color-vz-line);
+  transition: color 0.25s ease;
+}
+.group:hover .vz-icon {
+  background-image: linear-gradient(135deg, #1460d8, #5b3ee6 55%, #9a3cc8);
+  color: #fff;
+  box-shadow: none;
+}
+
+/* Hero: light lavender, with violet waves along the foot and a printing press
+   scene on a violet disc (PressScene in Home.jsx). */
+.vz-hero-v2 {
+  background-color: #f7f5ff;
+  background-image:
+    radial-gradient(50% 60% at 0% 0%, rgb(219 234 254 / 0.9), transparent 70%),
+    radial-gradient(45% 60% at 100% 10%, rgb(221 214 254 / 0.9), transparent 70%),
+    linear-gradient(180deg, #f9f8ff, #f1edff);
+}
+.vz-hero-waves {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: -1;
+  width: 100%;
+  height: clamp(60px, 9vw, 120px);
+}
+
+/* "Printed Reality": a bookish italic serif in the brand's blue-to-violet,
+   with a brush stroke drawn under it. */
+.hero-accent {
+  font-family: "Literata", Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  /* Room for the italic's overhang and descenders, which background-clip
+     would otherwise cut. */
+  padding: 0 0.08em 0.14em 0;
+  margin-bottom: -0.14em;
+  background-image: linear-gradient(90deg, #2b3fd8, #5b2be0 45%, #8b2fd8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-swash {
+  position: absolute;
+  left: 40%;
+  right: -4%;
+  bottom: -0.3em;
+  height: 0.34em;
+  overflow: visible;
+}
+
+/* The scene: a 600 x 500 box holding a 3D stage, seen from a little above
+   and to the right. Everything in it is drawn in stage pixels and the whole
+   stage scales by --k (set from the scene's width in PressScene). On wide
+   screens the scene also follows the screen's height so the hero fits. */
+.scene {
+  --k: 1;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 6 / 5;
+  margin-inline: auto;
+  perspective: 1600px;
+  perspective-origin: 50% 20%;
+}
+@media (min-width: 1024px) {
+  .scene {
+    width: min(100%, calc((100svh - 175px) * 1.2));
+  }
+}
+.stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-style: preserve-3d;
+  transform:
+    translate(calc(290px * var(--k)), calc(328px * var(--k)))
+    scale3d(var(--k), var(--k), var(--k))
+    rotateX(-18deg)
+    rotateY(-32deg);
+}
+
+/* Boxes and flat pieces. */
+.cube,
+.plane {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-style: preserve-3d;
+}
+.cube-face {
+  position: absolute;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+.cube-front { inset: 0; transform: translateZ(calc(var(--d) / 2)); }
+.cube-back { inset: 0; transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); }
+.cube-right,
+.cube-left {
+  top: 0;
+  left: calc((var(--w) - var(--d)) / 2);
+  width: var(--d);
+  height: 100%;
+}
+.cube-right { transform: rotateY(90deg) translateZ(calc(var(--w) / 2)); }
+.cube-left { transform: rotateY(-90deg) translateZ(calc(var(--w) / 2)); }
+.cube-top,
+.cube-bottom {
+  left: 0;
+  top: calc((var(--h) - var(--d)) / 2);
+  width: 100%;
+  height: var(--d);
+}
+.cube-top { transform: rotateX(90deg) translateZ(calc(var(--h) / 2)); }
+.cube-bottom { transform: rotateX(-90deg) translateZ(calc(var(--h) / 2)); }
+/* Light comes from above and to the front left: tops brightest, fronts in
+   half light, right-hand sides in shade. */
+.cube-front::after,
+.cube-right::after,
+.cube-back::after,
+.cube-left::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.cube-front::after { background: rgb(10 8 30 / 0.06); }
+.cube-right::after,
+.cube-back::after,
+.cube-left::after { background: rgb(10 8 30 / 0.28); }
+
+.floor-shadow {
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(30 20 70 / 0.42), rgb(30 20 70 / 0.12) 60%, transparent);
+  filter: blur(6px);
+}
+.floor-shadow--soft {
+  opacity: 0.55;
+}
+/* Tight, dark shadow right under the press's base, so it stands on the
+   floor instead of floating. */
+.floor-shadow--contact {
+  border-radius: 10px;
+  background: rgb(20 14 50 / 0.55);
+  filter: blur(5px);
+}
+
+/* --- The press body: brushed graphite with bevelled edges. --- */
+.mc-body .cube-face {
+  background-color: #2b2f48;
+  background-image:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.03) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #41466a, #2a2e48 55%, #1e2136);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    inset 1px 0 0 rgb(255 255 255 / 0.1),
+    inset 0 -2px 0 rgb(0 0 0 / 0.45);
+}
+.mc-body .cube-top {
+  background-image:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.04) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #5a6088, #434870);
+}
+/* Lid seam on top. */
+.mc-lid {
+  position: absolute;
+  inset: 14px;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 0.35),
+    0 0 0 1px rgb(255 255 255 / 0.08);
+}
+/* Seams and vents on the side. */
+.mc-side {
+  position: absolute;
+  inset: 18px 16px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.05);
+  background-image: repeating-linear-gradient(180deg, transparent 0 9px, rgb(0 0 0 / 0.45) 9px 12px);
+  background-size: 50% 40%;
+  background-position: 50% 85%;
+  background-repeat: no-repeat;
+}
+/* Output slot under the roller, with a faint glow from inside. */
+.mc-slot {
+  position: absolute;
+  top: 70px;
+  left: 28px;
+  right: 28px;
+  height: 8px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #020309, #0b0e1d);
+  box-shadow:
+    inset 0 2px 3px #000,
+    0 1px 0 rgb(255 255 255 / 0.14),
+    inset 0 -2px 6px rgb(63 208 232 / 0.35);
+}
+/* The recessed lower panel. */
+.mc-panel {
+  position: absolute;
+  top: 100px;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.16), rgb(255 255 255 / 0.03));
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 0.5),
+    0 1px 0 rgb(255 255 255 / 0.08);
+}
+.mc-plate {
+  position: absolute;
+  top: 178px;
+  left: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #ffffff, #e4e2ee);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.6),
+    inset 0 -1px 0 rgb(0 0 0 / 0.15);
+}
+.mc-plate img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+/* Control panel on the right-hand side (whose left edge is the front):
+   status screen with two lines of readout and a job progress bar, three
+   buttons and the run lamp. Above the side's shade layer so they still glow. */
+.mc-lcd,
+.mc-btn,
+.mc-led {
+  z-index: 1;
+}
+.mc-lcd {
+  position: absolute;
+  top: 36px;
+  left: 30px;
+  width: 92px;
+  height: 50px;
+  padding: 8px 9px;
+  border-radius: 4px;
+  background: radial-gradient(120% 90% at 30% 20%, #0f3b52, #061a26);
+  box-shadow:
+    0 0 0 3px #11131f,
+    0 1px 0 3px rgb(255 255 255 / 0.08),
+    inset 0 0 12px rgb(63 208 232 / 0.25);
+}
+.mc-lcd-line {
+  display: block;
+  width: 70%;
+  height: 4px;
+  margin-bottom: 5px;
+  border-radius: 2px;
+  background: rgb(125 227 240 / 0.75);
+  box-shadow: 0 0 6px rgb(63 208 232 / 0.7);
+}
+.mc-lcd-line--short {
+  width: 42%;
+  opacity: 0.6;
+}
+.mc-lcd-track {
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  bottom: 8px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgb(125 227 240 / 0.15);
+  overflow: hidden;
+}
+.mc-lcd-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  background: #7de3f0;
+  box-shadow: 0 0 6px #3fd0e8;
+  transform-origin: left;
+}
+/* Buttons and the run lamp. */
+.mc-btn {
+  position: absolute;
+  top: 104px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px #0f111c,
+    0 2px 3px rgb(0 0 0 / 0.6),
+    inset 0 -2px 3px rgb(0 0 0 / 0.35),
+    inset 0 2px 2px rgb(255 255 255 / 0.55);
+}
+.mc-btn--go { left: 34px; background: #22c55e; }
+.mc-btn--warn { left: 60px; background: #f59e0b; }
+.mc-btn--stop { left: 86px; background: #9ca3af; }
+.mc-led {
+  position: absolute;
+  top: 40px;
+  left: 136px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 1.5px #0f111c, 0 0 8px 1px rgb(74 222 128 / 0.9);
+}
+.mc-vents {
+  position: absolute;
+  right: 32px;
+  bottom: 30px;
+  width: 92px;
+  height: 34px;
+  background-image: repeating-linear-gradient(180deg, rgb(0 0 0 / 0.55) 0 3px, transparent 3px 7px);
+  border-radius: 2px;
+}
+.mc-screw {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background:
+    linear-gradient(45deg, transparent 44%, rgb(0 0 0 / 0.6) 44% 56%, transparent 56%),
+    radial-gradient(circle at 35% 35%, #c9ccdc, #6a6f8c);
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.6);
+}
+.mc-screw--tl { top: 10px; left: 10px; }
+.mc-screw--tr { top: 10px; right: 10px; }
+.mc-screw--bl { bottom: 10px; left: 10px; }
+.mc-screw--br { bottom: 10px; right: 10px; }
+
+.mc-bracket .cube-face {
+  background-image: linear-gradient(180deg, #4b5175, #262a42);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+
+/* Polished chrome roller, seen face on: bands of reflected light down its
+   curve, and a fine knurl that slides down as it turns. */
+.mc-roller {
+  border-radius: 6px;
+  background-image:
+    linear-gradient(180deg, #2b2f42 0%, #6f7590 12%, #c7cbdb 26%, #ffffff 34%, #dfe2ec 40%, #8a8fa8 58%, #5d6280 72%, #a6abc1 86%, #2b2f42 100%),
+    repeating-linear-gradient(180deg, rgb(0 0 0 / 0.07) 0 2px, transparent 2px 4px);
+  background-blend-mode: multiply;
+  box-shadow: 0 10px 14px -6px rgb(10 8 30 / 0.7);
+}
+.mc-cap {
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #ffffff, #b3b8cc 40%, #5b6080 72%, #2a2d3e);
+  box-shadow: inset 0 0 0 2px #1d2030;
+}
+.mc-cap::after {
+  content: "";
+  position: absolute;
+  inset: 36%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #5b6080, #15172a);
+}
+/* Ink roller: wet process colours with a glossy highlight. */
+.mc-ink {
+  border-radius: 8px;
+  background-image:
+    linear-gradient(180deg, rgb(0 0 0 / 0.35), rgb(255 255 255 / 0.55) 32%, rgb(255 255 255 / 0) 52%, rgb(0 0 0 / 0.4)),
+    linear-gradient(90deg, #ec4899, #a855f7 50%, #22d3ee);
+  box-shadow: 0 4px 6px -2px rgb(10 8 30 / 0.6);
+}
+
+/* Output tray: brushed aluminium, darker where it meets the body. */
+.mc-tray .cube-face {
+  background-image:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.18) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #8d91a8, #c9ccdb 30%, #dfe1ea);
+}
+.mc-tray .cube-front,
+.mc-tray .cube-right {
+  background-image: linear-gradient(180deg, #b4b7c9, #7c8098);
+}
+/* The paper stack: white sheets, their edges showing as fine lines. */
+.mc-stack .cube-face {
+  background: linear-gradient(180deg, #f1f0ec, #ffffff 40%, #fbfaf6);
+}
+.mc-stack-edge {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(180deg, #ffffff 0 1.5px, #dcd8cc 1.5px 2.5px);
+}
+
+/* A printed sheet: the cover on white paper, lying just above the stack.
+   Its place there is also the whole picture without motion. */
+.sheet3d {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 120px;
+  height: 160px;
+  padding: 6px;
+  background: #fff;
+  box-shadow: 0 6px 10px rgb(10 8 30 / 0.28);
+  transform: rotateX(90deg);
+  translate: -90px calc(-255.6px - var(--i) * 0.5px) 137px;
+}
+.sheet3d img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Books. --- */
+.book3d .cube-face {
+  background: var(--board);
+}
+.book3d-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Light falling across the cover, and the board's edge. */
+.book3d .cube-top::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg, rgb(255 255 255 / 0.28), rgb(255 255 255 / 0) 40%, rgb(0 0 0 / 0.12));
+  box-shadow: inset 0 0 0 1.5px var(--board);
+  pointer-events: none;
+}
+/* A band of light that crosses the top cover's lamination (animated). */
+.book3d--top .cube-top::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / 0.5) 50%, transparent 62%);
+  background-size: 260% 100%;
+  background-position: 160% 0;
+  pointer-events: none;
+}
+/* Page edges between the boards. */
+.book3d-pages {
+  position: absolute;
+  inset: 0;
+  background-color: #f6f3ea;
+  background-image:
+    linear-gradient(180deg, rgb(0 0 0 / 0.1), transparent 30%, transparent 70%, rgb(0 0 0 / 0.14)),
+    repeating-linear-gradient(180deg, #fffdf6 0 1.2px, #dcd5c4 1.2px 2px);
+  box-shadow:
+    inset 0 3px 0 var(--board),
+    inset 0 -3px 0 var(--board);
+}
+/* Cloth spine, rounded, with gilt bands and a title panel. */
+.book3d-spine {
+  position: absolute;
+  inset: 0;
+  background-color: var(--board);
+  background-image:
+    linear-gradient(90deg, transparent 11%, #e6c35c 11% 12.5%, transparent 12.5% 87.5%, #e6c35c 87.5% 89%, transparent 89%),
+    linear-gradient(90deg, transparent 34%, rgb(230 195 92 / 0.85) 34% 66%, transparent 66%),
+    linear-gradient(180deg, rgb(0 0 0 / 0.35), rgb(255 255 255 / 0.18) 40%, rgb(0 0 0 / 0.3));
+  background-size: 100% 100%, 100% 30%, 100% 100%;
+  background-position: 0 0, 0 50%, 0 0;
+  background-repeat: no-repeat;
+}
+
+/* The pause button only matters where something moves. */
+.vz-motion-toggle {
+  display: none;
+}
+
+/* Halftone dots, the texture of print (behind the contact form). */
+.vz-halftone {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgb(91 62 230 / 0.16) 1.4px, transparent 2px);
+  background-size: 14px 14px;
+  mask-image: radial-gradient(60% 45% at 50% 75%, #000, transparent 75%);
+}
+@media (min-width: 1024px) {
+  .vz-halftone {
+    mask-image: radial-gradient(42% 75% at 78% 50%, #000, transparent 75%);
+  }
+}
+
+/* The four process inks as a band along the foot of a section (or, with
+   --top, the head of a section or sheet). */
+.vz-cmyk-band {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 4px;
+  background-image: linear-gradient(90deg, #3fd0e8 0 25%, #d27af0 25% 50%, #f2c14e 50% 75%, #17133d 75%);
+}
+.vz-cmyk-band--top {
+  top: 0;
+  bottom: auto;
+}
+
+/* Home contact section: lavender press paper with faint ink glows in two
+   corners, the form set as a press proof. */
+.vz-proof-band {
+  background-color: var(--color-vz-paper);
+  background-image:
+    radial-gradient(45% 60% at 0% 100%, rgb(63 208 232 / 0.1), transparent 70%),
+    radial-gradient(40% 55% at 100% 0%, rgb(210 122 240 / 0.1), transparent 70%);
+}
+
+/* Printer's marks around the proof: crop marks at the corners, registration
+   targets halfway down each side. */
+.press-crop {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 0 solid rgb(23 19 61 / 0.45);
+}
+.press-crop--tl { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.press-crop--tr { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+.press-crop--bl { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+.press-crop--br { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+.press-reg {
+  position: absolute;
+  top: 55%;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgb(23 19 61 / 0.5);
+  border-radius: 50%;
+}
+.press-reg::before,
+.press-reg::after {
+  content: "";
+  position: absolute;
+  background: rgb(23 19 61 / 0.5);
+}
+.press-reg::before { left: 50%; top: -6px; bottom: -6px; width: 1px; translate: -50% 0; }
+.press-reg::after { top: 50%; left: -6px; right: -6px; height: 1px; translate: 0 -50%; }
+.press-reg--l { left: 3px; }
+.press-reg--r { right: 3px; }
+
+/* Services: the night tile that leads the bento grid. */
+.vz-feature {
+  background-color: var(--color-vz-night2);
+  background-image:
+    radial-gradient(60% 80% at 100% 0%, rgb(210 122 240 / 0.28), transparent 70%),
+    radial-gradient(55% 70% at 0% 100%, rgb(63 208 232 / 0.18), transparent 70%);
+}
+.vz-feature-diamond {
+  position: absolute;
+  z-index: -1;
+  right: -90px;
+  bottom: -150px;
+  width: 340px;
+  aspect-ratio: 1;
+  rotate: 45deg;
+  border: 1px solid rgb(169 156 255 / 0.3);
+  box-shadow: 0 0 0 36px rgb(169 156 255 / 0.05);
+  pointer-events: none;
+}
+
+/* From Draft stats: one gradient rule runs through the three of them (each
+   shows its third of it), with a diamond node at the start of each. */
+.vz-step {
+  position: relative;
+  padding-top: 2.75rem;
+}
+.vz-step::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-image: linear-gradient(90deg, #3fd0e8, #5b3ee6 50%, #d27af0);
+  background-size: 300% 100%;
+  background-position: calc(var(--i) * 50%) 0;
+}
+.vz-step::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 14px;
+  height: 14px;
+  rotate: 45deg;
+  background: #fff;
+  border: 2px solid var(--color-vz-violet);
+}
+@media (min-width: 640px) {
+  /* Carry the rule across the column gap so it reads as one line. */
+  .vz-step:not(:last-child)::before {
+    right: -2rem;
+  }
+}
+
+/* Shelf: paged by the arrow buttons or by swiping, so the scrollbar is hidden. */
+.vz-shelf {
+  scrollbar-width: none;
+}
+.vz-shelf::-webkit-scrollbar {
+  display: none;
+}
+.vz-book-cover {
+  box-shadow:
+    0 22px 40px -12px rgb(0 0 0 / 0.6),
+    0 0 0 1px rgb(255 255 255 / 0.06);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The headline's cyan, magenta and yellow plates start out of register and
+     settle onto each other. */
+  @keyframes misreg-in {
     from {
-      opacity: 0;
-      transform: translateY(0.6em) rotate(3deg);
+      text-shadow:
+        -0.09em 0.02em 0 rgb(63 208 232 / 0.9),
+        0.09em -0.02em 0 rgb(210 122 240 / 0.9),
+        0.02em 0.09em 0 rgb(242 193 78 / 0.9);
     }
   }
   @keyframes soft-fade {
@@ -208,169 +1018,126 @@
       transform: translateY(16px);
     }
   }
-  @keyframes ring-turn {
-    to {
-      transform: rotateY(-360deg);
+  /* One sheet through the press (6s, two sheets half a cycle apart, so one
+     lands every 3s):
+     0-42%   it slides out of the slot, from inside the press onto the stack,
+             riding just above the sheet already there;
+     42-50%  it settles onto the stack;
+     80-95%  the sheet beneath it fades while the next one slides over.
+     It starts hidden inside the body, so the jump back is never seen. */
+  @keyframes sheet-out {
+    0% {
+      translate: -90px -257px -33px;
+      opacity: 1;
+      animation-timing-function: cubic-bezier(0.3, 0.1, 0.3, 1);
+    }
+    42% {
+      translate: -90px -257px 137px;
+    }
+    50%,
+    80% {
+      translate: -90px calc(-255.6px - var(--i) * 0.5px) 137px;
+      opacity: 1;
+    }
+    95%,
+    100% {
+      translate: -90px calc(-255.6px - var(--i) * 0.5px) 137px;
+      opacity: 0;
     }
   }
-  @keyframes orb-drift {
-    to {
-      transform: translate(6vw, 4vw) scale(1.15);
+  /* Light crosses the top book's laminated cover, then rests a while. */
+  @keyframes cover-sheen {
+    0%,
+    62% {
+      background-position: 160% 0;
+    }
+    100% {
+      background-position: -60% 0;
     }
   }
-  @keyframes belt {
+  @keyframes roller-turn {
     to {
-      transform: translateX(-50%);
+      background-position: 0 0, 0 8px;
     }
   }
-  @keyframes page-in {
+  @keyframes ink-oscillate {
+    from {
+      translate: -5px 0 0;
+    }
+    to {
+      translate: 5px 0 0;
+    }
+  }
+  @keyframes lcd-progress {
+    from {
+      scale: 0 1;
+    }
+  }
+  @keyframes led-blink {
+    50% {
+      opacity: 0.3;
+    }
+  }
+  @keyframes swash-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+  @keyframes vz-quote-in {
     from {
       opacity: 0;
-      transform: rotateY(-55deg);
+      translate: 0 14px;
     }
   }
 
-  .hero-word {
-    display: inline-block;
-    animation: word-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
-    animation-delay: calc(var(--w) * 70ms);
+  .vz-misreg {
+    animation: misreg-in 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s backwards;
   }
   .hero-fade {
     animation: soft-fade 0.8s ease-out 0.55s backwards;
   }
-  .ring-spin {
-    animation: ring-turn 40s linear infinite;
+  .hero-swash path {
+    stroke-dasharray: 1;
+    animation: swash-draw 1s cubic-bezier(0.6, 0, 0.2, 1) 0.9s backwards;
   }
-  .orb {
-    animation: orb-drift 16s ease-in-out infinite alternate;
+  .sheet3d {
+    animation: sheet-out 6s infinite;
+    animation-delay: calc(var(--i) * -3s);
   }
-  .shelf-window {
-    overflow-x: hidden;
+  .book3d--top .cube-top::before {
+    animation: cover-sheen 6s ease-in-out infinite;
   }
-  .shelf-belt {
-    animation: belt 60s linear infinite;
+  .mc-roller {
+    animation: roller-turn 0.3s linear infinite;
   }
-  .shelf-window:hover .shelf-belt,
-  .shelf-window:focus-within .shelf-belt {
+  .mc-ink {
+    animation: ink-oscillate 1.5s ease-in-out infinite alternate;
+  }
+  .mc-lcd-fill {
+    animation: lcd-progress 3s linear infinite;
+  }
+  .mc-led {
+    animation: led-blink 1.6s ease-in-out infinite;
+  }
+  /* WCAG 2.2.2: anything that keeps moving gets a visible pause control. */
+  .vz-motion-toggle {
+    display: flex;
+  }
+  .vz-hero[data-paused] :is(.sheet3d, .mc-roller, .mc-ink, .mc-lcd-fill, .mc-led),
+  .vz-hero[data-paused] .book3d--top .cube-top::before {
     animation-play-state: paused;
   }
-  .page-turn {
-    animation: page-in 0.65s cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  .vz-book-cover {
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .vz-book:hover .vz-book-cover,
+  .vz-book:focus-visible .vz-book-cover {
+    transform: perspective(800px) rotateY(-14deg) translateY(-8px);
   }
 
-  @supports ((animation-timeline: view()) and (animation-range: entry)) {
-    @keyframes reveal-up {
-      from {
-        opacity: 0;
-        transform: translateY(48px) scale(0.97);
-      }
-    }
-    @keyframes process-pan {
-      to {
-        transform: translateX(calc(-100% + 100vw - var(--intro-w)));
-      }
-    }
-    @keyframes process-fill {
-      from {
-        transform: scaleX(0);
-      }
-    }
-
-    /* The ring turns half a revolution as the hero scrolls out of view. */
-    @keyframes ring-scroll-turn {
-      to {
-        transform: rotateY(-180deg);
-      }
-    }
-    .ring-scroll {
-      animation: ring-scroll-turn auto linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 700px;
-    }
-
-    .reveal {
-      animation: reveal-up auto linear backwards;
-      animation-timeline: view();
-      animation-range: entry 0% entry 80%;
-    }
-
-    /* Pinned sideways pan. 83px is the desktop navbar height. The intro is a
-       fixed column on the left; only the card track inside the viewport
-       beside it moves. */
-    @media (min-width: 1024px) {
-      .process-pin {
-        --intro-w: clamp(400px, 38vw, 600px);
-        height: 380vh;
-        padding-block: 0;
-        view-timeline: --process block;
-      }
-      .process-sticky {
-        position: sticky;
-        top: 83px;
-        height: calc(100vh - 83px);
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-      }
-      .process-layout {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      .process-intro {
-        flex: none;
-        width: var(--intro-w);
-        margin: 0;
-        padding: 0 3rem 0 5rem;
-      }
-      .process-viewport {
-        flex: 1;
-        min-width: 0;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-        mask-image: linear-gradient(to right, transparent, #000 3rem);
-      }
-      .process-track {
-        display: flex;
-        align-items: stretch;
-        gap: 1.5rem;
-        width: max-content;
-        margin: 0;
-        padding-inline: 3rem 5rem;
-        animation: process-pan auto linear both;
-        animation-timeline: --process;
-        animation-range: contain;
-      }
-      .process-card {
-        flex: none;
-        width: clamp(360px, 32vw, 500px);
-        padding: 2.5rem;
-        animation: none;
-      }
-      .process-bar {
-        display: block;
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 4px;
-        transform-origin: left;
-        background: linear-gradient(
-          90deg,
-          var(--color-brand-cyan),
-          var(--color-brand-violet),
-          var(--color-brand-orchid)
-        );
-        animation: process-fill auto linear both;
-        animation-timeline: --process;
-        animation-range: contain;
-      }
-    }
+  .vz-quote {
+    animation: vz-quote-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 }
 
