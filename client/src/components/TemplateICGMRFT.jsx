@@ -27,9 +27,9 @@ export default function TemplateICGMRFT({ conference }) {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* 1. Header Section */}
-      <section className="bg-blue-800 text-white py-16 text-center">
+      <section className="bg-indigo-800 text-white py-16 text-center">
         <div className="max-w-4xl mx-auto px-4">
-          <span className="inline-block bg-yellow-500 text-blue-900 font-bold px-4 py-1 rounded-full text-xs mb-4 uppercase tracking-wider">
+          <span className="inline-block bg-yellow-500 text-indigo-900 font-bold px-4 py-1 rounded-full text-xs mb-4 uppercase tracking-wider">
             {conference.type} {conference.date ? new Date(conference.date).getFullYear() : ""}
           </span>
           <h1 className="text-3xl md:text-5xl font-extrabold mb-2 leading-tight">
@@ -57,8 +57,8 @@ export default function TemplateICGMRFT({ conference }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
           <div className="space-y-6">
             <div>
-              <p className="text-blue-600 font-bold text-sm tracking-wider uppercase mb-1">Event: {conference.date ? new Date(conference.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "TBA"}</p>
-              <h2 className="text-3xl font-bold text-gray-900 border-l-4 border-blue-600 pl-3">About the Conference</h2>
+              <p className="text-indigo-600 font-bold text-sm tracking-wider uppercase mb-1">Event: {conference.date ? new Date(conference.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "TBA"}</p>
+              <h2 className="text-3xl font-bold text-gray-900 border-l-4 border-indigo-600 pl-3">About the Conference</h2>
             </div>
             <p className="text-gray-600 leading-relaxed">
               {conference.aboutConference}
@@ -80,11 +80,11 @@ export default function TemplateICGMRFT({ conference }) {
             </div>
 
             <div className="flex gap-4 pt-4">
-              <a href={conference.googleFormLink || "#"} target="_blank" rel="noreferrer" className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition">
+              <a href={conference.googleFormLink || "#"} target="_blank" rel="noreferrer" className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:bg-indigo-700 transition">
                 Register Now
               </a>
               {conference.brochure && (
-                <button onClick={() => handleDownload(conference.brochure)} className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center gap-2">
+                <button onClick={() => handleDownload(conference.brochure)} className="border border-indigo-600 text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition flex items-center gap-2">
                   <Download size={18} /> Download Brochure
                 </button>
               )}
@@ -105,7 +105,7 @@ export default function TemplateICGMRFT({ conference }) {
         {/* 3. Conference Downloads (Proceeding) */}
         {conference.conferenceProceeding && (
           <div className="bg-white rounded-2xl shadow-sm border p-8 max-w-3xl mx-auto">
-            <h3 className="text-lg font-bold text-gray-900 mb-6 border-l-4 border-blue-600 pl-3 flex justify-between items-center">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 border-l-4 border-indigo-600 pl-3 flex justify-between items-center">
               <span>CONFERENCE DOWNLOADS</span>
               <span className="text-xs font-normal text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Format: Digital PDF</span>
             </h3>
@@ -114,7 +114,7 @@ export default function TemplateICGMRFT({ conference }) {
                 <FileText size={24} />
               </div>
               <h4 className="font-bold text-green-800 mb-4">CONFERENCE PROCEEDINGS</h4>
-              <button onClick={() => handleDownload(conference.conferenceProceeding)} className="bg-blue-400 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-500 transition inline-flex items-center gap-2 text-sm">
+              <button onClick={() => handleDownload(conference.conferenceProceeding)} className="bg-indigo-400 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-500 transition inline-flex items-center gap-2 text-sm">
                 <Download size={16} /> Download
               </button>
             </div>
@@ -147,7 +147,7 @@ export default function TemplateICGMRFT({ conference }) {
             {conference.verificationDetails && (
               <div className="mt-8 pt-6 border-t">
                 <h4 className="font-semibold text-gray-700 flex items-center gap-2 mb-4">
-                  <CheckCircle size={18} className="text-blue-500" /> Verification Details
+                  <CheckCircle size={18} className="text-indigo-500" /> Verification Details
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-gray-50 border rounded-lg p-3">
@@ -164,7 +164,7 @@ export default function TemplateICGMRFT({ conference }) {
                   </div>
                   <div className="bg-gray-50 border rounded-lg p-3">
                     <span className="block text-xs text-gray-500 uppercase font-semibold">Validity</span>
-                    <span className="text-blue-600 font-medium text-sm mt-1 block">
+                    <span className="text-indigo-600 font-medium text-sm mt-1 block">
                       {conference.verificationDetails.validity2}
                     </span>
                   </div>
@@ -177,13 +177,13 @@ export default function TemplateICGMRFT({ conference }) {
         {/* 5. Topics Section */}
         {conference.topics && conference.topics.length > 0 && (
           <div className="bg-white rounded-2xl shadow-sm border p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-8 border-l-4 border-blue-600 pl-3">
+            <h3 className="text-xl font-bold text-gray-900 mb-8 border-l-4 border-indigo-600 pl-3">
               Conference Topics & Tracks
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {conference.topics.map((topic, i) => (
                 <div key={i} className="flex items-center gap-4 bg-gray-50 border border-gray-100 p-4 rounded-xl hover:shadow-md transition">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 flex-shrink-0">
+                  <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 flex-shrink-0">
                     <FileText size={18} />
                   </div>
                   <p className="font-medium text-sm text-gray-800">{topic}</p>
@@ -211,7 +211,7 @@ export default function TemplateICGMRFT({ conference }) {
                   {conference.fees && Object.entries(conference.fees).map(([cat, fee], idx) => (
                     <tr key={idx}>
                       <td className="py-4 font-medium text-gray-800 capitalize">{cat.replace(/([A-Z])/g, ' $1')}</td>
-                      <td className="py-4 text-right font-bold text-blue-700">₹ {fee}/-</td>
+                      <td className="py-4 text-right font-bold text-indigo-700">₹ {fee}/-</td>
                     </tr>
                   ))}
                 </tbody>
@@ -219,14 +219,14 @@ export default function TemplateICGMRFT({ conference }) {
             </div>
           </div>
           
-          <div className="bg-blue-900 rounded-2xl shadow-sm p-8 text-white flex flex-col items-center justify-center">
+          <div className="bg-indigo-900 rounded-2xl shadow-sm p-8 text-white flex flex-col items-center justify-center">
             <h3 className="text-xl font-bold mb-6">Register Now</h3>
             {conference.qrCode && (
               <div className="bg-white p-2 rounded-xl mb-6">
                 <img src={conference.qrCode} alt="QR Code" className="w-32 h-32 object-contain rounded-lg" />
               </div>
             )}
-            <a href={conference.googleFormLink || "#"} target="_blank" rel="noreferrer" className="bg-yellow-500 text-blue-900 font-bold px-8 py-3 rounded-full hover:bg-yellow-400 transition shadow-lg w-full max-w-xs text-center">
+            <a href={conference.googleFormLink || "#"} target="_blank" rel="noreferrer" className="bg-yellow-500 text-indigo-900 font-bold px-8 py-3 rounded-full hover:bg-yellow-400 transition shadow-lg w-full max-w-xs text-center">
               Link to Register
             </a>
           </div>
@@ -248,7 +248,7 @@ export default function TemplateICGMRFT({ conference }) {
                   </div>
                 ))}
                 {conference.contact?.email && (
-                  <p className="text-blue-400 text-sm flex items-center gap-2 mt-4 bg-white/10 p-2 rounded inline-flex">
+                  <p className="text-indigo-400 text-sm flex items-center gap-2 mt-4 bg-white/10 p-2 rounded inline-flex">
                     <LinkIcon size={14} /> {conference.contact.email}
                   </p>
                 )}
@@ -271,14 +271,14 @@ export default function TemplateICGMRFT({ conference }) {
           {/* Global Experts Grid */}
           {conference.globalExperts && conference.globalExperts.length > 0 && (
             <div className="pt-8 text-center">
-              <p className="text-blue-600 font-bold text-xs uppercase tracking-widest mb-2">Advisory Committee</p>
+              <p className="text-indigo-600 font-bold text-xs uppercase tracking-widest mb-2">Advisory Committee</p>
               <h2 className="text-3xl font-extrabold text-gray-900 mb-10">Meet Our Global Experts</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
                 {conference.globalExperts.map((exp, i) => (
                   <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition flex flex-col justify-between">
                     <div>
                       <h4 className="font-bold text-gray-900 mb-1">{exp.name}</h4>
-                      <p className="text-xs font-semibold text-blue-600 mb-3">{exp.designation}</p>
+                      <p className="text-xs font-semibold text-indigo-600 mb-3">{exp.designation}</p>
                       <div className="flex items-start gap-2 text-gray-500 text-xs mb-2">
                         <MapPin size={14} className="flex-shrink-0 mt-0.5" />
                         <span>{exp.institution}</span>

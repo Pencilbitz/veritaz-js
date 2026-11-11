@@ -4,10 +4,10 @@ import { Menu, X, Phone, Mail, ChevronDown, ArrowUpRight, ShieldCheck, Briefcase
 import { FaLinkedinIn, FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { supabase } from "../lib/supabase";
 
-/* Navbar in the home page's "night press" look: a contact strip that scrolls
-   away, then a night bar lit by the logo's colours that lifts into a floating
-   pill once the page scrolls, with a gradient highlight that slides between
-   the links. On phones, a full-screen night menu. The vz-nav* and vz-menu*
+/* Navbar: a dark contact strip that scrolls away, then a white bar that lifts
+   into a floating pill once the page scrolls. A highlight slides between the
+   links: indigo-violet on the current page, gold on the link under the
+   pointer. On phones, a full-screen white menu. The vz-nav* and vz-menu*
    styles live in index.css. */
 
 const PHONE_DISPLAY = "+91 6380658876";
@@ -46,22 +46,22 @@ const confNameOf = (conf) => conf.conferencename || conf.conferenceName || "";
 const confSlugOf = (conf) => confNameOf(conf).replace(/\s+/g, "-").toLowerCase();
 
 const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 xl:px-10";
-const GLASS_BUTTON =
-  "flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.07] ring-1 ring-white/15 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vz-cyan";
+const ROUND_BUTTON =
+  "flex h-10 w-10 items-center justify-center rounded-full bg-sf-mist ring-1 ring-vz-line transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-indigo";
 
 function Logo() {
   return (
     <Link
       to="/"
-      className="flex flex-shrink-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vz-cyan"
+      className="flex flex-shrink-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sf-indigo"
       aria-label="Veritaz International Press, home"
     >
       <span className="vz-nav-logo flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-white">
-        <img src="/assets/image/veritaz-bg-Remove.png" alt="" className="h-9 w-9 object-contain" />
+        <img src="/assets/image/veritaz-logo.webp" alt="" className="h-9 w-9 object-contain" />
       </span>
       <span className="leading-none">
-        <span className="block font-display text-[1.35rem] font-bold tracking-[-0.01em] text-white">Veritaz</span>
-        <span className="mt-1 block whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.22em] text-vz-cyan">
+        <span className="block font-display text-[1.35rem] font-bold tracking-[-0.01em] text-vz-ink">Veritaz</span>
+        <span className="mt-1 block whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.22em] text-sf-indigo">
           International Press
         </span>
       </span>
@@ -162,10 +162,17 @@ export default function Navbar() {
     if (!tray || !pill) return;
     if (!el) {
       pill.style.opacity = "0";
+      tray.removeAttribute("data-hovering");
       return;
     }
     const t = tray.getBoundingClientRect();
     const r = el.getBoundingClientRect();
+    // On the current page the highlight is indigo; on any other link it turns
+    // gold, and the tray is marked so the current link's text stays readable
+    // without the highlight under it.
+    const current = el.matches('[aria-current="page"], [data-active]');
+    pill.dataset.mode = current ? "current" : "hover";
+    tray.toggleAttribute("data-hovering", !current);
     pill.style.opacity = "1";
     pill.style.width = `${r.width}px`;
     pill.style.transform = `translateX(${r.left - t.left}px)`;
@@ -222,38 +229,42 @@ export default function Navbar() {
 
   return (
     <>
-      {/* ================= CONTACT STRIP (scrolls away) ================= */}
-      <div className="border-b border-white/[0.07] bg-[#07061a] text-[13px] text-white/70">
+      {/* ================= CONTACT STRIP (scrolls away) =================
+          Deep teal, a colour used nowhere else on the site, so the header
+          reads apart from the page. The teal stays in the darker range
+          (#0f766e to #115e59) so white 13px text keeps at least 4.5:1;
+          icons are gold, and links and buttons turn gold on hover. */}
+      <div className="border-b border-white/10 bg-[linear-gradient(90deg,#0f766e,#0d7a70_50%,#115e59)] text-[13px] text-white">
         <div className={`${WRAP} flex h-10 items-center justify-between gap-4`}>
           <div className="flex min-w-0 items-center gap-4 sm:gap-5">
-            <a href={PHONE_HREF} className="flex items-center gap-2 whitespace-nowrap transition-colors hover:text-white">
-              <Phone className="h-3.5 w-3.5 text-vz-cyan" aria-hidden="true" />
+            <a href={PHONE_HREF} className="flex items-center gap-2 whitespace-nowrap transition-colors hover:text-amber-300">
+              <Phone className="h-3.5 w-3.5 text-amber-300" aria-hidden="true" />
               <span className="tabular-nums">{PHONE_DISPLAY}</span>
             </a>
-            <span className="hidden h-3.5 w-px bg-white/15 sm:block" aria-hidden="true" />
-            <a href={MAIL_HREF} className="hidden min-w-0 items-center gap-2 transition-colors hover:text-white sm:flex">
-              <Mail className="h-3.5 w-3.5 flex-shrink-0 text-vz-cyan" aria-hidden="true" />
+            <span className="hidden h-3.5 w-px bg-white/25 sm:block" aria-hidden="true" />
+            <a href={MAIL_HREF} className="hidden min-w-0 items-center gap-2 transition-colors hover:text-amber-300 sm:flex">
+              <Mail className="h-3.5 w-3.5 flex-shrink-0 text-amber-300" aria-hidden="true" />
               <span className="truncate">{EMAIL}</span>
             </a>
-            <span className="hidden h-3.5 w-px bg-white/15 md:block" aria-hidden="true" />
+            <span className="hidden h-3.5 w-px bg-white/25 md:block" aria-hidden="true" />
             <a
               href={WHATSAPP_HREF}
               target="_blank"
               rel="noreferrer"
-              className="hidden items-center gap-2 whitespace-nowrap transition-colors hover:text-white md:flex"
+              className="hidden items-center gap-2 whitespace-nowrap transition-colors hover:text-amber-300 md:flex"
             >
-              <FaWhatsapp className="h-3.5 w-3.5 text-[#25d366]" aria-hidden="true" />
+              <FaWhatsapp className="h-3.5 w-3.5 text-amber-300" aria-hidden="true" />
               Chat on WhatsApp
             </a>
           </div>
           <div className="flex flex-shrink-0 items-center gap-1.5">
-            <span className="mr-1.5 hidden text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 lg:inline">Follow us</span>
+            <span className="mr-1.5 hidden text-[11px] font-bold uppercase tracking-[0.2em] text-white/85 lg:inline">Follow us</span>
             <a
               href={WHATSAPP_HREF}
               target="_blank"
               rel="noreferrer"
               aria-label="Chat on WhatsApp"
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.06] text-[#25d366] ring-1 ring-white/10 transition-colors hover:bg-white/15 md:hidden"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 transition-colors hover:bg-amber-400 hover:text-sf-navy md:hidden"
             >
               <FaWhatsapp className="h-3.5 w-3.5" />
             </a>
@@ -264,7 +275,7 @@ export default function Navbar() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label={label}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.06] text-white/70 ring-1 ring-white/10 transition-colors hover:bg-white/15 hover:text-white"
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 transition-colors hover:bg-amber-400 hover:text-sf-navy"
               >
                 <Icon className="h-3 w-3" />
               </a>
@@ -310,15 +321,15 @@ export default function Navbar() {
                         <Link
                           key={conf.id}
                           to={`/conferences/${confSlugOf(conf)}`}
-                          className="group flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/[0.07] hover:text-white"
+                          className="group flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-vz-ink/80 transition-colors hover:bg-amber-50 hover:text-vz-ink"
                         >
                           <span className="vz-nav-bullet mt-1.5" aria-hidden="true" />
                           <span className="min-w-0 flex-1">{confNameOf(conf) || "Unnamed Conference"}</span>
-                          <ArrowUpRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-vz-cyan opacity-0 transition-opacity group-hover:opacity-100" />
+                          <ArrowUpRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500 opacity-0 transition-opacity group-hover:opacity-100" />
                         </Link>
                       ))
                     ) : (
-                      <span className="block px-3 py-2.5 text-sm text-white/50">No released conferences yet</span>
+                      <span className="block px-3 py-2.5 text-sm text-slate-500">No released conferences yet</span>
                     )}
                   </div>
                 </div>
@@ -330,16 +341,16 @@ export default function Navbar() {
                     <Link
                       key={to}
                       to={to}
-                      className="group flex items-center gap-3.5 rounded-xl p-3 transition-colors hover:bg-white/[0.07]"
+                      className="group flex items-center gap-3.5 rounded-xl p-3 transition-colors hover:bg-amber-50"
                     >
-                      <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#1460d8] via-[#5b3ee6] to-[#9a3cc8] text-white">
+                      <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#4f46e5] via-[#4f46e5] to-[#7c3aed] text-white">
                         <Icon className="h-[18px] w-[18px]" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-bold text-white">{label}</span>
-                        <span className="block text-xs text-white/55">{hint}</span>
+                        <span className="block text-sm font-bold text-vz-ink">{label}</span>
+                        <span className="block text-xs text-slate-500">{hint}</span>
                       </span>
-                      <ArrowUpRight className="h-4 w-4 flex-shrink-0 text-vz-cyan opacity-0 transition-opacity group-hover:opacity-100" />
+                      <ArrowUpRight className="h-4 w-4 flex-shrink-0 text-amber-500 opacity-0 transition-opacity group-hover:opacity-100" />
                     </Link>
                   ))}
                 </div>
@@ -353,30 +364,30 @@ export default function Navbar() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Chat on WhatsApp"
-                className={`${GLASS_BUTTON} hidden text-[#25d366] hover:bg-[#25d366] hover:text-white xl:flex`}
+                className={`${ROUND_BUTTON} hidden text-[#1da851] hover:bg-[#25d366] hover:text-white xl:flex`}
               >
                 <FaWhatsapp className="h-[18px] w-[18px]" aria-hidden="true" />
               </a>
               <a
                 href={PHONE_HREF}
                 aria-label={`Call ${PHONE_DISPLAY}`}
-                className={`${GLASS_BUTTON} text-white hover:bg-white/20 lg:hidden xl:flex`}
+                className={`${ROUND_BUTTON} text-sf-indigo hover:bg-amber-400 hover:text-sf-navy lg:hidden xl:flex`}
               >
                 <Phone className="h-[18px] w-[18px]" />
               </a>
               <Link
                 to="/contact"
-                className="group/cta ml-1 hidden h-11 items-center gap-2 rounded-full bg-white pl-5 pr-5 text-sm font-bold whitespace-nowrap text-vz-ink shadow-lg shadow-black/25 transition-transform hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vz-cyan lg:flex xl:pr-1.5"
+                className="pill-primary group/cta ml-1 hidden h-11 items-center gap-2 rounded-full pl-5 pr-5 text-sm font-bold whitespace-nowrap text-white transition-transform hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-indigo lg:flex xl:pr-1.5"
               >
                 Get in Touch
-                <span className="vz-btn-primary hidden h-8 w-8 items-center justify-center rounded-full text-white xl:flex">
+                <span className="hidden h-8 w-8 items-center justify-center rounded-full bg-amber-400 text-sf-navy xl:flex">
                   <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover/cta:rotate-45" />
                 </span>
               </Link>
               <button
                 ref={menuButtonRef}
                 onClick={() => setIsMenuOpen(true)}
-                className="vz-btn-primary flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg shadow-vz-violet/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vz-cyan lg:hidden"
+                className="pill-primary flex h-11 w-11 items-center justify-center rounded-full text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-indigo lg:hidden"
                 aria-label="Open menu"
                 aria-expanded={isMenuOpen}
               >
@@ -387,18 +398,16 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* ================= MOBILE MENU (full screen, night) ================= */}
+      {/* ================= MOBILE MENU (full screen, white) ================= */}
       <div
-        className="vz-menu vz-aurora fixed inset-0 z-[100] isolate flex flex-col overflow-hidden text-white lg:hidden"
+        className="vz-menu vz-menu-light fixed inset-0 z-[100] isolate flex flex-col overflow-hidden text-vz-ink lg:hidden"
         data-open={isMenuOpen || undefined}
         role="dialog"
         aria-modal="true"
         aria-label="Menu"
         aria-hidden={!isMenuOpen}
       >
-        <div className="vz-grid" aria-hidden="true" />
-
-        <div className={`${WRAP} flex h-[72px] flex-shrink-0 items-center justify-between border-b border-white/10`}>
+        <div className={`${WRAP} flex h-[72px] flex-shrink-0 items-center justify-between border-b border-vz-line`}>
           <Logo />
           <button
             ref={closeButtonRef}
@@ -406,7 +415,7 @@ export default function Navbar() {
               closeMenu();
               menuButtonRef.current?.focus();
             }}
-            className={`${GLASS_BUTTON} text-white hover:bg-white/20`}
+            className={`${ROUND_BUTTON} text-vz-ink hover:bg-amber-400`}
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
@@ -420,15 +429,15 @@ export default function Navbar() {
               to={to}
               end={end}
               style={{ "--i": i }}
-              className="vz-menu-item group flex items-baseline gap-4 border-b border-white/10 py-4"
+              className="vz-menu-item group flex items-baseline gap-4 border-b border-vz-line py-4"
             >
               {({ isActive }) => (
                 <>
-                  <span className="w-6 text-xs font-bold tabular-nums text-vz-cyan">{number(i)}</span>
-                  <span className={`font-display text-[1.7rem] font-bold leading-none tracking-[-0.01em] ${isActive ? "vz-gradient-text" : ""}`}>
+                  <span className="w-6 text-xs font-bold tabular-nums text-amber-500">{number(i)}</span>
+                  <span className={`font-display text-[1.7rem] font-bold leading-none tracking-[-0.01em] ${isActive ? "vz-gradient-text-deep" : ""}`}>
                     {label}
                   </span>
-                  <ArrowUpRight className="ml-auto h-5 w-5 self-center text-white/30 transition-colors group-hover:text-white" />
+                  <ArrowUpRight className="ml-auto h-5 w-5 self-center text-vz-ink/30 transition-colors group-hover:text-amber-500" />
                 </>
               )}
             </NavLink>
@@ -460,29 +469,29 @@ export default function Navbar() {
           ].map((group, j) => {
             const i = primaryLinks.length + j;
             return (
-              <div key={group.label} style={{ "--i": i }} className="vz-menu-item border-b border-white/10">
+              <div key={group.label} style={{ "--i": i }} className="vz-menu-item border-b border-vz-line">
                 <button type="button" onClick={group.toggle} aria-expanded={group.open} className="flex w-full items-baseline gap-4 py-4 text-left">
-                  <span className="w-6 text-xs font-bold tabular-nums text-vz-cyan">{number(i)}</span>
+                  <span className="w-6 text-xs font-bold tabular-nums text-amber-500">{number(i)}</span>
                   <span
-                    className={`font-display text-[1.7rem] font-bold leading-none tracking-[-0.01em] ${group.active ? "vz-gradient-text" : ""}`}
+                    className={`font-display text-[1.7rem] font-bold leading-none tracking-[-0.01em] ${group.active ? "vz-gradient-text-deep" : ""}`}
                   >
                     {group.label}
                   </span>
                   <ChevronDown
-                    className={`ml-auto h-5 w-5 self-center text-white/50 transition-transform duration-300 ${group.open ? "rotate-180" : ""}`}
+                    className={`ml-auto h-5 w-5 self-center text-vz-ink/50 transition-transform duration-300 ${group.open ? "rotate-180" : ""}`}
                   />
                 </button>
                 {group.open && (
-                  <div className="mb-4 ml-10 border-l border-white/15">
+                  <div className="mb-4 ml-10 border-l border-vz-line">
                     {group.items ? (
                       group.items.map((item) => (
-                        <Link key={item.key} to={item.to} className="block py-2.5 pl-4 text-[15px] text-white/75 transition-colors hover:text-white">
+                        <Link key={item.key} to={item.to} className="block py-2.5 pl-4 text-[15px] text-vz-ink/75 transition-colors hover:text-amber-600">
                           <span className="block font-semibold">{item.label}</span>
-                          {item.hint && <span className="block text-xs text-white/45">{item.hint}</span>}
+                          {item.hint && <span className="block text-xs text-slate-500">{item.hint}</span>}
                         </Link>
                       ))
                     ) : (
-                      <p className="py-2.5 pl-4 text-sm text-white/45">{group.empty}</p>
+                      <p className="py-2.5 pl-4 text-sm text-slate-500">{group.empty}</p>
                     )}
                   </div>
                 )}
@@ -491,23 +500,23 @@ export default function Navbar() {
           })}
         </nav>
 
-        <div className={`${WRAP} flex-shrink-0 space-y-4 border-t border-white/10 py-5`}>
+        <div className={`${WRAP} flex-shrink-0 space-y-4 border-t border-vz-line py-5`}>
           <Link
             to="/contact"
-            className="flex h-12 items-center justify-between rounded-full bg-white pl-6 pr-1.5 text-[15px] font-bold text-vz-ink shadow-lg shadow-black/30"
+            className="pill-primary flex h-12 items-center justify-between rounded-full pl-6 pr-1.5 text-[15px] font-bold text-white"
           >
             Get in Touch
-            <span className="vz-btn-primary flex h-9 w-9 items-center justify-center rounded-full text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-400 text-sf-navy">
               <ArrowUpRight className="h-4 w-4" />
             </span>
           </Link>
-          <div className="grid gap-2.5 text-sm text-white/75">
-            <a href={PHONE_HREF} className="flex items-center gap-3 hover:text-white">
-              <Phone className="h-4 w-4 text-vz-cyan" />
+          <div className="grid gap-2.5 text-sm text-vz-ink/75">
+            <a href={PHONE_HREF} className="flex items-center gap-3 hover:text-amber-600">
+              <Phone className="h-4 w-4 text-sf-indigo" />
               {PHONE_DISPLAY}
             </a>
-            <a href={MAIL_HREF} className="flex items-center gap-3 break-all hover:text-white">
-              <Mail className="h-4 w-4 flex-shrink-0 text-vz-cyan" />
+            <a href={MAIL_HREF} className="flex items-center gap-3 break-all hover:text-amber-600">
+              <Mail className="h-4 w-4 flex-shrink-0 text-sf-indigo" />
               {EMAIL}
             </a>
           </div>
@@ -517,7 +526,7 @@ export default function Navbar() {
               target="_blank"
               rel="noreferrer"
               aria-label="Chat on WhatsApp"
-              className={`${GLASS_BUTTON} text-[#25d366] hover:bg-[#25d366] hover:text-white`}
+              className={`${ROUND_BUTTON} text-[#25d366] hover:bg-[#25d366] hover:text-white`}
             >
               <FaWhatsapp className="h-4 w-4" />
             </a>
@@ -528,7 +537,7 @@ export default function Navbar() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label={label}
-                className={`${GLASS_BUTTON} text-white/80 hover:bg-white/20 hover:text-white`}
+                className={`${ROUND_BUTTON} text-vz-ink/70 hover:bg-amber-400 hover:text-sf-navy`}
               >
                 <Icon className="h-4 w-4" />
               </a>

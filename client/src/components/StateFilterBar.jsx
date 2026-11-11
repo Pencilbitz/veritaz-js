@@ -1,36 +1,33 @@
-import React from "react";
+import { useId } from "react";
+import { MapPin } from "lucide-react";
 
-export default function StateFilterBar({ states, value, onChange }) {
+/* The state filter on the events page: a label and a row of chips, the
+   chosen one filled with the brand gradient (.ev-chip in styles/events.css).
+   Each chip is a toggle button, so screen readers hear which is pressed. */
+export default function StateFilterBar({ states, value, onChange, className = "" }) {
+  const labelId = useId();
   if (!states || states.length === 0) return null;
 
+  const chip = (state, label) => (
+    <button
+      key={state || "all"}
+      type="button"
+      aria-pressed={value === state}
+      onClick={() => onChange(state)}
+      className="ev-chip"
+    >
+      {label}
+    </button>
+  );
+
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
-      <span className="text-sm font-semibold text-gray-500 mr-1">STATE:</span>
-      <button
-        type="button"
-        onClick={() => onChange("")}
-        className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors ${
-          value === ""
-            ? "bg-emerald-50 border-emerald-400 text-emerald-700"
-            : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
-        }`}
-      >
-        All States
-      </button>
-      {states.map((s) => (
-        <button
-          key={s}
-          type="button"
-          onClick={() => onChange(s)}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors ${
-            value === s
-              ? "bg-emerald-50 border-emerald-400 text-emerald-700"
-              : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
-          }`}
-        >
-          {s}
-        </button>
-      ))}
+    <div role="group" aria-labelledby={labelId} className={`flex flex-wrap items-center gap-2 ${className}`}>
+      <span id={labelId} className="mr-1 inline-flex items-center gap-1.5 text-sm font-semibold tracking-[0.08em] text-slate-600">
+        <MapPin className="h-4 w-4 text-sf-violet" aria-hidden="true" />
+        STATE:
+      </span>
+      {chip("", "All States")}
+      {states.map((s) => chip(s, s))}
     </div>
   );
 }

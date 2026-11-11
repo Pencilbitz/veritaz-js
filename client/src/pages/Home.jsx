@@ -3,13 +3,11 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
-  ArrowUpRight,
   Award,
   BadgeIndianRupee,
   Barcode,
   BookCopy,
   BookOpen,
-  BookOpenText,
   FileText,
   Globe,
   GraduationCap,
@@ -19,31 +17,32 @@ import {
   Layers,
   Lightbulb,
   Mail,
-  Megaphone,
   MessageCircle,
+  Megaphone,
   PenLine,
-  Pause,
-  Phone,
   Play,
+  Phone,
   Presentation,
   Printer,
+  Smile,
   Star,
   TrendingUp,
   Trophy,
   X,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { Accent, Pill, Rule, Swash } from "../components/PressUI";
+import { BADGE_TONES as TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
 
 /* Home page in the "night press" look: night-ink bands lit by the logo's
    cyan-violet-orchid sweep, a display grotesque for headings, square corners
    and ruled hairline grids. The styles live under "Home page" in index.css. */
 
-const WRAP = "mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-20";
 
 const FALLBACK_COVERS = [
-  "/assets/image/books/index-1.png",
-  "/assets/image/books/index-2.png",
-  "/assets/image/books/index-3.png",
+  "/assets/image/books/index-1.webp",
+  "/assets/image/books/index-2.webp",
+  "/assets/image/books/index-3.webp",
 ];
 
 const stats = [
@@ -152,11 +151,11 @@ function CountUp({ value }) {
   return <span ref={ref}>{value}</span>;
 }
 
-function Avatar({ src, name }) {
+function Avatar({ src, name, size = "h-14 w-14 text-lg" }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
     return (
-      <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-vz-violet text-lg font-bold text-white">
+      <span className={`flex ${size} flex-shrink-0 items-center justify-center rounded-full bg-vz-violet font-bold text-white`}>
         {(name || "?").trim().charAt(0).toUpperCase()}
       </span>
     );
@@ -165,118 +164,25 @@ function Avatar({ src, name }) {
     <img
       src={src}
       alt={name || "Client"}
-      className="h-14 w-14 flex-shrink-0 rounded-full object-cover ring-1 ring-vz-line"
+      className={`${size} flex-shrink-0 rounded-full object-cover ring-1 ring-vz-line`}
       onError={() => setFailed(true)}
     />
   );
 }
 
-/** Decorative mark above a heading: a short gradient rule ending in the
- *  logo's diamond. */
-function Rule({ tone = "light", className = "" }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`flex items-center gap-1.5 ${tone === "dark" ? "text-vz-cyan" : "text-vz-violet"} ${className}`}
-    >
-      <span className="vz-rule h-0.5 w-10" />
-      <span className="h-2 w-2 rotate-45 border-[1.5px] border-current" />
-    </span>
-  );
-}
+const ROUND_BUTTON =
+  "flex h-12 w-12 flex-none items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-35";
+const ROUND_DARK = `${ROUND_BUTTON} bg-white/10 text-white ring-1 ring-white/25 hover:bg-white hover:text-sf-navy focus-visible:outline-white`;
+const ROUND_LIGHT = `${ROUND_BUTTON} bg-white text-vz-ink shadow-sm ring-1 ring-vz-line hover:bg-sf-indigo hover:text-white hover:ring-transparent focus-visible:outline-sf-violet`;
 
-/** Section label: a short gradient rule, then uppercase text. */
-function Eyebrow({ children, tone = "light", className = "" }) {
-  return (
-    <p
-      className={`flex items-center gap-3 text-xs font-bold uppercase tracking-[0.22em] ${
-        tone === "dark" ? "text-vz-cyan" : "text-vz-violet"
-      } ${className}`}
-    >
-      <span aria-hidden="true" className="vz-rule h-0.5 w-8 flex-none" />
-      {children}
-    </p>
-  );
-}
-
-const BUTTON_VARIANTS = {
-  primary: { button: "vz-btn-primary text-white focus-visible:outline-vz-violet", divider: "border-white/20" },
-  ghostDark: {
-    button: "border border-white/25 text-white hover:border-white/60 hover:bg-white/10 focus-visible:outline-vz-cyan",
-    divider: "border-white/20",
-  },
-  ghostLight: {
-    button: "border border-vz-ink/20 text-vz-ink hover:border-vz-ink hover:bg-vz-paper focus-visible:outline-vz-violet",
-    divider: "border-vz-ink/15",
-  },
-};
-
-/** Square button with the arrow in its own cell. Renders a router Link for
- *  `to`, an anchor for `href`, otherwise a button. */
-function PressButton({ to, href, variant = "primary", type = "button", className = "", children, ...rest }) {
-  const v = BUTTON_VARIANTS[variant];
-  const classes = `group inline-flex h-14 items-stretch text-[15px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-60 ${v.button} ${className}`;
-  const content = (
-    <>
-      <span className="flex flex-1 items-center justify-center px-6 sm:px-7">{children}</span>
-      <span aria-hidden="true" className={`flex w-14 flex-none items-center justify-center border-l ${v.divider}`}>
-        <ArrowUpRight className="h-5 w-5 motion-safe:transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-      </span>
-    </>
-  );
-
-  if (to) {
-    return (
-      <Link to={to} className={classes} {...rest}>
-        {content}
-      </Link>
-    );
-  }
-  if (href) {
-    return (
-      <a href={href} className={classes} {...rest}>
-        {content}
-      </a>
-    );
-  }
-  return (
-    <button type={type} className={classes} {...rest}>
-      {content}
-    </button>
-  );
-}
-
-const ICON_BUTTON_DARK =
-  "flex h-12 w-12 items-center justify-center border border-white/20 text-white transition-colors hover:bg-white hover:text-vz-night disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vz-cyan";
-const ICON_BUTTON_LIGHT =
-  "flex h-12 w-12 items-center justify-center border border-vz-ink/20 text-vz-ink transition-colors hover:border-vz-violet hover:bg-vz-violet hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vz-violet";
-
-const H2 = "font-display text-4xl font-bold leading-[1.04] tracking-[-0.02em] sm:text-5xl lg:text-6xl";
-
-// Process inks, as on a press sheet's colour bar: cyan, magenta (the logo's
-// orchid), yellow (the logo's gold globe) and key, each solid then at a tint.
-const COLOR_BAR = ["#3fd0e8", "#a5ebf5", "#d27af0", "#ecc4f8", "#f2c14e", "#f9e2a8", "#17133d", "#8f8bb0"];
-const INKS = ["#3fd0e8", "#d27af0", "#f2c14e", "#17133d"];
-
-/** The four process inks, as a press sheet's corner swatch. */
-function InkSwatch({ className = "" }) {
-  return (
-    <span aria-hidden="true" className={`flex items-center gap-1.5 ${className}`}>
-      {INKS.map((ink) => (
-        <span key={ink} className="h-2.5 w-2.5" style={{ background: ink }} />
-      ))}
-      <span className="ml-2 h-px w-16 bg-vz-ink/20" />
-    </span>
-  );
-}
 
 // The publishing steps, as tiles under the hero's paragraph.
 const HERO_FEATURES = [
-  { icon: PenLine, label: "Editing & Typesetting" },
-  { icon: BookOpen, label: "Cover Design" },
-  { icon: Barcode, label: "ISBN & Patent Registration" },
-  { icon: Printer, label: "Printing & Production" },
-  { icon: Layers, label: "eBook Distribution" },
+  { icon: PenLine, label: "Editing & Typesetting", color: "text-sf-indigo" },
+  { icon: BookOpen, label: "Cover Design", color: "text-pink-600" },
+  { icon: Barcode, label: "ISBN & Patent Registration", color: "text-amber-600" },
+  { icon: Printer, label: "Printing & Production", color: "text-sky-600" },
+  { icon: Layers, label: "eBook Distribution", color: "text-emerald-600" },
 ];
 
 /** A box in the press scene's 3D stage. (x, y, z) is its centre in stage
@@ -400,7 +306,7 @@ function PressScene({ covers }) {
                 <span className="mc-slot" />
                 <span className="mc-panel" />
                 <span className="mc-plate">
-                  <img src="/assets/image/veritaz-bg-Remove.png" alt="" />
+                  <img src="/assets/image/veritaz-logo.webp" alt="" />
                 </span>
                 <span className="mc-vents" />
                 <span className="mc-screw mc-screw--tl" />
@@ -468,7 +374,6 @@ function PressScene({ covers }) {
 
 function Hero({ covers, booksReady }) {
   const [gaveUp, setGaveUp] = useState(false);
-  const [motionPaused, setMotionPaused] = useState(false);
 
   // The press waits for the book list, but a slow network should not leave it
   // empty, so fall back to the bundled covers after a while.
@@ -489,10 +394,7 @@ function Hero({ covers, booksReady }) {
     // (7.6rem: the 40px contact strip plus the 80px bar); the scene and the
     // headline scale with the screen height to fit, and `short:` tightens
     // the spacing on low laptop screens.
-    <section
-      className="vz-hero vz-hero-v2 relative isolate overflow-hidden text-vz-ink lg:flex lg:min-h-[calc(100svh-7.6rem)] lg:flex-col"
-      data-paused={motionPaused || undefined}
-    >
+    <section className="vz-hero vz-hero-v2 relative isolate overflow-hidden text-vz-ink lg:flex lg:min-h-[calc(100svh-7.6rem)] lg:flex-col">
       <svg aria-hidden="true" className="vz-hero-waves" viewBox="0 0 1440 120" preserveAspectRatio="none">
         <defs>
           <linearGradient id="vz-wave" x1="0" y1="0" x2="1" y2="0">
@@ -502,140 +404,172 @@ function Hero({ covers, booksReady }) {
           </linearGradient>
         </defs>
         <path d="M0 64 C 220 8 430 118 720 78 C 990 42 1190 4 1440 46 L1440 120 L0 120 Z" fill="url(#vz-wave)" opacity="0.55" />
-        <path d="M0 98 C 300 62 520 122 820 100 C 1080 82 1260 72 1440 92 L1440 120 L0 120 Z" fill="#f5f3fb" />
+        <path d="M0 98 C 300 62 520 122 820 100 C 1080 82 1260 72 1440 92 L1440 120 L0 120 Z" fill="#f5f3ff" />
       </svg>
 
       <div
         className={`${WRAP} grid items-center gap-10 pb-16 pt-8 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-8 lg:pb-10 lg:pt-6 xl:gap-12 short:pb-8 short:pt-4`}
       >
         <div>
-          <p className="hero-fade inline-flex items-center gap-3 rounded-full bg-[#ece8ff] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#3b2a99] sm:px-5 sm:py-2.5 sm:text-[13px] short:py-2">
-            <BookOpenText className="h-5 w-5 text-[#5b21b6]" aria-hidden="true" />
-            Academic &amp; Professional Publishing
-          </p>
           {/* The headline comes into register: its cyan, magenta and yellow
               plates start offset and settle onto each other. */}
-          <h1 className="vz-misreg mt-6 text-balance text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.025em] text-vz-ink sm:text-6xl lg:text-[clamp(2.6rem,min(4.6vw,8svh),4.4rem)] short:mt-4">
+          <h1 className="vz-misreg text-balance text-[2.25rem] font-extrabold leading-[1.1] tracking-[-0.025em] text-vz-ink sm:text-5xl lg:text-[clamp(2.4rem,min(3.9vw,7.2svh),3.5rem)]">
             Where Great Writing Becomes a{" "}
             <span className="relative inline-block">
               <span className="hero-accent">Printed Reality</span>
-              <svg aria-hidden="true" className="hero-swash" viewBox="0 0 300 24" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="vz-swash" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0" stopColor="#4f46e5" />
-                    <stop offset="1" stopColor="#9333ea" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M6 15 C 70 6 150 3 236 8 C 262 10 282 14 294 21"
-                  fill="none"
-                  stroke="url(#vz-swash)"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  pathLength="1"
-                />
-              </svg>
+              <Swash />
             </span>
           </h1>
-          <p className="hero-fade mt-6 max-w-xl text-lg leading-relaxed text-slate-600 short:mt-4 short:text-base">
+          <p className="hero-fade mt-6 max-w-xl text-base leading-relaxed text-slate-600 lg:text-[17px] short:mt-4 short:text-[15px]">
             Seamless book creation through self-publishing, editing, cover design, ISBN &amp; patent
             registration, printing, and eBook distribution.
           </p>
 
           <ul className="hero-fade mt-6 grid max-w-2xl grid-cols-3 gap-2 sm:grid-cols-5 short:mt-4">
-            {HERO_FEATURES.map(({ icon: Icon, label }) => (
+            {HERO_FEATURES.map(({ icon: Icon, label, color }) => (
               <li
                 key={label}
                 className="flex flex-col items-center gap-2 rounded-xl bg-white/60 px-2 py-3 text-center text-[13px] font-semibold leading-tight text-vz-ink shadow-sm ring-1 ring-white backdrop-blur-sm short:gap-1 short:py-2 short:text-xs"
               >
-                <Icon className="h-7 w-7 text-[#5b21b6] short:h-6 short:w-6" strokeWidth={1.6} aria-hidden="true" />
+                <Icon className={`h-7 w-7 short:h-6 short:w-6 ${color}`} strokeWidth={1.6} aria-hidden="true" />
                 {label}
               </li>
             ))}
           </ul>
 
           <div className="hero-fade mt-8 flex flex-col gap-3 sm:flex-row short:mt-6">
-            <a
-              href="#publish-form"
-              className="group inline-flex h-14 items-center justify-center gap-3 rounded-full bg-[linear-gradient(100deg,#3b1fd1,#6d28d9_60%,#8b3fe0)] px-8 text-[15px] font-bold text-white shadow-[0_14px_30px_-10px_rgb(91_33_182/0.6)] transition-shadow hover:shadow-[0_18px_36px_-10px_rgb(91_33_182/0.75)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vz-violet short:h-12"
-            >
+            <Pill to="/contact" arrow>
               Start Publishing Today
-              <ArrowRight className="h-5 w-5 motion-safe:transition-transform group-hover:translate-x-1" aria-hidden="true" />
-            </a>
-            <Link
-              to="/book-store"
-              className="inline-flex h-14 items-center justify-center gap-3 rounded-full border-2 border-vz-ink/85 bg-white/50 px-8 text-[15px] font-bold text-vz-ink transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vz-violet short:h-12"
-            >
-              <BookOpen className="h-5 w-5" aria-hidden="true" />
+            </Pill>
+            <Pill to="/book-store" variant="outline" icon={BookOpen}>
               Browse the Book Store
-            </Link>
+            </Pill>
           </div>
         </div>
 
         <div className="relative">
           <PressScene covers={sceneCovers} />
-          <button
-            type="button"
-            onClick={() => setMotionPaused((p) => !p)}
-            aria-label={motionPaused ? "Play the press animation" : "Pause the press animation"}
-            className="vz-motion-toggle absolute right-0 top-0 flex h-9 w-9 items-center justify-center rounded-full border border-vz-ink/15 bg-white/80 text-vz-ink/60 transition-colors hover:border-vz-ink/50 hover:text-vz-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vz-violet"
-          >
-            {motionPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-          </button>
         </div>
       </div>
     </section>
   );
 }
 
-function ServiceTile({ service: { title, text, icon: Icon } }) {
+/** A hardcover standing up, cover to the front: its fore-edge pages show on
+ *  the right, the cloth spine on the left. Stands on the floor of a 3D stage. */
+function StandingBook({ cover, board, x, z, ry, className = "" }) {
   return (
-    <li className="group flex flex-col bg-white p-7 transition-colors hover:bg-[#fbfaff] lg:p-9">
-      <span className="vz-icon flex h-12 w-12 items-center justify-center">
-        <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden="true" />
-      </span>
-      <h3 className="mt-10 font-display text-2xl font-bold leading-tight text-vz-ink">{title}</h3>
-      <p className="mt-3 leading-relaxed text-slate-600">{text}</p>
+    <Cuboid
+      w={118}
+      h={158}
+      d={22}
+      x={x}
+      y={-79}
+      z={z}
+      ry={ry}
+      className={`bookstand ${className}`}
+      vars={{ "--board": board }}
+      faces={{
+        front: (
+          <img
+            src={cover}
+            alt=""
+            className="book3d-cover"
+            onError={(e) => {
+              e.currentTarget.src = FALLBACK_COVERS[0];
+            }}
+          />
+        ),
+        right: <span className="bookstand-pages" />,
+        top: <span className="bookstand-top" />,
+        left: <span className="book3d-spine" />,
+      }}
+    />
+  );
+}
+
+/** Three real books standing in a fan; they spread when the card is hovered. */
+function BookFan({ covers }) {
+  const pick = (i) => covers[i % covers.length];
+  return (
+    <div aria-hidden="true" className="fan">
+      <div className="fan-stage">
+        <Plane w={380} h={170} z={0} turn="rotateX(90deg)" className="floor-shadow fan-shadow" />
+        <StandingBook cover={pick(1)} board="#1e3a8a" x={-98} z={-34} ry={16} className="fan-book--l" />
+        <StandingBook cover={pick(2)} board="#7a1f2b" x={98} z={-34} ry={-16} className="fan-book--r" />
+        <StandingBook cover={pick(0)} board="#3b0764" x={0} z={26} ry={0} className="fan-book--c" />
+      </div>
+    </div>
+  );
+}
+
+function ServiceTile({ service: { title, text, icon: Icon }, tone = "" }) {
+  return (
+    <li className="svc-card group relative isolate flex flex-col overflow-hidden rounded-3xl bg-white p-6 short:p-4">
+      <span aria-hidden="true" className="svc-card-glow" />
+      <div className="flex items-center gap-4 short:gap-3">
+        <span className={`svc-badge svc-badge--sm ${tone}`}>
+          <Icon className="relative z-10 h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
+        </span>
+        <h3 className="text-[17px] font-bold leading-snug tracking-[-0.01em] text-vz-ink short:text-base">{title}</h3>
+      </div>
+      <p className="mt-3 text-[15px] leading-relaxed text-slate-600 short:mt-2 short:text-[13px] short:leading-normal">{text}</p>
     </li>
   );
 }
 
-function FeaturedService({ service: { title, text, icon: Icon } }) {
+function FeaturedService({ service: { title, text, icon: Icon }, covers }) {
   return (
-    <li className="vz-feature relative isolate flex flex-col justify-between overflow-hidden p-8 text-white sm:col-span-2 lg:p-12">
-      <span aria-hidden="true" className="vz-feature-diamond" />
-      <span className="flex h-12 w-12 items-center justify-center border border-white/20 bg-white/10 text-vz-cyan">
-        <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden="true" />
-      </span>
-      <div className="mt-16 lg:mt-24">
-        <h3 className="max-w-xl font-display text-3xl font-bold leading-[1.05] tracking-[-0.01em] sm:text-4xl lg:text-5xl">
-          {title}
-        </h3>
-        <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/75">{text}</p>
+    <li className="svc-feature group relative isolate overflow-hidden rounded-3xl p-6 text-white sm:col-span-2 lg:col-span-1 lg:row-span-2 lg:flex lg:flex-col short:p-5">
+      <div className="grid gap-6 md:grid-cols-2 md:items-center lg:flex lg:flex-1 lg:flex-col lg:items-stretch lg:gap-0">
+        <div className="relative z-10">
+          <div className="flex items-center gap-4">
+            <span className="svc-badge svc-badge--glass">
+              <Icon className="relative z-10 h-6 w-6" strokeWidth={1.8} aria-hidden="true" />
+            </span>
+            <h3 className="text-xl font-bold leading-tight tracking-[-0.02em] xl:text-2xl short:text-lg">{title}</h3>
+          </div>
+          <p className="mt-4 text-[15px] leading-relaxed text-white/80 short:mt-3 short:text-[13px] short:leading-normal">{text}</p>
+        </div>
+        <div className="lg:my-auto">
+          <BookFan covers={covers} />
+        </div>
       </div>
     </li>
   );
 }
 
-/** Inside Our Process: a ruled bento grid, book publishing leading on a night tile. */
-function Services() {
+
+const H2_SANS = "font-extrabold leading-[1.05] tracking-[-0.025em] text-vz-ink";
+
+/** Inside Our Process: book publishing leads on a tall violet card with real
+ *  books standing in 3D, beside the other four services in a 2 x 2 grid of
+ *  cards with glossy icon badges. Fits one screen on wide screens. */
+function Services({ covers }) {
+  const books = covers.length ? covers : FALLBACK_COVERS;
   return (
-    <section className="bg-vz-paper py-20 lg:py-28">
+    <section className={`vz-services relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
       <div className={WRAP}>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-16">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-16">
           <div>
             <Rule />
-            <h2 className={`reveal mt-6 text-vz-ink ${H2}`}>Inside Our Process</h2>
+            <h2 className={`reveal mt-5 ${H2_SANS} ${H2_FIT} short:mt-3`}>
+              Inside Our <Accent>Process</Accent>
+            </h2>
           </div>
-          <p className="text-lg leading-relaxed text-slate-600">
+          <p className="reveal text-base leading-relaxed text-slate-600 lg:text-[17px] short:text-[15px]">
             A seamless, guided workflow ensuring precision, quality, and complete author support at
             every stage of the publishing journey.
           </p>
         </div>
 
-        <ul className="mt-12 grid gap-px border border-vz-line bg-vz-line sm:grid-cols-2 lg:mt-16 lg:grid-cols-3">
-          {services.map((s) =>
-            s.featured ? <FeaturedService key={s.title} service={s} /> : <ServiceTile key={s.title} service={s} />
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:mt-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,3.5fr)_minmax(0,3.5fr)] short:mt-5 short:gap-3">
+          {services.map((s, i) =>
+            s.featured ? (
+              <FeaturedService key={s.title} service={s} covers={books} />
+            ) : (
+              <ServiceTile key={s.title} service={s} tone={TONES[i % TONES.length]} />
+            )
           )}
         </ul>
       </div>
@@ -643,47 +577,66 @@ function Services() {
   );
 }
 
-/** From Draft to Global Bookshelves: the stats on a ruled strip, each topped
- *  by a stretch of one gradient rule with a diamond node. */
+/** From Draft to Global Bookshelves: the three stats as glass cards on a
+ *  dashed journey line, each with a glossy badge and a count-up number. */
+const STAT_ICONS = [BookOpen, Lightbulb, Smile];
+const STAT_TONES = ["", "svc-badge--amber", "svc-badge--emerald"];
+
 function FromDraft() {
   return (
-    <section className="bg-white py-20 lg:py-28">
+    <section className={`vz-draft relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
       <div className={WRAP}>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-16">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-16">
           <div>
             <Rule />
-            <h2 className={`reveal mt-6 text-vz-ink ${H2}`}>From Draft to Global Bookshelves</h2>
+            <h2 className={`reveal mt-5 ${H2_SANS} ${H2_FIT} short:mt-3`}>
+              From Draft to Global <Accent>Bookshelves</Accent>
+            </h2>
           </div>
-          <p className="reveal text-lg leading-relaxed text-slate-600">
+          <p className="reveal text-base leading-relaxed text-slate-600 lg:text-[17px] short:text-[15px]">
             Veritaz International Press bridges the gap between innovative ideas and global
             recognition through complete publishing, patent protection, and academic support.
           </p>
         </div>
 
-        <dl className="mt-14 grid gap-x-8 gap-y-12 sm:grid-cols-3 lg:mt-20">
-          {stats.map((s, i) => (
-            <div key={s.label} className="vz-step reveal flex flex-col-reverse gap-3" style={{ "--i": i }}>
-              <dt className="font-medium text-slate-600">{s.label}</dt>
-              <dd className="vz-gradient-text-deep font-display text-6xl font-bold tabular-nums lg:text-8xl">
-                <CountUp value={s.value} />
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <div className="relative mt-10 lg:mt-14 short:mt-8">
+          <span aria-hidden="true" className="draft-path" />
+          <dl className="relative grid gap-4 sm:grid-cols-3 lg:gap-6">
+            {stats.map((s, i) => {
+              const Icon = STAT_ICONS[i];
+              return (
+                <div key={s.label} className="draft-card svc-card reveal relative isolate flex flex-col overflow-hidden rounded-3xl p-6 short:p-5">
+                  <span aria-hidden="true" className="svc-card-glow" />
+                  <dt className="order-last mt-2 font-semibold text-slate-600">{s.label}</dt>
+                  <dd>
+                    <span aria-hidden="true" className={`svc-badge svc-badge--sm mb-5 short:mb-3 ${STAT_TONES[i]}`}>
+                      <Icon className="relative z-10 h-5 w-5" strokeWidth={1.8} />
+                    </span>
+                    <span className="vz-gradient-text-deep block text-[clamp(2.5rem,min(4.4vw,8svh),3.75rem)] font-extrabold leading-none tracking-[-0.03em] tabular-nums">
+                      <CountUp value={s.value} />
+                    </span>
+                  </dd>
+                </div>
+              );
+            })}
+          </dl>
+        </div>
 
-        <div className="mt-14 flex flex-col gap-3 sm:flex-row lg:mt-16">
-          <PressButton href="#publish-form">Start Publishing Today</PressButton>
-          <PressButton to="/contact" variant="ghostLight">
+        <div className="mt-10 flex flex-col gap-3 sm:flex-row lg:mt-12 short:mt-8">
+          <Pill to="/contact" arrow>
+            Start Publishing Today
+          </Pill>
+          <Pill to="/contact" variant="outline">
             Contact us
-          </PressButton>
+          </Pill>
         </div>
       </div>
     </section>
   );
 }
 
-/** A row of covers the visitor pages through with the arrow buttons, or by
- *  swiping. Nothing moves on its own. */
+/** From our shelves: real books standing on a lit glass shelf in a violet
+ *  band, paged with the arrow buttons or by swiping. Nothing moves on its own. */
 function Shelf({ books }) {
   const rowRef = useRef(null);
   const [edge, setEdge] = useState({ start: true, end: false });
@@ -711,56 +664,57 @@ function Shelf({ books }) {
   if (!books.length) return null;
 
   return (
-    <section className="vz-aurora relative isolate overflow-hidden py-20 text-white lg:py-28">
+    <section className={`vz-shelf-band relative isolate overflow-hidden text-white ${SCREEN_PAD} ${SCREEN}`}>
       <div className={`${WRAP} flex flex-wrap items-end justify-between gap-6`}>
         <div>
           <Rule tone="dark" />
-          <h2 className={`reveal mt-6 ${H2}`}>From our shelves</h2>
+          <h2 className={`reveal mt-5 ${H2_SANS} ${H2_FIT} text-white short:mt-3`}>
+            From our <Accent tone="light">shelves</Accent>
+          </h2>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            to="/book-store"
-            className="mr-4 inline-flex items-center gap-2 font-bold text-white transition-colors hover:text-vz-cyan focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vz-cyan"
-          >
+        <div className="flex items-center gap-3">
+          <Pill to="/book-store" variant="light" arrow className="mr-1">
             View all books
-            <ArrowUpRight className="h-5 w-5" />
-          </Link>
-          <button type="button" onClick={() => page(-1)} disabled={edge.start} aria-label="Previous books" className={ICON_BUTTON_DARK}>
+          </Pill>
+          <button type="button" onClick={() => page(-1)} disabled={edge.start} aria-label="Previous books" className={ROUND_DARK}>
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <button type="button" onClick={() => page(1)} disabled={edge.end} aria-label="More books" className={ICON_BUTTON_DARK}>
+          <button type="button" onClick={() => page(1)} disabled={edge.end} aria-label="More books" className={ROUND_DARK}>
             <ArrowRight className="h-5 w-5" />
           </button>
         </div>
       </div>
 
-      <div className={`${WRAP} mt-10 lg:mt-14`}>
-        {/* Runs out to the right edge of the page so the cut-off cover hints
-            at more. The small inset on the left keeps focus rings unclipped. */}
+      <div className={`${WRAP} shelf-wrap relative mt-8 lg:mt-10 short:mt-5`}>
+        {/* The glass shelf stays put while the books slide along it. */}
+        <span aria-hidden="true" className="shelf-plank" />
+        {/* Runs out to the right edge of the page so the cut-off book hints
+            at more. The inset on the left keeps focus rings unclipped. */}
         <ul
           ref={rowRef}
           onScroll={updateEdges}
-          className="vz-shelf -ml-3 -mr-4 flex snap-x snap-mandatory scroll-pl-3 gap-5 overflow-x-auto py-4 pl-3 pr-4 sm:-mr-6 sm:pr-6 lg:-mr-20 lg:gap-8 lg:pr-20"
+          className="vz-shelf relative -ml-3 -mr-4 flex snap-x snap-mandatory scroll-pl-3 gap-6 overflow-x-auto pb-4 pl-3 pr-4 pt-5 sm:-mr-6 sm:pr-6 lg:-mr-20 lg:gap-9 lg:pr-20"
         >
           {books.map((book) => (
-            <li key={book.id} className="w-[150px] flex-none snap-start sm:w-[180px] lg:w-[210px]">
+            <li key={book.id} className="shelf-item flex-none snap-start">
               <Link
                 to={bookPath(book)}
-                className="vz-book group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vz-cyan"
+                className="shelf-book group block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
               >
-                <img
-                  src={book.cover1}
-                  alt={book.title}
-                  loading="lazy"
-                  className="vz-book-cover aspect-[3/4] w-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = FALLBACK_COVERS[0];
-                  }}
-                />
-                <h3 className="mt-4 line-clamp-2 text-sm font-bold text-white transition-colors group-hover:text-vz-cyan">
+                <span className="shelf-book-3d">
+                  <img
+                    src={book.cover1}
+                    alt={book.title}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = FALLBACK_COVERS[0];
+                    }}
+                  />
+                </span>
+                <h3 className="mt-6 line-clamp-2 text-sm font-bold text-white transition-colors group-hover:text-sf-lavender">
                   {book.title}
                 </h3>
-                <p className="mt-1 line-clamp-1 text-xs text-white/55">{book.authors}</p>
+                <p className="mt-1 line-clamp-1 text-xs text-white/60">{book.authors}</p>
               </Link>
             </li>
           ))}
@@ -770,51 +724,307 @@ function Shelf({ books }) {
   );
 }
 
-/** Why authors choose us: the heading stays put while the reasons run down a
- *  ruled two-column sheet beside it. */
-function Reasons() {
+/** Why authors choose us: the reasons printed in a hardcover book that opens
+ *  as it scrolls into view and then turns its own pages, a spread every few
+ *  seconds, riffling back to the start after the last; it holds while the
+ *  pointer or keyboard focus is on it.
+ *  Click or swipe a page, use the arrows, or pick a reason from the contents
+ *  to turn to it (a jump riffles through the pages in between). On phones the
+ *  pages sit in a row you swipe through. The rb-* styles live in index.css. */
+
+// The cover's back carries the first reason; each leaf after it carries two,
+// front (a right-hand page) and back (the left-hand page once turned).
+const BOOK_LEAVES = 1 + Math.ceil((reasons.length - 1) / 2);
+const LAST_SPREAD = BOOK_LEAVES - 1;
+// How long each spread stays open while the pages turn by themselves, and
+// how long the book waits after a visitor turns a page themselves.
+const TURN_EVERY = 2000;
+const WAIT_AFTER_USER = 7000;
+const pageNo = (i) => String(i + 1).padStart(2, "0");
+
+/** One printed page: a running head, the reason's badge, title and text with
+ *  a drop cap, its icon faint in the corner, and the page number. */
+function ReasonPage({ index }) {
+  const reason = reasons[index];
+  if (!reason) {
+    // The last page: the press's mark, as at the end of a book.
+    return (
+      <div className="rb-page rb-page--end" aria-hidden="true">
+        <span className="rb-end-mark">
+          <img src="/assets/image/veritaz-logo.webp" alt="" />
+        </span>
+        <span className="rb-end-rule" />
+      </div>
+    );
+  }
+  const { title, text, icon: Icon } = reason;
   return (
-    <section className="bg-vz-paper py-20 lg:py-28">
-      <div className={`${WRAP} grid gap-12 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16`}>
-        <div className="lg:sticky lg:top-32 lg:self-start">
+    <div className="rb-page">
+      <span className="rb-runhead" aria-hidden="true">
+        <img src="/assets/image/veritaz-logo.webp" alt="" />
+        <span />
+      </span>
+      <span className={`svc-badge svc-badge--sm rb-badge ${TONES[index % TONES.length]}`} aria-hidden="true">
+        <Icon className="relative z-10 h-5 w-5" strokeWidth={1.8} />
+      </span>
+      <h3 className="rb-title">{title}</h3>
+      <p className="rb-text">{text}</p>
+      <Icon className="rb-ghost" strokeWidth={1.2} aria-hidden="true" />
+      <span className="rb-folio" aria-hidden="true">
+        {pageNo(index)}
+      </span>
+    </div>
+  );
+}
+
+function Reasons() {
+  // s: the open spread (-1 = closed); from: the spread it last turned from,
+  // so the pages in between can turn one after another.
+  // by: who turned last ("auto" or "user"), so the book waits longer after a
+  // visitor turns a page themselves.
+  const [view, setView] = useState(() => ({ s: prefersCalm() ? 0 : -1, from: -1, by: "auto" }));
+  const { s, from, by } = view;
+  // The pages turn by themselves while the book is on screen, holding while
+  // the pointer is over it or a key has focused one of its controls. Not for
+  // visitors who ask for less motion.
+  const [autoTurn] = useState(() => !prefersCalm());
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [inView, setInView] = useState(false);
+  const stageRef = useRef(null);
+  const touched = useRef(false);
+  const opened = useRef(false);
+  const swipe = useRef({ x: 0, moved: false });
+  const running = autoTurn && !hovered && !focused && inView && s >= 0;
+
+  const go = useCallback((next, who = "auto") => {
+    setView((v) => {
+      const n = Math.max(-1, Math.min(LAST_SPREAD, next));
+      return n === v.s ? v : { s: n, from: v.s, by: who };
+    });
+  }, []);
+  const turnTo = (next) => {
+    touched.current = true;
+    go(next, "user");
+  };
+
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.5 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Open the book the first time it comes into view, unless the visitor has
+  // already turned to a page.
+  useEffect(() => {
+    if (!inView || opened.current || touched.current || s !== -1) return;
+    const t = setTimeout(() => {
+      opened.current = true;
+      go(0);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [inView, s, go]);
+
+  // Turn to the next spread after a pause; from the last one, riffle back to
+  // the first and carry on.
+  useEffect(() => {
+    if (!running) return;
+    const t = setTimeout(() => go(s >= LAST_SPREAD ? 0 : s + 1), by === "user" ? WAIT_AFTER_USER : TURN_EVERY);
+    return () => clearTimeout(t);
+  }, [running, s, by, go]);
+
+  // Once a jump has finished turning, clear its delays so hovering a page
+  // lifts it at once.
+  useEffect(() => {
+    if (from === s) return;
+    const steps = Math.abs(s - from);
+    const t = setTimeout(() => setView((v) => (v.s === s ? { ...v, from: v.s } : v)), 700 + steps * 60);
+    return () => clearTimeout(t);
+  }, [s, from]);
+
+  const onPointerDown = (e) => {
+    swipe.current = { x: e.clientX, moved: false };
+  };
+  const onPointerUp = (e) => {
+    const dx = e.clientX - swipe.current.x;
+    if (Math.abs(dx) < 40) return;
+    swipe.current.moved = true;
+    turnTo(dx < 0 ? s + 1 : s - 1);
+  };
+  const onLeafClick = (leaf) => {
+    if (swipe.current.moved) {
+      swipe.current.moved = false;
+      return;
+    }
+    if (leaf === s + 1 || (s === -1 && leaf === 0)) turnTo(s + 1);
+    else if (leaf === s) turnTo(s - 1);
+  };
+
+  const shown = s < 0 ? [] : [2 * s, 2 * s + 1];
+
+  return (
+    <section className={`vz-services rb-section relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+      <div className={`${WRAP} grid gap-8 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:items-center lg:gap-12 xl:gap-16`}>
+        {/* min-w-0: the phone row of pages must not widen the column. */}
+        <div className="min-w-0">
           <Rule />
-          <h2 className={`reveal mt-6 text-vz-ink ${H2}`}>Why Authors Choose Us</h2>
+          <h2 className={`reveal mt-5 ${H2_SANS} ${H2_FIT} short:mt-3`}>
+            Why Authors <Accent>Choose Us</Accent>
+          </h2>
+
+          {/* Contents: each reason with its page number; picks its spread. */}
+          <ol className="rb-toc mt-7 hidden lg:block short:mt-4">
+            {reasons.map(({ title }, i) => {
+              const current = shown.includes(i);
+              return (
+                <li key={title}>
+                  <button
+                    type="button"
+                    onClick={() => turnTo(Math.floor(i / 2))}
+                    aria-current={current ? "true" : undefined}
+                    className="rb-toc-item group flex w-full items-baseline gap-2 rounded-md py-[5px] text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-violet short:py-[3px]"
+                  >
+                    <span className="rb-toc-mark" aria-hidden="true" />
+                    <span className="rb-toc-title">{title}</span>
+                    <span className="rb-toc-leader" aria-hidden="true" />
+                    <span className="rb-toc-no" aria-hidden="true">
+                      {pageNo(i)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
         </div>
 
-        <ul className="grid border-t border-vz-line sm:grid-cols-2">
-          {reasons.map(({ title, text, icon: Icon }) => (
-            <li
-              key={title}
-              className="reveal group flex gap-5 border-b border-vz-line py-7 sm:last:col-span-2 sm:odd:pr-8 sm:even:pl-8 sm:[&:nth-child(odd):not(:last-child)]:border-r"
+        <div className="min-w-0">
+          {/* The book (tablets and up). */}
+          <div
+            ref={stageRef}
+            className="rb-stage hidden md:block"
+            onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(true)}
+            onPointerLeave={() => setHovered(false)}
+            onFocus={(e) => e.target.matches(":focus-visible") && setFocused(true)}
+            onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setFocused(false)}
+          >
+            <div
+              className="rb-book"
+              data-closed={s < 0 || undefined}
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
             >
-              <span className="vz-icon flex h-11 w-11 flex-none items-center justify-center">
-                <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-              </span>
-              <div>
-                <h3 className="font-display text-lg font-bold text-vz-ink">{title}</h3>
-                <p className="mt-1.5 leading-relaxed text-slate-600">{text}</p>
+              <div className="rb-body">
+                <span className="rb-shadow" aria-hidden="true" />
+                <span className="rb-board" aria-hidden="true">
+                  <span className="rb-ribbon" />
+                </span>
+                <div className="rb-base rb-paper rb-paper--right">
+                  <ReasonPage index={reasons.length + 1} />
+                </div>
+
+                {Array.from({ length: BOOK_LEAVES }, (_, leaf) => {
+                  const turned = leaf <= s;
+                  // Turned leaves stack up on the left, the latest on top;
+                  // the rest wait on the right, the next one on top.
+                  const z = turned ? leaf + 1 : BOOK_LEAVES - leaf + 1;
+                  const delay =
+                    from < s && leaf > from && leaf <= s
+                      ? (leaf - from - 1) * 60
+                      : s < from && leaf > s && leaf <= from
+                        ? (from - leaf) * 60
+                        : 0;
+                  const backIndex = leaf === 0 ? 0 : 2 * leaf;
+                  const frontIndex = 2 * leaf - 1;
+                  const isNext = leaf === s + 1;
+                  const isPrev = leaf === s;
+                  // Leaves turning right now: their faces shade as they lift.
+                  const turning = from !== s && leaf > Math.min(from, s) && leaf <= Math.max(from, s);
+                  return (
+                    <div
+                      key={leaf}
+                      className={`rb-leaf ${leaf === 0 ? "rb-leaf--cover" : ""}`}
+                      data-turned={turned || undefined}
+                      data-turning={turning || undefined}
+                      data-next={isNext || undefined}
+                      data-prev={isPrev || undefined}
+                      style={{ zIndex: z, "--d": `${delay}ms` }}
+                      onClick={() => onLeafClick(leaf)}
+                    >
+                      <div className={`rb-face rb-face--front ${leaf === 0 ? "rb-cover" : "rb-paper rb-paper--right"}`} aria-hidden={!isNext}>
+                        {leaf === 0 ? (
+                          <>
+                            <span className="rb-cover-dots" />
+                            <span className="rb-cover-frame" />
+                            <span className="rb-cover-medal">
+                              <img src="/assets/image/veritaz-logo.webp" alt="" />
+                            </span>
+                          </>
+                        ) : (
+                          <ReasonPage index={frontIndex} />
+                        )}
+                      </div>
+                      <div className={`rb-face rb-face--back ${leaf === 0 ? "rb-endpaper" : "rb-paper rb-paper--left"}`} aria-hidden={!isPrev}>
+                        {leaf === 0 ? (
+                          <div className="rb-paper rb-paper--left rb-pasted">
+                            <ReasonPage index={backIndex} />
+                          </div>
+                        ) : (
+                          <ReasonPage index={backIndex} />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </li>
-          ))}
-        </ul>
+            </div>
+
+            <div className="mt-8 flex items-center justify-center gap-4 short:mt-5">
+              <button type="button" onClick={() => turnTo(s - 1)} disabled={s < 0} aria-label="Previous page" className={ROUND_LIGHT}>
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <span className="rb-progress" aria-hidden="true">
+                <span style={{ transform: `scaleX(${(s + 1) / BOOK_LEAVES})` }} />
+              </span>
+              <button type="button" onClick={() => turnTo(s + 1)} disabled={s >= LAST_SPREAD} aria-label="Next page" className={ROUND_LIGHT}>
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Phones: the pages in a row to swipe through. */}
+          <ol className="rb-strip -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6 pt-2 sm:-mx-6 sm:px-6 md:hidden">
+            {reasons.map(({ title }, i) => (
+              <li key={title} className="rb-card rb-paper rb-paper--right flex-none snap-center">
+                <ReasonPage index={i} />
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     </section>
   );
 }
 
+/** Testimonials: each review set as a press clipping taped up, with the
+ *  previous and next clippings fanned out behind it. The reviews change by
+ *  themselves, holding while the pointer or focus is on them (not for
+ *  visitors who ask for less motion); the arrows, the side clippings and the
+ *  authors' portraits pick one directly. Every clipping stays in the page so
+ *  each change slides them between places. The tm-* styles live in index.css. */
 function Testimonials({ testimonials }) {
   const [index, setIndex] = useState(0);
-  // Visitors who ask for less motion start paused and can press play.
-  const [paused, setPaused] = useState(prefersCalm);
+  const [calm] = useState(prefersCalm);
   const [held, setHeld] = useState(false);
   const [videoUrl, setVideoUrl] = useState(null);
   const count = testimonials.length;
 
   useEffect(() => {
-    if (count < 2 || paused || held || videoUrl) return undefined;
-    const timer = setInterval(() => setIndex((i) => (i + 1) % count), 8000);
+    if (count < 2 || calm || held || videoUrl) return undefined;
+    const timer = setInterval(() => setIndex((i) => (i + 1) % count), 7000);
     return () => clearInterval(timer);
-  }, [count, paused, held, videoUrl]);
+  }, [count, calm, held, videoUrl]);
 
   useEffect(() => {
     if (!videoUrl) return undefined;
@@ -825,83 +1035,117 @@ function Testimonials({ testimonials }) {
 
   if (!count) return null;
 
-  const current = testimonials[index % count];
-  const hasVideo = (current.is_video_testimonial === true || current.is_video_testimonial === 1) && current.video_url;
-  const long = (current.content || "").length > 280;
-  const go = (step) => setIndex((i) => (i + step + count) % count);
+  const at = (i) => ((i % count) + count) % count;
+  const current = at(index);
+  const go = (step) => setIndex((i) => at(i + step));
+  // Where each clipping sits: in front, tucked behind to either side, or put away.
+  const roleOf = (i) => {
+    if (i === current) return "front";
+    if (count > 1 && i === at(current + 1)) return "next";
+    if (count > 2 && i === at(current - 1)) return "prev";
+    return "away";
+  };
 
   return (
-    <section className="bg-white py-20 lg:py-28">
+    <section className={`vz-draft relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
       <div
-        className={`${WRAP} grid gap-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-x-16`}
+        className={`${WRAP} grid gap-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:items-center lg:gap-x-16`}
         onMouseEnter={() => setHeld(true)}
         onMouseLeave={() => setHeld(false)}
         onFocus={() => setHeld(true)}
         onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setHeld(false)}
       >
-        <div>
-          <Eyebrow>Testimonials</Eyebrow>
-          <h2 className={`reveal mt-5 text-vz-ink ${H2}`}>In our authors&apos; words</h2>
+        <div className="min-w-0">
+          <Rule />
+          <h2 className={`reveal mt-5 ${H2_SANS} ${H2_FIT}`}>
+            In our authors&apos; <Accent>words</Accent>
+          </h2>
+
+          {count > 1 && (
+            <>
+              {/* The authors' portraits: each brings up their clipping. */}
+              <ul className="mt-8 flex flex-wrap gap-2.5 short:mt-5">
+                {testimonials.map((t, i) => (
+                  <li key={t.id ?? i}>
+                    <button
+                      type="button"
+                      onClick={() => setIndex(i)}
+                      aria-label={t.name || `Testimonial ${i + 1}`}
+                      aria-current={i === current ? "true" : undefined}
+                      className="tm-face rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sf-violet"
+                    >
+                      <Avatar src={t.avatar_url} name={t.name} size="h-11 w-11 text-base" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-6 flex items-center gap-2 short:mt-4">
+                <button type="button" onClick={() => go(-1)} aria-label="Previous testimonial" className={ROUND_LIGHT}>
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <button type="button" onClick={() => go(1)} aria-label="Next testimonial" className={ROUND_LIGHT}>
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+                <span className="ml-3 text-sm font-bold tabular-nums text-slate-500">
+                  {current + 1} / {count}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Re-keyed so each new quote replays its entrance. */}
-        <figure key={current.id ?? index} className="vz-quote flex flex-col lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:min-h-[420px]">
-          {/* The glyph sits high in its em box, so the box is cut to its top half. */}
-          <span aria-hidden="true" className="vz-gradient-text block h-[0.5em] w-fit font-display text-[7rem] font-bold leading-none lg:text-[9rem]">
-            &ldquo;
-          </span>
-          <blockquote
-            className={`mb-10 mt-4 font-display font-medium leading-snug tracking-[-0.01em] text-vz-ink ${
-              long ? "text-xl lg:text-2xl" : "text-2xl lg:text-[2rem]"
-            }`}
-          >
-            {current.content}
-          </blockquote>
-          <figcaption className="mt-auto flex flex-wrap items-center gap-4 border-t border-vz-line pt-8">
-            <Avatar src={current.avatar_url} name={current.name} />
-            <div className="min-w-0">
-              <p className="font-bold text-vz-ink">{current.name}</p>
-              <p className="text-sm text-slate-600">{current.designation}</p>
-              <div className="mt-1 flex gap-0.5" role="img" aria-label={`${current.rating || 5} out of 5 stars`}>
-                {Array.from({ length: Number(current.rating) || 5 }).map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-brand-gold text-brand-gold" aria-hidden="true" />
-                ))}
-              </div>
-            </div>
-            {hasVideo && (
-              <button
-                type="button"
-                onClick={() => setVideoUrl(current.video_url)}
-                className="vz-btn-primary inline-flex h-11 items-center gap-2 px-5 text-sm font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vz-violet sm:ml-auto"
+        <div className="tm-stage min-w-0">
+          <span className="tm-dots" aria-hidden="true" />
+          {testimonials.map((t, i) => {
+            const role = roleOf(i);
+            const front = role === "front";
+            const hasVideo = front && (t.is_video_testimonial === true || t.is_video_testimonial === 1) && t.video_url;
+            const long = (t.content || "").length > 280;
+            const turn = role === "prev" ? () => go(-1) : role === "next" ? () => go(1) : undefined;
+            return (
+              <figure
+                key={t.id ?? i}
+                className="tm-clip"
+                data-role={role}
+                aria-hidden={front ? undefined : "true"}
+                inert={role === "away" || undefined}
+                onClick={turn}
               >
-                <Play className="h-4 w-4 fill-white" aria-hidden="true" />
-                Watch Video
-              </button>
-            )}
-          </figcaption>
-        </figure>
-
-        {count > 1 && (
-          <div className="flex items-center gap-2 lg:col-start-1 lg:row-start-2 lg:self-end">
-            <button type="button" onClick={() => go(-1)} aria-label="Previous testimonial" className={ICON_BUTTON_LIGHT}>
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaused((p) => !p)}
-              aria-label={paused ? "Play testimonials" : "Pause testimonials"}
-              className={ICON_BUTTON_LIGHT}
-            >
-              {paused ? <Play className="h-5 w-5" /> : <Pause className="h-5 w-5" />}
-            </button>
-            <button type="button" onClick={() => go(1)} aria-label="Next testimonial" className={ICON_BUTTON_LIGHT}>
-              <ArrowRight className="h-5 w-5" />
-            </button>
-            <span className="ml-3 text-sm font-bold tabular-nums text-slate-500">
-              {(index % count) + 1} / {count}
-            </span>
-          </div>
-        )}
+                <span className="tm-tape" aria-hidden="true" />
+                <div className="tm-paper">
+                  <span className="tm-mark" aria-hidden="true">
+                    &ldquo;
+                  </span>
+                  <blockquote
+                    className={`mb-6 font-medium leading-relaxed text-vz-ink short:mb-4 ${long ? "text-[15px] lg:text-base" : "text-base lg:text-[17px]"}`}
+                  >
+                    {t.content}
+                  </blockquote>
+                  <figcaption className="tm-byline mt-auto flex flex-wrap items-center gap-4 pt-5 short:pt-4">
+                    <span className="rounded-full bg-[linear-gradient(135deg,var(--color-sf-indigo),var(--color-sf-violet))] p-[2px]">
+                      <Avatar src={t.avatar_url} name={t.name} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-bold text-vz-ink">{t.name}</p>
+                      <p className="text-sm text-slate-600">{t.designation}</p>
+                      <div className="mt-1 flex gap-0.5" role="img" aria-label={`${t.rating || 5} out of 5 stars`}>
+                        {Array.from({ length: Number(t.rating) || 5 }).map((_, k) => (
+                          <Star key={k} className="h-3.5 w-3.5 fill-brand-gold text-brand-gold" aria-hidden="true" />
+                        ))}
+                      </div>
+                    </div>
+                    {hasVideo && (
+                      <Pill onClick={() => setVideoUrl(t.video_url)} icon={Play} className="h-11 px-5 text-sm sm:ml-auto short:h-11">
+                        Watch Video
+                      </Pill>
+                    )}
+                  </figcaption>
+                </div>
+              </figure>
+            );
+          })}
+        </div>
       </div>
 
       {videoUrl && (
@@ -909,161 +1153,82 @@ function Testimonials({ testimonials }) {
           role="dialog"
           aria-modal="true"
           aria-label="Testimonial video"
-          className="fixed inset-0 z-[110] flex items-center justify-center bg-vz-night/85 p-4"
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-sf-navy/85 p-4"
           onClick={(e) => e.target === e.currentTarget && setVideoUrl(null)}
         >
           <button
             type="button"
             onClick={() => setVideoUrl(null)}
             aria-label="Close video"
-            className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center border border-white/20 text-white hover:bg-white/15"
+            className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25"
           >
             <X className="h-6 w-6" />
           </button>
-          <video src={videoUrl} className="w-full max-w-3xl" controls autoPlay />
+          <video src={videoUrl} className="w-full max-w-3xl rounded-2xl" controls autoPlay />
         </div>
       )}
     </section>
   );
 }
 
-// #8f8bb0 keeps the field outline at 3:1 against white.
-const FIELD =
-  "w-full border border-[#8f8bb0] bg-white px-4 text-slate-900 transition-colors focus:outline-none focus:border-vz-violet focus:ring-2 focus:ring-vz-violet/20";
-const LABEL = "mb-1.5 block text-sm font-semibold text-vz-ink";
-
-const contacts = [
-  { href: "tel:+916380658876", icon: Phone, label: "+91 6380658876" },
-  { href: "mailto:info@veritazinternational.com", icon: Mail, label: "info@veritazinternational.com" },
-  { href: "https://wa.me/916380658876", icon: MessageCircle, label: "Join WhatsApp", external: true },
-];
-
-function InquiryForm() {
-  const [status, setStatus] = useState({ type: "idle", message: "" });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const data = new FormData(form);
-
-    setStatus({ type: "loading", message: "Sending..." });
-    try {
-      const { error } = await supabase.from("veritaz_inquiries").insert({
-        name: data.get("name"),
-        email: data.get("email"),
-        phone: data.get("phone"),
-        message: data.get("message"),
-        form_type: "Book Publishing",
-      });
-      if (error) throw error;
-      setStatus({ type: "success", message: "Thank you! We'll be in touch within 24 hours." });
-      form.reset();
-    } catch (error) {
-      console.error("Inquiry failed:", error);
-      setStatus({ type: "error", message: "Something went wrong. Please try again or call us." });
-    }
-  };
-
+/** Reach out: the page closes on an invitation to get in touch, on a violet
+ *  card with a desk photo, two real book covers and a telephone receiver
+ *  hanging in from the top that sways a little as the card scrolls by. The
+ *  button leads to the Contact page. The ro-* styles live in index.css. */
+function ReachOut() {
   return (
-    // On wide screens the section is exactly one screen below the sticky
-    // navbar (72px on phones, 80px from lg), and scroll-mt lands the anchor
-    // links right under it. The `short` variant tightens it on low laptop
-    // screens so the whole form still fits.
-    <section
-      id="publish-form"
-      className="vz-proof-band relative isolate scroll-mt-[72px] overflow-hidden text-vz-ink lg:flex lg:min-h-[calc(100svh-5rem)] lg:scroll-mt-20 lg:items-center"
-    >
-      <span aria-hidden="true" className="vz-cmyk-band vz-cmyk-band--top" />
-      <span aria-hidden="true" className="vz-halftone" />
+    <section className={`vz-draft relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+      <div className={WRAP}>
+        <div className="ro-card relative isolate overflow-hidden rounded-[2.5rem] text-white lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-stretch">
+          <span className="ro-dots" aria-hidden="true" />
 
-      <div
-        className={`${WRAP} grid items-center gap-10 py-16 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-14 lg:py-12 xl:gap-24 short:py-8`}
-      >
-        <div>
-          <InkSwatch />
-          <h2 className="mt-6 font-display text-4xl font-bold leading-[1.04] tracking-[-0.02em] text-vz-ink sm:text-5xl xl:text-[3.6rem] short:mt-4 short:text-[2.75rem]">
-            Have a manuscript? <span className="vz-gradient-text-deep">Let&apos;s publish it.</span>
-          </h2>
-          <p className="mt-5 max-w-lg text-lg leading-relaxed text-slate-600 short:mt-3 short:text-base">
-            Tell us about your book and our team will get back to you within 24 hours.
-          </p>
-          <ul className="mt-8 grid max-w-lg gap-3 short:mt-5 short:gap-2">
-            {contacts.map(({ href, icon: Icon, label, external }) => (
-              <li key={label}>
+          <div className="relative z-10 px-6 pb-4 pt-12 sm:px-12 lg:py-16 lg:pl-16 xl:pl-20 short:py-10">
+            <Rule tone="dark" />
+            <h2 className={`reveal mt-5 ${H2_FIT} leading-[1.1] text-white short:mt-3`}>
+              Ready To Publish Your <Accent tone="light">Book?</Accent>
+            </h2>
+            <p className="mt-5 max-w-lg text-base leading-relaxed text-white/85 lg:text-[17px] short:mt-4">
+              Tell us about your book and our team will get back to you within 24 hours.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap short:mt-6">
+              <Pill to="/contact" variant="light" arrow>
+                Get in Touch
+              </Pill>
+              <Pill href="tel:+916380658876" variant="outline-light" icon={Phone}>
+                +91 6380658876
+              </Pill>
+            </div>
+            <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-white/85 short:mt-5">
+              <li>
                 <a
-                  href={href}
-                  {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
-                  className="group flex items-center gap-4 border border-vz-line bg-white px-3 py-3 font-semibold break-all transition-colors hover:border-vz-violet focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vz-violet short:py-2"
+                  href="mailto:info@veritazinternational.com"
+                  className="inline-flex items-center gap-2 break-all transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                 >
-                  <span className="vz-icon flex h-10 w-10 flex-none items-center justify-center">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </span>
-                  {label}
-                  <ArrowUpRight
-                    className="ml-auto h-4 w-4 flex-none text-vz-ink/35 transition-colors group-hover:text-vz-violet"
-                    aria-hidden="true"
-                  />
+                  <Mail className="h-4 w-4 flex-none text-amber-300" aria-hidden="true" />
+                  info@veritazinternational.com
                 </a>
               </li>
-            ))}
-          </ul>
-        </div>
+              <li>
+                <a
+                  href="https://wa.me/916380658876"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                >
+                  <MessageCircle className="h-4 w-4 flex-none text-amber-300" aria-hidden="true" />
+                  Join WhatsApp
+                </a>
+              </li>
+            </ul>
+          </div>
 
-        {/* The form as a press proof: crop marks and registration targets
-            around a sheet with the process colours along its head. */}
-        <div className="relative p-5 sm:p-7 short:p-4">
-          <span aria-hidden="true" className="press-crop press-crop--tl" />
-          <span aria-hidden="true" className="press-crop press-crop--tr" />
-          <span aria-hidden="true" className="press-crop press-crop--bl" />
-          <span aria-hidden="true" className="press-crop press-crop--br" />
-          <span aria-hidden="true" className="press-reg press-reg--l" />
-          <span aria-hidden="true" className="press-reg press-reg--r" />
-
-          <form
-            onSubmit={handleSubmit}
-            className="reveal relative border border-vz-line bg-white p-6 text-slate-800 shadow-[0_30px_60px_-28px_rgb(23_19_61/0.35)] sm:p-8 short:p-6"
-          >
-            <span aria-hidden="true" className="vz-cmyk-band vz-cmyk-band--top" />
-            <div className="flex items-center justify-between gap-4">
-              <h3 className="font-display text-2xl font-bold text-vz-ink lg:text-3xl short:text-2xl">Publish Your Book</h3>
-              <span aria-hidden="true" className="hidden gap-0.5 sm:flex">
-                {COLOR_BAR.map((color) => (
-                  <span key={color} className="h-2 w-3" style={{ background: color }} />
-                ))}
-              </span>
-            </div>
-            <div className="mt-6 space-y-4 short:mt-4 short:space-y-3">
-              <div>
-                <label htmlFor="home-name" className={LABEL}>Your Name</label>
-                <input id="home-name" name="name" type="text" autoComplete="name" required className={`${FIELD} h-11`} />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 short:gap-3">
-                <div>
-                  <label htmlFor="home-email" className={LABEL}>Email Address</label>
-                  <input id="home-email" name="email" type="email" autoComplete="email" required className={`${FIELD} h-11`} />
-                </div>
-                <div>
-                  <label htmlFor="home-phone" className={LABEL}>Phone Number</label>
-                  <input id="home-phone" name="phone" type="tel" autoComplete="tel" required className={`${FIELD} h-11`} />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="home-message" className={LABEL}>Message</label>
-                <textarea id="home-message" name="message" rows={3} className={`${FIELD} h-24 resize-y py-2.5 short:h-16`} />
-              </div>
-              <PressButton type="submit" disabled={status.type === "loading"} className="w-full">
-                {status.type === "loading" ? "Sending..." : "Send Inquiry"}
-              </PressButton>
-              <p
-                role="status"
-                className={`min-h-5 text-center text-sm font-medium ${
-                  status.type === "error" ? "text-red-600" : status.type === "success" ? "text-green-700" : "text-slate-500"
-                }`}
-              >
-                {status.type === "loading" ? "" : status.message}
-              </p>
-            </div>
-          </form>
+          {/* The picture: desk photo, book covers and the hanging receiver. */}
+          <div className="ro-visual relative" aria-hidden="true">
+            <img src="/assets/image/our-company/laptop-books.webp" alt="" loading="lazy" className="ro-photo" />
+            <img src={FALLBACK_COVERS[1]} alt="" loading="lazy" className="ro-cover ro-cover--back" />
+            <img src={FALLBACK_COVERS[0]} alt="" loading="lazy" className="ro-cover ro-cover--front" />
+            <img src="/assets/image/contact-phone.webp" alt="" loading="lazy" className="ro-phone" />
+          </div>
         </div>
       </div>
     </section>
@@ -1113,12 +1278,12 @@ export default function Home() {
   return (
     <main>
       <Hero covers={covers} booksReady={booksReady} />
-      <Services />
+      <Services covers={covers} />
       <FromDraft />
       <Shelf books={books.slice(0, 12)} />
       <Reasons />
       <Testimonials testimonials={testimonials} />
-      <InquiryForm />
+      <ReachOut />
     </main>
   );
 }
