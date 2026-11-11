@@ -395,6 +395,9 @@ function Hero({ covers, booksReady }) {
     // headline scale with the screen height to fit, and `short:` tightens
     // the spacing on low laptop screens.
     <section className="vz-hero vz-hero-v2 relative isolate overflow-hidden text-vz-ink lg:flex lg:min-h-[calc(100svh-7.6rem)] lg:flex-col">
+      {/* A library softly out of focus behind the press, fading out before
+          the text. */}
+      <span aria-hidden="true" className="vz-hero-library" />
       <svg aria-hidden="true" className="vz-hero-waves" viewBox="0 0 1440 120" preserveAspectRatio="none">
         <defs>
           <linearGradient id="vz-wave" x1="0" y1="0" x2="1" y2="0">

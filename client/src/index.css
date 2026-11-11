@@ -483,6 +483,39 @@ h2 {
     radial-gradient(45% 60% at 100% 10%, rgb(221 214 254 / 0.9), transparent 70%),
     linear-gradient(180deg, #f9f8ff, #f1edff);
 }
+/* Behind the press: a library softly out of focus (a bookshelf photo,
+   blurred and tinted to the hero's lavender), fading out before the text,
+   with soft light just behind the press so it stays crisp against it. On
+   phones, where the press sits under the text, it fades in from below. */
+.vz-hero-library {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: linear-gradient(180deg, transparent 58%, #000 86%);
+}
+@media (min-width: 1024px) {
+  .vz-hero-library {
+    mask-image: linear-gradient(90deg, transparent 28%, #000 68%);
+  }
+}
+.vz-hero-library::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  background: url("/assets/image/our-company/bookshelf.webp") 70% 40% / cover no-repeat;
+  filter: blur(3px) saturate(0.85);
+  opacity: 0.42;
+}
+.vz-hero-library::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(45% 60% at 72% 52%, rgb(245 243 255 / 0.62), transparent 70%),
+    linear-gradient(90deg, rgb(247 245 255 / 0.18), rgb(237 233 254 / 0.32));
+}
 .vz-hero-waves {
   position: absolute;
   inset-inline: 0;
