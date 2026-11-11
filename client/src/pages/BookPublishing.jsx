@@ -763,10 +763,12 @@ function CallToAction() {
               Join thousands of authors who have successfully published their works with our expert guidance and support.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Pill variant="light" arrow className="max-sm:gap-2 max-sm:px-5 max-sm:text-sm">
+              <Pill to="/contact" variant="light" arrow className="max-sm:gap-2 max-sm:px-5 max-sm:text-sm">
                 Start Your Publication Journey
               </Pill>
-              <Pill variant="outline-light">Request a Consultation</Pill>
+              <Pill to="/contact" variant="outline-light">
+                Request a Consultation
+              </Pill>
             </div>
           </div>
 
