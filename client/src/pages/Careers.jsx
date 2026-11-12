@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
   Briefcase,
-  Mail,
   Send,
   FileText,
-  Users,
-  ArrowRight,
   MapPin,
   Monitor,
   Clock,
   GraduationCap,
+  PenLine,
+  Phone,
+  Target,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
+import { Accent, Pill, Rule } from '../components/PressUI';
+import { BADGE_TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from '../components/pressLayout';
 import { useSeo } from "../seo/useSeo";
 import { PAGES } from "../seo/site";
 
@@ -59,6 +60,14 @@ import { PAGES } from "../seo/site";
  * the contact page and the book pages — info@veritazinternational.com. No HR name,
  * direct number or desk extension: those live in the HR system and a copy here
  * would drift the moment someone changes roles.
+ *
+ * ---------------------------------------------------------------------------
+ * Look
+ *
+ * The site's "press" look (styles: cr-* in styles/hr.css): a lavender hero with
+ * the handshake photo framed on a violet backing; Open Roles on white, the empty
+ * state set beside a newspaper's classified column with its advert space still
+ * blank; How to Apply on the navy band, with what to include down glass rows.
  */
 
 // One address, spelled once. The subject line matters more than it looks: HR
@@ -90,17 +99,22 @@ const CAREERS_SELECT =
 // claims about the company, which is why this list is safe to hardcode while a
 // list of roles is not.
 const WHAT_TO_INCLUDE = [
-  'Your CV or résumé, attached as a PDF.',
-  'The kind of work you are looking for — editorial, publishing operations, events, design, technology or support.',
-  'A short note on why Veritaz International Press, in your own words. A few lines is plenty.',
-  'A phone number and an email address we can reach you on.',
+  ['CV or Résumé', 'Attached in PDF format.'],
+  ['Desired Field', 'Specify your interest (e.g., Editorial, Publishing Operations, Event Coordination, Graphic Design, Information Technology, or Administration).'],
+  ['Statement of Intent', 'A short note explaining why you wish to join Veritaz International Press (3–4 sentences is sufficient).'],
+  ['Contact Details', 'Your current phone number and primary email address.'],
+];
+// A glossy badge for each of the four, in the accent tones.
+const INCLUDE_BADGES = [
+  { Icon: FileText, tone: '' },
+  { Icon: Target, tone: 'svc-badge--amber' },
+  { Icon: PenLine, tone: 'svc-badge--pink' },
+  { Icon: Phone, tone: 'svc-badge--emerald' },
 ];
 
-const SectionHeading = ({ children }) => (
-  <h2 className="border-b border-gray-100 pb-2 text-sm font-extrabold text-gray-900">
-    {children}
-  </h2>
-);
+const HERO_PHOTO = '/assets/image/careers-hero.webp';
+const H2 = `${H2_FIT} leading-[1.1] text-vz-ink`;
+const H2_LIGHT = `${H2_FIT} leading-[1.1] text-white`;
 
 export default function Careers() {
   useSeo(PAGES["/careers"]);
@@ -149,128 +163,183 @@ export default function Careers() {
     };
   }, []);
 
+  // How to Apply is for the speculative applicant: it only appears once the list
+  // has loaded and turned out empty. When roles are listed, each card carries its
+  // own "Apply for this role" link, so the general instructions would just repeat
+  // it. Hidden while loading so it does not flash up and vanish.
+  const showHowToApply = !loading && roles.length === 0;
+
   return (
-    <section className="bg-gray-50 py-12 sm:py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        {/* Header — same shape as the Employment Verification page, since the two
-            sit together under the HR Department menu and should read as one desk. */}
-        <header className="flex items-start gap-4">
-          <span className="hidden size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white sm:grid">
-            <Briefcase size={24} />
-          </span>
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
-              Careers
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-600 sm:text-[15px]">
-              Veritaz International Press publishes books and runs academic conferences and
-              events. We welcome applications by email throughout the year, and we share open
-              roles here and on our social channels whenever there are any.
-            </p>
-          </div>
-        </header>
+    <main className="min-h-screen overflow-x-clip bg-white text-slate-800">
+      <CareersHero />
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            {/* ── Open roles ─────────────────────────────────────
-                The heading and the card shell are rendered in all three states, so
-                the only thing that changes when the fetch lands is the body. That
-                keeps the page from reflowing under the reader's cursor, and it
-                means the loading state cannot be mistaken for a broken page. */}
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-              <SectionHeading>Open roles</SectionHeading>
+      {/* ── Open roles ─────────────────────────────────────
+          The heading and the section are rendered in all three states, so the
+          only thing that changes when the fetch lands is the body. That keeps the
+          page from reflowing under the reader's cursor, and it means the loading
+          state cannot be mistaken for a broken page. */}
+      <section aria-labelledby="cr-roles" className={`cr-roles relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+        <div className={WRAP}>
+          <Rule />
+          <h2 id="cr-roles" className={`reveal mt-5 ${H2} short:mt-3`}>
+            Open <Accent>Roles</Accent>
+          </h2>
 
-              {loading ? (
-                <RolesLoading />
-              ) : roles.length > 0 ? (
-                <div className="mt-4 space-y-4">
-                  {roles.map((role) => (
-                    <RoleCard key={role.id} role={role} />
-                  ))}
-                </div>
-              ) : (
-                <NoRoles />
-              )}
-            </div>
-
-            {/* ── How to apply ─────────────────────────────────── */}
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-              <SectionHeading>How to apply</SectionHeading>
-
-              <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                Email your application to our HR department. There is no form to fill in and no
-                account to create — a single email with your CV attached is a complete
-                application, whether or not a role has been advertised.
-              </p>
-
-              <h3 className="mt-6 text-sm font-extrabold text-gray-900">What to include</h3>
-              <ul className="mt-3 space-y-3 text-sm text-slate-700">
-                {WHAT_TO_INCLUDE.map((item, i) => (
-                  <li key={i} className="flex gap-3">
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2563eb]/10 text-[11px] font-bold text-[#1d4ed8]">
-                      {i + 1}
-                    </span>
-                    <span className="leading-relaxed">{item}</span>
-                  </li>
+          <div className="mt-10 lg:mt-12 short:mt-6">
+            {loading ? (
+              <RolesLoading />
+            ) : roles.length > 0 ? (
+              // A lone role takes the full row rather than leaving half of it empty.
+              <div className={`grid gap-6 ${roles.length > 1 ? 'lg:grid-cols-2' : ''}`}>
+                {roles.map((role, i) => (
+                  <RoleCard key={role.id} role={role} tone={BADGE_TONES[i % BADGE_TONES.length]} />
                 ))}
-              </ul>
-
-              <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-5">
-                <a
-                  href={APPLY_MAILTO}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md transition hover:from-blue-700 hover:to-indigo-700"
-                >
-                  <Send size={16} />
-                  Email your application
-                </a>
-                {/* The address is written out as well as linked: plenty of people
-                    read this on a phone with no mail client configured, or want to
-                    apply later from a work machine. */}
-                <span className="text-xs text-gray-500">
-                  Or write to{' '}
-                  <a href={APPLY_MAILTO} className="font-semibold text-[#1d4ed8] hover:underline">
-                    {HR_EMAIL}
-                  </a>
-                </span>
               </div>
-            </div>
+            ) : (
+              <NoRoles />
+            )}
           </div>
+        </div>
+      </section>
 
-          {/* ── Sidebar ──────────────────────────────────────── */}
-          <aside className="space-y-5">
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-              <h2 className="flex items-center gap-2 text-sm font-extrabold text-gray-900">
-                <Users size={16} className="text-[#1d4ed8]" />
-                After you apply
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-slate-700">
-                Our HR department reviews each application. If your background suits something we
-                are working on, they will get in touch using the phone number or email address in
-                your message.
-              </p>
-            </div>
+      {showHowToApply && <HowToApply />}
+    </main>
+  );
+}
 
-            {/* The other half of the HR Department menu. An employer who lands here
-                looking to verify a former employee should not have to go back to the
-                nav to find it. */}
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-              <h2 className="flex items-center gap-2 text-sm font-extrabold text-gray-900">
-                <Mail size={16} className="text-[#1d4ed8]" />
-                Not applying for a job?
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-slate-700">
-                Employers, banks and screening agencies checking someone’s employment with us
-                should use the employment verification page instead.
-              </p>
-              <Link
-                to="/hr-department"
-                className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-[#1d4ed8] hover:underline"
+/**
+ * Hero: lavender, the title and introduction on the left, and the handshake
+ * photo on the right on a violet backing, with a patch of halftone behind its
+ * corner and three glossy badges pinned round it.
+ */
+function CareersHero() {
+  return (
+    <header className="vz-hero-v2 relative isolate flex flex-col overflow-hidden text-vz-ink lg:min-h-[calc(100svh-7.6rem)]">
+      <svg aria-hidden="true" className="vz-hero-waves" viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="cr-wave" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#a78bfa" />
+            <stop offset="0.5" stopColor="#ddd6fe" />
+            <stop offset="1" stopColor="#8b5cf6" />
+          </linearGradient>
+        </defs>
+        <path d="M0 64 C 220 8 430 118 720 78 C 990 42 1190 4 1440 46 L1440 120 L0 120 Z" fill="url(#cr-wave)" opacity="0.5" />
+        <path d="M0 98 C 300 62 520 122 820 100 C 1080 82 1260 72 1440 92 L1440 120 L0 120 Z" fill="#fff" />
+      </svg>
+
+      <div
+        className={`${WRAP} grid flex-1 items-center gap-16 pb-28 pt-12 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-16 lg:pb-24 lg:pt-8 xl:gap-24 short:pb-20 short:pt-4`}
+      >
+        <div className="min-w-0">
+          <Rule />
+          <h1 className="mt-6 text-[2.25rem] leading-[1.1] text-vz-ink sm:text-5xl lg:text-[clamp(2.4rem,min(3.9vw,7.2svh),3.5rem)] short:mt-4">
+            Join Our Team at <span className="hero-accent">Veritaz International Press</span>
+          </h1>
+          <p className="mt-7 max-w-2xl text-base leading-relaxed text-slate-600 lg:text-[17px] short:mt-5 short:text-[15px]">
+            Veritaz International Press publishes academic textbooks, coordinates scholarly volumes, and manages international academic conferences. We accept applications year-round and publish specific openings here and across our official channels as positions become available.
+          </p>
+        </div>
+
+        <div className="cr-frame relative mx-5 mb-4 sm:mx-12 lg:m-0 lg:mr-4">
+          <span aria-hidden="true" className="cr-frame-back" />
+          <img
+            src={HERO_PHOTO}
+            alt=""
+            fetchPriority="high"
+            className="cr-frame-img relative aspect-[4/3] w-full rounded-[2rem] object-cover object-[50%_60%] lg:aspect-auto lg:h-[min(27rem,calc(100svh-17rem))]"
+          />
+          <span aria-hidden="true" className="cr-pin cr-pin--1">
+            <span className="svc-badge">
+              <Briefcase className="relative z-10 h-6 w-6" strokeWidth={1.8} />
+            </span>
+          </span>
+          <span aria-hidden="true" className="cr-pin cr-pin--2">
+            <span className="svc-badge svc-badge--amber">
+              <GraduationCap className="relative z-10 h-6 w-6" strokeWidth={1.8} />
+            </span>
+          </span>
+          <span aria-hidden="true" className="cr-pin cr-pin--3">
+            <span className="svc-badge svc-badge--sm svc-badge--pink">
+              <Send className="relative z-10 h-5 w-5" strokeWidth={1.8} />
+            </span>
+          </span>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/**
+ * How to Apply. Only rendered when there are no open roles (see Careers above).
+ * The navy band: the instructions and the email button on the left, what to
+ * include down four glass rows on the right.
+ */
+function HowToApply() {
+  return (
+    <section aria-labelledby="cr-apply" className={`vz-shelf-band relative isolate overflow-hidden text-white ${SCREEN_PAD} ${SCREEN}`}>
+      <span aria-hidden="true" className="cr-apply-dots" />
+      <div className={`${WRAP} grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:items-center lg:gap-16 xl:gap-24`}>
+        <div className="min-w-0">
+          <Rule tone="dark" />
+          <h2 id="cr-apply" className={`reveal mt-5 ${H2_LIGHT} short:mt-3`}>
+            How to <Accent tone="light">Apply</Accent>
+          </h2>
+          {/* Left-aligned: justifying the line before the unbreakable email
+              address would stretch its word gaps wide. */}
+          <p className="mt-6 text-left text-base leading-relaxed text-white/80 lg:text-[17px] short:mt-4">
+            Submitting your application is simple and direct, no portal setup or lengthy forms required. Send a single email with your CV attached to our human resources team at{' '}
+            <a
+              href={APPLY_MAILTO}
+              className="break-words font-semibold text-sf-lavender underline decoration-sf-lavender/50 underline-offset-4 hover:decoration-sf-lavender focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              {HR_EMAIL}
+            </a>
+            .
+          </p>
+
+          <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 short:mt-6">
+            <Pill href={APPLY_MAILTO} variant="light" icon={Send}>
+              Email your application
+            </Pill>
+            {/* The address is written out as well as linked: plenty of people
+                read this on a phone with no mail client configured, or want to
+                apply later from a work machine. */}
+            <span className="text-sm text-white/75">
+              Or write to{' '}
+              <a
+                href={APPLY_MAILTO}
+                className="break-all font-semibold text-sf-lavender hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
-                Employment Verification
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-          </aside>
+                {HR_EMAIL}
+              </a>
+            </span>
+          </div>
+        </div>
+
+        <div className="min-w-0">
+          <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-white/90">
+            Please include the following in your email:
+          </h3>
+          <ol className="mt-5 grid gap-3 short:mt-4 short:gap-2">
+            {WHAT_TO_INCLUDE.map(([label, text], i) => {
+              const { Icon, tone } = INCLUDE_BADGES[i];
+              return (
+                <li key={label} className="cr-glass reveal group flex items-start gap-5 rounded-2xl p-5 short:py-3.5">
+                  <span aria-hidden="true" className={`svc-badge svc-badge--sm ${tone}`}>
+                    <Icon className="relative z-10 h-5 w-5" strokeWidth={1.8} />
+                  </span>
+                  {/* The number floats beside the label only, so the text
+                      beneath runs the row's full width. */}
+                  <div className="min-w-0 flex-1">
+                    <span className="cr-num">{String(i + 1).padStart(2, '0')}</span>
+                    <p className="pt-0.5 font-bold text-white">{label}</p>
+                    {/* Ragged on phones, where the row is too narrow to justify evenly. */}
+                    <p className="mt-1.5 text-left text-sm leading-relaxed text-white/75 sm:text-justify">{text}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         </div>
       </div>
     </section>
@@ -280,32 +349,32 @@ export default function Careers() {
 /**
  * The loading state.
  *
- * Two grey role-shaped blocks rather than a spinner. A spinner on a list that is
+ * Two role-shaped blocks rather than a spinner. A spinner on a list that is
  * usually empty is the worst of both: it spins, then vanishes to reveal nothing,
  * which reads as a failure. A skeleton the size of the thing being fetched keeps
- * the card's height roughly stable instead, so the swap to either real roles or
- * the "nothing listed" paragraph is a small change rather than a jump.
+ * the section's height roughly stable instead, so the swap to either real roles or
+ * the "nothing listed" panel is a small change rather than a jump. (It holds
+ * still: the site plays no animation on a loop.)
  *
  * aria-busy plus the visually-hidden line give a screen reader the one fact the
- * pulsing rectangles carry, since the rectangles themselves are decorative.
+ * placeholder blocks carry, since the blocks themselves are decorative.
  */
 function RolesLoading() {
   return (
-    <div className="mt-4 space-y-4" aria-busy="true">
+    <div className="grid gap-6 lg:grid-cols-2" aria-busy="true">
       <span className="sr-only">Loading open roles…</span>
       {[0, 1].map((i) => (
-        <div
-          key={i}
-          aria-hidden="true"
-          className="animate-pulse rounded-xl border border-gray-100 bg-white p-4"
-        >
-          <div className="h-4 w-1/2 rounded bg-gray-100" />
-          <div className="mt-3 flex gap-2">
-            <div className="h-5 w-24 rounded-full bg-gray-100" />
-            <div className="h-5 w-20 rounded-full bg-gray-100" />
+        <div key={i} aria-hidden="true" className="cr-skeleton rounded-3xl bg-white p-6 sm:p-8">
+          <div className="flex items-center gap-5">
+            <div className="h-14 w-14 flex-none rounded-[18px] bg-sf-mist" />
+            <div className="h-5 w-1/2 rounded-full bg-sf-mist" />
           </div>
-          <div className="mt-3 h-3 w-full rounded bg-gray-100" />
-          <div className="mt-2 h-3 w-4/5 rounded bg-gray-100" />
+          <div className="mt-6 flex gap-2">
+            <div className="h-7 w-24 rounded-full bg-vz-paper" />
+            <div className="h-7 w-20 rounded-full bg-vz-paper" />
+          </div>
+          <div className="mt-5 h-3 w-full rounded-full bg-vz-paper" />
+          <div className="mt-2.5 h-3 w-4/5 rounded-full bg-vz-paper" />
         </div>
       ))}
     </div>
@@ -319,24 +388,65 @@ function RolesLoading() {
  * the absence is real rather than a loading failure, and it tells the reader the
  * useful thing, which is that an application is worth sending anyway. The mailto
  * is repeated here because this paragraph is what a reader who came looking for a
- * vacancy actually reads, and sending them back up the page to find the button is
+ * vacancy actually reads, and sending them down the page to find the button is
  * how you lose them.
+ *
+ * Beside it, a newspaper's classified column with its advert space still blank.
  */
 function NoRoles() {
   return (
-    <div className="mt-4">
-      <p className="text-sm leading-relaxed text-slate-700">
-        We do not have any roles listed on this page at the moment. That does not mean we are not
-        hiring — applications are read as they arrive, so send yours in and it will be on file when
-        something opens up.
-      </p>
-      <a
-        href={APPLY_MAILTO}
-        className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-[#1d4ed8] hover:underline"
-      >
-        <Send size={14} />
-        Email your application
-      </a>
+    <div className="cr-empty relative isolate overflow-hidden rounded-[2rem] bg-white lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+      <span aria-hidden="true" className="svc-card-glow" />
+      <div className="relative flex flex-col justify-center p-5 sm:p-10 lg:p-12 xl:p-14 short:p-8">
+        <span aria-hidden="true" className="svc-badge">
+          <Briefcase className="relative z-10 h-6 w-6" strokeWidth={1.8} />
+        </span>
+        <p className="mt-6 text-base leading-relaxed text-slate-600 lg:text-[17px] short:mt-4 short:text-[15px]">
+          There are currently no active listings on this page. However, we continuously review incoming CVs and keep promising applications on file for upcoming opportunities across editorial, event management, and administrative teams.
+        </p>
+        <div className="mt-8 short:mt-6">
+          <Pill href={APPLY_MAILTO} variant="outline" icon={Send}>
+            Email your application
+          </Pill>
+        </div>
+      </div>
+      <Classifieds />
+    </div>
+  );
+}
+
+/** Decoration: a newspaper's classified column, its one advert space empty. */
+function Classifieds() {
+  const lines = (widths) => widths.map((w, i) => <span key={i} className={`cr-line ${w}`} />);
+  return (
+    <div aria-hidden="true" className="cr-board relative">
+      <div className="cr-paper-tilt">
+        <div className="cr-paper">
+          <span className="cr-mast" />
+          <span className="cr-mast-rule" />
+          <div className="cr-cols">
+            <div className="grid content-start gap-[2.4cqw]">
+              <span className="cr-line cr-line--head w-[70%]" />
+              {lines(['w-full', 'w-[92%]', 'w-full', 'w-[64%]'])}
+              <span className="cr-boxad">
+                <span className="cr-line cr-line--head w-1/2" />
+                {lines(['w-full', 'w-[80%]'])}
+              </span>
+              {lines(['w-full', 'w-[86%]', 'w-[50%]'])}
+            </div>
+            <div className="grid content-start gap-[2.4cqw]">
+              <span className="cr-vacant">
+                <span className="svc-badge svc-badge--sm">
+                  <Briefcase className="relative z-10 h-5 w-5" strokeWidth={1.8} />
+                </span>
+              </span>
+              <span className="cr-line cr-line--head w-[60%]" />
+              {lines(['w-full', 'w-[88%]', 'w-full', 'w-[70%]'])}
+            </div>
+          </div>
+        </div>
+        <span className="cr-tape" />
+      </div>
     </div>
   );
 }
@@ -350,7 +460,7 @@ function NoRoles() {
  * force HR to fill in a location for a remote role, and the page should not
  * punish them for that.
  */
-function RoleCard({ role }) {
+function RoleCard({ role, tone }) {
   const {
     jobtitle,
     jobdescription,
@@ -379,25 +489,35 @@ function RoleCard({ role }) {
     .filter(Boolean);
 
   return (
-    <article className="rounded-xl border border-gray-100 bg-gray-50/60 p-4 transition hover:border-blue-100 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <h3 className="text-base font-extrabold leading-snug text-gray-900">
-          {/* A row with no title would be a card with no heading, so it falls back
-              to something a reader can still click on rather than rendering blank. */}
-          {jobtitle || 'Open role'}
-        </h3>
-        {category && (
-          <span className="shrink-0 rounded-full bg-[#2563eb]/10 px-2.5 py-1 text-[11px] font-bold text-[#1d4ed8]">
-            {category}
-          </span>
-        )}
+    <article className="svc-card reveal group relative isolate flex flex-col overflow-hidden rounded-3xl bg-white p-5 sm:p-8">
+      <span aria-hidden="true" className="svc-card-glow" />
+      <Briefcase className="cr-watermark" strokeWidth={1.2} aria-hidden="true" />
+      <div className="flex items-start gap-5">
+        <span aria-hidden="true" className={`svc-badge ${tone}`}>
+          <Briefcase className="relative z-10 h-6 w-6" strokeWidth={1.8} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-xl font-bold leading-snug text-vz-ink">
+            {/* A row with no title would be a card with no heading, so it falls back
+                to something a reader can still click on rather than rendering blank. */}
+            {jobtitle || 'Open role'}
+          </h3>
+          {category && (
+            <span className="mt-2 inline-block rounded-full bg-sf-mist px-3 py-1 text-xs font-bold text-sf-indigo-deep">
+              {category}
+            </span>
+          )}
+        </div>
       </div>
 
       {meta.length > 0 && (
-        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+        <ul className="mt-6 flex flex-wrap gap-2">
           {meta.map(([Icon, value], i) => (
-            <li key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
-              <Icon size={14} className="shrink-0 text-[#1d4ed8]" />
+            <li
+              key={i}
+              className="flex items-center gap-1.5 rounded-full bg-vz-paper px-3 py-1.5 text-xs font-semibold text-vz-ink ring-1 ring-vz-line"
+            >
+              <Icon size={14} aria-hidden="true" className="shrink-0 text-sf-indigo" />
               {value}
             </li>
           ))}
@@ -405,23 +525,20 @@ function RoleCard({ role }) {
       )}
 
       {paragraphs.length > 0 && (
-        <div className="mt-3 space-y-2">
+        <div className="mt-5 space-y-2">
           {paragraphs.map((paragraph, i) => (
-            <p key={i} className="text-sm leading-relaxed text-slate-700">
+            <p key={i} className="text-left text-[15px] leading-relaxed text-slate-600 sm:text-justify">
               {paragraph}
             </p>
           ))}
         </div>
       )}
 
-      <a
-        href={roleMailto(jobtitle)}
-        className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[#1d4ed8] hover:underline"
-      >
-        <FileText size={14} />
-        Apply for this role
-        <ArrowRight size={14} />
-      </a>
+      <div className="mt-auto pt-7">
+        <Pill href={roleMailto(jobtitle)} icon={FileText} arrow>
+          Apply for this role
+        </Pill>
+      </div>
     </article>
   );
 }

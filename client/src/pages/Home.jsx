@@ -1,839 +1,1273 @@
-import { useEffect, useRef, useState } from "react";
-import { CheckCircle } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Award,
+  BadgeIndianRupee,
+  Barcode,
+  BookCopy,
+  BookOpen,
+  FileText,
+  Globe,
+  GraduationCap,
+  Headset,
+  Landmark,
+  Languages,
+  Layers,
+  Lightbulb,
+  Mail,
+  MessageCircle,
+  Megaphone,
+  PenLine,
+  Play,
+  Phone,
+  Presentation,
+  Printer,
+  Smile,
+  Star,
+  TrendingUp,
+  Trophy,
+  X,
+} from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { Accent, Pill, Rule, Swash } from "../components/PressUI";
+import { BADGE_TONES as TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
 import { useSeo } from "../seo/useSeo";
-import { PAGES } from "../seo/site";
+import { PAGES, bookPath } from "../seo/site";
+
+/* Home page in the "night press" look: night-ink bands lit by the logo's
+   cyan-violet-orchid sweep, a display grotesque for headings, square corners
+   and ruled hairline grids. The styles live under "Home page" in index.css. */
+
+
+const FALLBACK_COVERS = [
+  "/assets/image/books/index-1.webp",
+  "/assets/image/books/index-2.webp",
+  "/assets/image/books/index-3.webp",
+];
+
+const stats = [
+  { value: "500+", label: "Books Published" },
+  { value: "200+", label: "Patents Registered" },
+  { value: "98%", label: "Client Satisfaction" },
+];
+
+const services = [
+  {
+    title: "Textbook & Book Publishing",
+    text: "A leading book publishing company providing end-to-end self-publishing, professional manuscript editing, custom cover design, official ISBN registration, high-quality book printing, and eBook publishing with global distribution across major platforms including Flipkart.",
+    icon: BookOpen,
+    featured: true,
+  },
+  {
+    title: "Patent Grant Support",
+    text: "Protect your innovations with expert patent grant support. We offer complete patent registration, documentation, IP protection, and end-to-end patent consulting services for national and international patent filings across 12 countries.",
+    icon: Lightbulb,
+  },
+  {
+    title: "Educational Events",
+    text: "Complete event coordination and academic organizing for international conferences, faculty development programs (FDPs), interactive workshops, and scholarly seminars designed to foster institutional growth and knowledge sharing.",
+    icon: Presentation,
+  },
+  {
+    title: "IEEE Conference Publications",
+    text: "Dedicated editorial, formatting, and submission assistance for scholars aiming to publish high-impact papers in prestigious IEEE conferences globally.",
+    icon: FileText,
+  },
+  {
+    title: "Professional Upskilling Programs",
+    text: "Industry aligned upskilling programs and specialized training modules built to advance professional competencies, research capabilities, and career growth for educators, students, and professionals.",
+    icon: GraduationCap,
+  },
+];
+
+const reasons = [
+  { title: "ISBN Assignment", text: "Every book is published with an official ISBN for international tracking and cataloging.", icon: Barcode },
+  { title: "Affordable Pricing", text: "Industry-leading publication packages with transparent, budget-friendly costs.", icon: BadgeIndianRupee },
+  { title: "Government Recognized", text: "Fully registered company recognized under MSME for official compliance.", icon: Landmark },
+  { title: "Author Copies", text: "Complimentary printed books provided to every author upon publication.", icon: BookCopy },
+  { title: "Global Distribution Network", text: "Strategic partnerships with major distribution platforms including Flipkart and leading online booksellers.", icon: Globe },
+  { title: "Academic Bestsellers", text: "Top-selling engineering, technical, and academic titles across major colleges and institutions.", icon: TrendingUp },
+  { title: "Academic Credit & API Score", text: "Fully compliant with UGC and institutional accreditation guidelines to boost API and self-appraisal points.", icon: GraduationCap },
+  { title: "Physical Certificate", text: "Hardcopy publication certificates delivered directly to every author.", icon: Award },
+  { title: "Complimentary Online Marketing", text: "Free digital promotion and multi-channel distribution across national online marketplaces and publisher portals.", icon: Megaphone },
+  { title: "Multilingual Publishing", text: "Complete editorial, layout, and printing capabilities in all regional languages.", icon: Languages },
+  { title: "Premium Production Quality", text: "Printed on high-grade 80 GSM paper with crisp color/monochrome printing and durable glossy lamination.", icon: Printer },
+  { title: "Dedicated Support", text: "Personalized publishing assistance backed by responsive 24/7 client care.", icon: Headset },
+  { title: "Market Presence", text: "Proven track record with multiple national bestsellers across genres.", icon: Trophy },
+];
+
+const prefersCalm = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** Counts up once when scrolled into view. The real value is rendered first,
+ *  so it is still correct with reduced motion or if this effect never runs. */
+function CountUp({ value }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    const match = /^(\d+)(.*)$/.exec(value);
+    if (!el || !match || prefersCalm()) return undefined;
+
+    const target = Number(match[1]);
+    const suffix = match[2];
+    let frame = 0;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        const start = performance.now();
+        const tick = (now) => {
+          const t = Math.min(Math.max((now - start) / 1400, 0), 1);
+          const eased = 1 - (1 - t) ** 3;
+          el.textContent = `${Math.round(target * eased)}${suffix}`;
+          if (t < 1) frame = requestAnimationFrame(tick);
+        };
+        frame = requestAnimationFrame(tick);
+      },
+      { threshold: 0.6 }
+    );
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+      el.textContent = value;
+    };
+  }, [value]);
+
+  return <span ref={ref}>{value}</span>;
+}
+
+function Avatar({ src, name, size = "h-14 w-14 text-lg" }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return (
+      <span className={`flex ${size} flex-shrink-0 items-center justify-center rounded-full bg-vz-violet font-bold text-white`}>
+        {(name || "?").trim().charAt(0).toUpperCase()}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={name || "Client"}
+      className={`${size} flex-shrink-0 rounded-full object-cover ring-1 ring-vz-line`}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+const ROUND_BUTTON =
+  "flex h-12 w-12 flex-none items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-35";
+const ROUND_DARK = `${ROUND_BUTTON} bg-white/10 text-white ring-1 ring-white/25 hover:bg-white hover:text-sf-navy focus-visible:outline-white`;
+const ROUND_LIGHT = `${ROUND_BUTTON} bg-white text-vz-ink shadow-sm ring-1 ring-vz-line hover:bg-sf-indigo hover:text-white hover:ring-transparent focus-visible:outline-sf-violet`;
+
+
+// The publishing steps, as tiles under the hero's paragraph.
+const HERO_FEATURES = [
+  { icon: PenLine, label: "Editing & Typesetting", color: "text-sf-indigo" },
+  { icon: BookOpen, label: "Cover Design", color: "text-pink-600" },
+  { icon: Barcode, label: "ISBN & Patent Registration", color: "text-amber-600" },
+  { icon: Printer, label: "Printing & Production", color: "text-sky-600" },
+  { icon: Layers, label: "eBook Distribution", color: "text-emerald-600" },
+];
+
+/** A box in the press scene's 3D stage. (x, y, z) is its centre in stage
+ *  pixels: x to the right, y down (the floor is y 0, so things standing on it
+ *  have negative y) and z towards the viewer. `faces` maps face names (front,
+ *  back, left, right, top, bottom) to their contents; faces turned away from
+ *  the camera are hidden, so only the ones that can show need content. */
+function Cuboid({ w, h, d, x = 0, y = 0, z = 0, ry = 0, className = "", vars, faces }) {
+  const style = {
+    ...vars,
+    "--w": `${w}px`,
+    "--h": `${h}px`,
+    "--d": `${d}px`,
+    width: w,
+    height: h,
+    transform: `translate3d(${x - w / 2}px, ${y - h / 2}px, ${z}px) rotateY(${ry}deg)`,
+  };
+  return (
+    <div className={`cube ${className}`} style={style}>
+      {Object.entries(faces).map(([name, content]) => (
+        <div key={name} className={`cube-face cube-${name}`}>
+          {content}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** A flat piece in the stage: `w` x `h`, centred on (x, y, z), then turned by
+ *  `turn` (a CSS rotate, e.g. "rotateX(90deg)" to lie flat). */
+function Plane({ w, h, x = 0, y = 0, z = 0, turn = "", className = "", style, children }) {
+  return (
+    <div
+      className={`plane ${className}`}
+      style={{ ...style, width: w, height: h, transform: `translate3d(${x - w / 2}px, ${y - h / 2}px, ${z}px) ${turn}` }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** A hardcover lying flat: the cover on top, page edges between the boards on
+ *  three sides, and a cloth spine with gilt bands on the fourth. */
+function Book3D({ cover, board, x, y, z, ry, className = "" }) {
+  const pages = <span className="book3d-pages" />;
+  return (
+    <Cuboid
+      w={150}
+      h={24}
+      d={200}
+      x={x}
+      y={y}
+      z={z}
+      ry={ry}
+      className={`book3d ${className}`}
+      vars={{ "--board": board }}
+      faces={{
+        top: (
+          <img
+            src={cover}
+            alt=""
+            className="book3d-cover"
+            onError={(e) => {
+              e.currentTarget.src = FALLBACK_COVERS[0];
+            }}
+          />
+        ),
+        front: pages,
+        back: pages,
+        right: pages,
+        left: <span className="book3d-spine" />,
+      }}
+    />
+  );
+}
+
+/** The hero's scene: a printing press built as real 3D boxes, seen from a
+ *  little above. Sheets printed with real covers slide out of the slot onto
+ *  the paper stack, and each time one lands, a bound book drops onto the stack
+ *  beside it. Designed in a 600 x 500 box and scaled to fit. Decorative only:
+ *  the same titles are linked in the shelf further down. */
+function PressScene({ covers }) {
+  const sceneRef = useRef(null);
+  // The screen's progress bar and the sheets mount together, so their
+  // animations start on the same frame and stay in step.
+  const running = covers.length > 0;
+  const cover = (i) => (covers.length ? covers[i % covers.length] : FALLBACK_COVERS[i % FALLBACK_COVERS.length]);
+
+  // The stage is drawn at 600px wide; scale it to the scene's real width.
+  useEffect(() => {
+    const el = sceneRef.current;
+    if (!el) return undefined;
+    const observer = new ResizeObserver(([entry]) => {
+      el.style.setProperty("--k", String(entry.contentRect.width / 600));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={sceneRef} aria-hidden="true" className="scene">
+      <div className="stage">
+        {/* Soft contact shadows on the floor. */}
+        <Plane w={400} h={300} x={-30} z={-45} turn="rotateX(90deg)" className="floor-shadow" />
+        <Plane w={312} h={222} x={-30} z={-50} turn="rotateX(90deg)" className="floor-shadow floor-shadow--contact" />
+        <Plane w={250} h={200} x={-30} z={150} turn="rotateX(90deg)" className="floor-shadow floor-shadow--soft" />
+        <Plane w={240} h={290} x={205} z={135} turn="rotateX(90deg)" className="floor-shadow" />
+
+        {/* The press body. */}
+        <Cuboid
+          w={300}
+          h={250}
+          d={210}
+          x={-30}
+          y={-125}
+          z={-50}
+          className="mc-body"
+          faces={{
+            front: (
+              <>
+                <span className="mc-slot" />
+                <span className="mc-panel" />
+                <span className="mc-plate">
+                  <img src="/assets/image/veritaz-logo.webp" alt="" />
+                </span>
+                <span className="mc-vents" />
+                <span className="mc-screw mc-screw--tl" />
+                <span className="mc-screw mc-screw--tr" />
+                <span className="mc-screw mc-screw--bl" />
+                <span className="mc-screw mc-screw--br" />
+              </>
+            ),
+            top: <span className="mc-lid" />,
+            // The control panel sits on the side the camera sees.
+            right: (
+              <>
+                <span className="mc-side" />
+                <span className="mc-lcd">
+                  <span className="mc-lcd-line" />
+                  <span className="mc-lcd-line mc-lcd-line--short" />
+                  <span className="mc-lcd-track">{running && <span className="mc-lcd-fill" />}</span>
+                </span>
+                <span className="mc-btn mc-btn--go" />
+                <span className="mc-btn mc-btn--warn" />
+                <span className="mc-btn mc-btn--stop" />
+                <span className="mc-led" />
+              </>
+            ),
+          }}
+        />
+
+        {/* Brackets holding the roller, the chrome roller with its end cap,
+            and the ink roller above it. */}
+        <Cuboid w={14} h={58} d={34} x={-178} y={-205} z={72} className="mc-bracket" faces={{ front: null, top: null, right: null }} />
+        <Cuboid w={14} h={58} d={34} x={118} y={-205} z={72} className="mc-bracket" faces={{ front: null, top: null, right: null }} />
+        <Plane w={280} h={40} x={-30} y={-200} z={72} className="mc-roller" />
+        <Plane w={40} h={40} x={110} y={-200} z={72} turn="rotateY(90deg)" className="mc-cap" />
+        <Plane w={240} h={16} x={-30} y={-233} z={64} className="mc-ink" />
+        <Plane w={16} h={16} x={90} y={-233} z={64} turn="rotateY(90deg)" className="mc-cap" />
+
+        {/* Output tray and the paper stack on it. */}
+        <Cuboid w={230} h={8} d={175} x={-30} y={-151} z={132} className="mc-tray" faces={{ top: null, front: null, right: null }} />
+        <Cuboid w={186} h={20} d={160} x={-30} y={-165} z={137} className="mc-stack" faces={{ top: null, front: <span className="mc-stack-edge" />, right: <span className="mc-stack-edge" /> }} />
+
+        {/* Printed sheets, sliding out of the slot onto the stack. */}
+        {running &&
+          [0, 1].map((i) => (
+            <div key={i} className="sheet3d" style={{ "--i": i }}>
+              <img
+                src={cover(i)}
+                alt=""
+                onError={(e) => {
+                  e.currentTarget.src = FALLBACK_COVERS[0];
+                }}
+              />
+            </div>
+          ))}
+
+        {/* The stack of bound books; light slides across the top cover's
+            lamination now and then. */}
+        <Book3D cover={cover(2)} board="#7a1f2b" x={205} y={-12} z={135} ry={176} />
+        <Book3D cover={cover(3)} board="#1e3a8a" x={202} y={-36} z={131} ry={-6} />
+        <Book3D cover={cover(4)} board="#3b0764" x={207} y={-60} z={137} ry={4} />
+        <Book3D cover={cover(5)} board="#134e4a" x={204} y={-84} z={134} ry={-3} className="book3d--top" />
+      </div>
+    </div>
+  );
+}
+
+function Hero({ covers, booksReady }) {
+  const [gaveUp, setGaveUp] = useState(false);
+
+  // The press waits for the book list, but a slow network should not leave it
+  // empty, so fall back to the bundled covers after a while.
+  useEffect(() => {
+    const timer = setTimeout(() => setGaveUp(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Covers for the scene: two printed sheets and four books.
+  const sceneCovers = useMemo(() => {
+    if (!booksReady && !gaveUp) return [];
+    const pool = covers.length ? covers : FALLBACK_COVERS;
+    return Array.from({ length: 6 }, (_, i) => pool[i % pool.length]);
+  }, [covers, booksReady, gaveUp]);
+
+  return (
+    // On wide screens the hero fills exactly one screen below the navbar
+    // (7.6rem: the 40px contact strip plus the 80px bar); the scene and the
+    // headline scale with the screen height to fit, and `short:` tightens
+    // the spacing on low laptop screens.
+    <section className="vz-hero vz-hero-v2 relative isolate overflow-hidden text-vz-ink lg:flex lg:min-h-[calc(100svh-7.6rem)] lg:flex-col">
+      {/* A library softly out of focus behind the press, fading out before
+          the text. */}
+      <span aria-hidden="true" className="vz-hero-library" />
+      <svg aria-hidden="true" className="vz-hero-waves" viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="vz-wave" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#a78bfa" />
+            <stop offset="0.5" stopColor="#ddd6fe" />
+            <stop offset="1" stopColor="#8b5cf6" />
+          </linearGradient>
+        </defs>
+        <path d="M0 64 C 220 8 430 118 720 78 C 990 42 1190 4 1440 46 L1440 120 L0 120 Z" fill="url(#vz-wave)" opacity="0.55" />
+        <path d="M0 98 C 300 62 520 122 820 100 C 1080 82 1260 72 1440 92 L1440 120 L0 120 Z" fill="#f5f3ff" />
+      </svg>
+
+      <div
+        className={`${WRAP} grid items-center gap-10 pb-16 pt-8 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-8 lg:pb-10 lg:pt-6 xl:gap-12 short:pb-8 short:pt-4`}
+      >
+        <div>
+          {/* The headline comes into register: its cyan, magenta and yellow
+              plates start offset and settle onto each other. */}
+          <h1 className="vz-misreg text-balance text-[2.25rem] font-extrabold leading-[1.1] tracking-[-0.025em] text-vz-ink sm:text-5xl lg:text-[clamp(2.4rem,min(3.9vw,7.2svh),3.5rem)]">
+            Where Great Writing Becomes a{" "}
+            <span className="relative inline-block">
+              <span className="hero-accent">Printed Reality</span>
+              <Swash />
+            </span>
+          </h1>
+          <p className="hero-fade mt-6 max-w-xl text-base leading-relaxed text-slate-600 lg:text-[17px] short:mt-4 short:text-[15px]">
+            Seamless book creation through self-publishing, editing, cover design, ISBN &amp; patent
+            registration, printing, and eBook distribution.
+          </p>
+
+          <ul className="hero-fade mt-6 grid max-w-2xl grid-cols-3 gap-2 sm:grid-cols-5 short:mt-4">
+            {HERO_FEATURES.map(({ icon: Icon, label, color }) => (
+              <li
+                key={label}
+                className="flex flex-col items-center gap-2 rounded-xl bg-white/60 px-2 py-3 text-center text-[13px] font-semibold leading-tight text-vz-ink shadow-sm ring-1 ring-white backdrop-blur-sm short:gap-1 short:py-2 short:text-xs"
+              >
+                <Icon className={`h-7 w-7 short:h-6 short:w-6 ${color}`} strokeWidth={1.6} aria-hidden="true" />
+                {label}
+              </li>
+            ))}
+          </ul>
+
+          <div className="hero-fade mt-8 flex flex-col gap-3 sm:flex-row short:mt-6">
+            <Pill to="/contact" arrow>
+              Start Publishing Today
+            </Pill>
+            <Pill to="/book-store" variant="outline" icon={BookOpen}>
+              Browse the Book Store
+            </Pill>
+          </div>
+        </div>
+
+        <div className="relative">
+          <PressScene covers={sceneCovers} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** A hardcover standing up, cover to the front: its fore-edge pages show on
+ *  the right, the cloth spine on the left. Stands on the floor of a 3D stage. */
+function StandingBook({ cover, board, x, z, ry, className = "" }) {
+  return (
+    <Cuboid
+      w={118}
+      h={158}
+      d={22}
+      x={x}
+      y={-79}
+      z={z}
+      ry={ry}
+      className={`bookstand ${className}`}
+      vars={{ "--board": board }}
+      faces={{
+        front: (
+          <img
+            src={cover}
+            alt=""
+            className="book3d-cover"
+            onError={(e) => {
+              e.currentTarget.src = FALLBACK_COVERS[0];
+            }}
+          />
+        ),
+        right: <span className="bookstand-pages" />,
+        top: <span className="bookstand-top" />,
+        left: <span className="book3d-spine" />,
+      }}
+    />
+  );
+}
+
+/** Three real books standing in a fan; they spread when the card is hovered. */
+function BookFan({ covers }) {
+  const pick = (i) => covers[i % covers.length];
+  return (
+    <div aria-hidden="true" className="fan">
+      <div className="fan-stage">
+        <Plane w={380} h={170} z={0} turn="rotateX(90deg)" className="floor-shadow fan-shadow" />
+        <StandingBook cover={pick(1)} board="#1e3a8a" x={-98} z={-34} ry={16} className="fan-book--l" />
+        <StandingBook cover={pick(2)} board="#7a1f2b" x={98} z={-34} ry={-16} className="fan-book--r" />
+        <StandingBook cover={pick(0)} board="#3b0764" x={0} z={26} ry={0} className="fan-book--c" />
+      </div>
+    </div>
+  );
+}
+
+function ServiceTile({ service: { title, text, icon: Icon }, tone = "" }) {
+  return (
+    <li className="svc-card group relative isolate flex flex-col overflow-hidden rounded-3xl bg-white p-6 short:p-4">
+      <span aria-hidden="true" className="svc-card-glow" />
+      <div className="flex items-center gap-4 short:gap-3">
+        <span className={`svc-badge svc-badge--sm ${tone}`}>
+          <Icon className="relative z-10 h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
+        </span>
+        <h3 className="text-[17px] font-bold leading-snug tracking-[-0.01em] text-vz-ink short:text-base">{title}</h3>
+      </div>
+      <p className="mt-3 text-[15px] leading-relaxed text-slate-600 short:mt-2 short:text-[13px] short:leading-normal">{text}</p>
+    </li>
+  );
+}
+
+function FeaturedService({ service: { title, text, icon: Icon }, covers }) {
+  return (
+    <li className="svc-feature group relative isolate overflow-hidden rounded-3xl p-6 text-white sm:col-span-2 lg:col-span-1 lg:row-span-2 lg:flex lg:flex-col short:p-5">
+      <div className="grid gap-6 md:grid-cols-2 md:items-center lg:flex lg:flex-1 lg:flex-col lg:items-stretch lg:gap-0">
+        <div className="relative z-10">
+          <div className="flex items-center gap-4">
+            <span className="svc-badge svc-badge--glass">
+              <Icon className="relative z-10 h-6 w-6" strokeWidth={1.8} aria-hidden="true" />
+            </span>
+            <h3 className="text-xl font-bold leading-tight tracking-[-0.02em] xl:text-2xl short:text-lg">{title}</h3>
+          </div>
+          <p className="mt-4 text-[15px] leading-relaxed text-white/80 short:mt-3 short:text-[13px] short:leading-normal">{text}</p>
+        </div>
+        <div className="lg:my-auto">
+          <BookFan covers={covers} />
+        </div>
+      </div>
+    </li>
+  );
+}
+
+
+const H2_SANS = "font-extrabold leading-[1.05] tracking-[-0.025em] text-vz-ink";
+
+/** Inside Our Process: book publishing leads on a tall violet card with real
+ *  books standing in 3D, beside the other four services in a 2 x 2 grid of
+ *  cards with glossy icon badges. Fits one screen on wide screens. */
+function Services({ covers }) {
+  const books = covers.length ? covers : FALLBACK_COVERS;
+  return (
+    <section className={`vz-services relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+      <div className={WRAP}>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-16">
+          <div>
+            <Rule />
+            <h2 className={`reveal mt-5 ${H2_SANS} ${H2_FIT} short:mt-3`}>
+              Inside Our <Accent>Process</Accent>
+            </h2>
+          </div>
+          <p className="reveal text-base leading-relaxed text-slate-600 lg:text-[17px] short:text-[15px]">
+            A seamless, guided workflow ensuring precision, quality, and complete author support at
+            every stage of the publishing journey.
+          </p>
+        </div>
+
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:mt-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,3.5fr)_minmax(0,3.5fr)] short:mt-5 short:gap-3">
+          {services.map((s, i) =>
+            s.featured ? (
+              <FeaturedService key={s.title} service={s} covers={books} />
+            ) : (
+              <ServiceTile key={s.title} service={s} tone={TONES[i % TONES.length]} />
+            )
+          )}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/** From Draft to Global Bookshelves: the three stats as glass cards on a
+ *  dashed journey line, each with a glossy badge and a count-up number. */
+const STAT_ICONS = [BookOpen, Lightbulb, Smile];
+const STAT_TONES = ["", "svc-badge--amber", "svc-badge--emerald"];
+
+function FromDraft() {
+  return (
+    <section className={`vz-draft relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+      <div className={WRAP}>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-16">
+          <div>
+            <Rule />
+            <h2 className={`reveal mt-5 ${H2_SANS} ${H2_FIT} short:mt-3`}>
+              From Draft to Global <Accent>Bookshelves</Accent>
+            </h2>
+          </div>
+          <p className="reveal text-base leading-relaxed text-slate-600 lg:text-[17px] short:text-[15px]">
+            Veritaz International Press bridges the gap between innovative ideas and global
+            recognition through complete publishing, patent protection, and academic support.
+          </p>
+        </div>
+
+        <div className="relative mt-10 lg:mt-14 short:mt-8">
+          <span aria-hidden="true" className="draft-path" />
+          <dl className="relative grid gap-4 sm:grid-cols-3 lg:gap-6">
+            {stats.map((s, i) => {
+              const Icon = STAT_ICONS[i];
+              return (
+                <div key={s.label} className="draft-card svc-card reveal relative isolate flex flex-col overflow-hidden rounded-3xl p-6 short:p-5">
+                  <span aria-hidden="true" className="svc-card-glow" />
+                  <dt className="order-last mt-2 font-semibold text-slate-600">{s.label}</dt>
+                  <dd>
+                    <span aria-hidden="true" className={`svc-badge svc-badge--sm mb-5 short:mb-3 ${STAT_TONES[i]}`}>
+                      <Icon className="relative z-10 h-5 w-5" strokeWidth={1.8} />
+                    </span>
+                    <span className="vz-gradient-text-deep block text-[clamp(2.5rem,min(4.4vw,8svh),3.75rem)] font-extrabold leading-none tracking-[-0.03em] tabular-nums">
+                      <CountUp value={s.value} />
+                    </span>
+                  </dd>
+                </div>
+              );
+            })}
+          </dl>
+        </div>
+
+        <div className="mt-10 flex flex-col gap-3 sm:flex-row lg:mt-12 short:mt-8">
+          <Pill to="/contact" arrow>
+            Start Publishing Today
+          </Pill>
+          <Pill to="/contact" variant="outline">
+            Contact us
+          </Pill>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** From our shelves: real books standing on a lit glass shelf in a violet
+ *  band, paged with the arrow buttons or by swiping. Nothing moves on its own. */
+function Shelf({ books }) {
+  const rowRef = useRef(null);
+  const [edge, setEdge] = useState({ start: true, end: false });
+
+  const updateEdges = useCallback(() => {
+    const el = rowRef.current;
+    if (!el) return;
+    const start = el.scrollLeft <= 4;
+    const end = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+    setEdge((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
+  }, []);
+
+  useEffect(() => {
+    updateEdges();
+    window.addEventListener("resize", updateEdges);
+    return () => window.removeEventListener("resize", updateEdges);
+  }, [books, updateEdges]);
+
+  const page = (direction) => {
+    const el = rowRef.current;
+    if (!el) return;
+    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: prefersCalm() ? "auto" : "smooth" });
+  };
+
+  if (!books.length) return null;
+
+  return (
+    <section className={`vz-shelf-band relative isolate overflow-hidden text-white ${SCREEN_PAD} ${SCREEN}`}>
+      <div className={`${WRAP} flex flex-wrap items-end justify-between gap-6`}>
+        <div>
+          <Rule tone="dark" />
+          <h2 className={`reveal mt-5 ${H2_SANS} ${H2_FIT} text-white short:mt-3`}>
+            From our <Accent tone="light">shelves</Accent>
+          </h2>
+        </div>
+        <div className="flex items-center gap-3">
+          <Pill to="/book-store" variant="light" arrow className="mr-1">
+            View all books
+          </Pill>
+          <button type="button" onClick={() => page(-1)} disabled={edge.start} aria-label="Previous books" className={ROUND_DARK}>
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <button type="button" onClick={() => page(1)} disabled={edge.end} aria-label="More books" className={ROUND_DARK}>
+            <ArrowRight className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      <div className={`${WRAP} shelf-wrap relative mt-8 lg:mt-10 short:mt-5`}>
+        {/* The glass shelf stays put while the books slide along it. */}
+        <span aria-hidden="true" className="shelf-plank" />
+        {/* Runs out to the right edge of the page so the cut-off book hints
+            at more. The inset on the left keeps focus rings unclipped. */}
+        <ul
+          ref={rowRef}
+          onScroll={updateEdges}
+          className="vz-shelf relative -ml-3 -mr-4 flex snap-x snap-mandatory scroll-pl-3 gap-6 overflow-x-auto pb-4 pl-3 pr-4 pt-5 sm:-mr-6 sm:pr-6 lg:-mr-20 lg:gap-9 lg:pr-20"
+        >
+          {books.map((book) => (
+            <li key={book.id} className="shelf-item flex-none snap-start">
+              <Link
+                to={bookPath(book)}
+                className="shelf-book group block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              >
+                <span className="shelf-book-3d">
+                  <img
+                    src={book.cover1}
+                    alt={book.title}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = FALLBACK_COVERS[0];
+                    }}
+                  />
+                </span>
+                <h3 className="mt-6 line-clamp-2 text-sm font-bold text-white transition-colors group-hover:text-sf-lavender">
+                  {book.title}
+                </h3>
+                <p className="mt-1 line-clamp-1 text-xs text-white/60">{book.authors}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/** Why authors choose us: the reasons printed in a hardcover book that opens
+ *  as it scrolls into view and then turns its own pages, a spread every few
+ *  seconds, riffling back to the start after the last; it holds while the
+ *  pointer or keyboard focus is on it.
+ *  Click or swipe a page, use the arrows, or pick a reason from the contents
+ *  to turn to it (a jump riffles through the pages in between). On phones the
+ *  pages sit in a row you swipe through. The rb-* styles live in index.css. */
+
+// The cover's back carries the first reason; each leaf after it carries two,
+// front (a right-hand page) and back (the left-hand page once turned).
+const BOOK_LEAVES = 1 + Math.ceil((reasons.length - 1) / 2);
+const LAST_SPREAD = BOOK_LEAVES - 1;
+// How long each spread stays open while the pages turn by themselves, and
+// how long the book waits after a visitor turns a page themselves.
+const TURN_EVERY = 2000;
+const WAIT_AFTER_USER = 7000;
+const pageNo = (i) => String(i + 1).padStart(2, "0");
+
+/** One printed page: a running head, the reason's badge, title and text with
+ *  a drop cap, its icon faint in the corner, and the page number. */
+function ReasonPage({ index }) {
+  const reason = reasons[index];
+  if (!reason) {
+    // The last page: the press's mark, as at the end of a book.
+    return (
+      <div className="rb-page rb-page--end" aria-hidden="true">
+        <span className="rb-end-mark">
+          <img src="/assets/image/veritaz-logo.webp" alt="" />
+        </span>
+        <span className="rb-end-rule" />
+      </div>
+    );
+  }
+  const { title, text, icon: Icon } = reason;
+  return (
+    <div className="rb-page">
+      <span className="rb-runhead" aria-hidden="true">
+        <img src="/assets/image/veritaz-logo.webp" alt="" />
+        <span />
+      </span>
+      <span className={`svc-badge svc-badge--sm rb-badge ${TONES[index % TONES.length]}`} aria-hidden="true">
+        <Icon className="relative z-10 h-5 w-5" strokeWidth={1.8} />
+      </span>
+      <h3 className="rb-title">{title}</h3>
+      <p className="rb-text">{text}</p>
+      <Icon className="rb-ghost" strokeWidth={1.2} aria-hidden="true" />
+      <span className="rb-folio" aria-hidden="true">
+        {pageNo(index)}
+      </span>
+    </div>
+  );
+}
+
+function Reasons() {
+  // s: the open spread (-1 = closed); from: the spread it last turned from,
+  // so the pages in between can turn one after another.
+  // by: who turned last ("auto" or "user"), so the book waits longer after a
+  // visitor turns a page themselves.
+  const [view, setView] = useState(() => ({ s: prefersCalm() ? 0 : -1, from: -1, by: "auto" }));
+  const { s, from, by } = view;
+  // The pages turn by themselves while the book is on screen, holding while
+  // the pointer is over it or a key has focused one of its controls. Not for
+  // visitors who ask for less motion.
+  const [autoTurn] = useState(() => !prefersCalm());
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [inView, setInView] = useState(false);
+  const stageRef = useRef(null);
+  const touched = useRef(false);
+  const opened = useRef(false);
+  const swipe = useRef({ x: 0, moved: false });
+  const running = autoTurn && !hovered && !focused && inView && s >= 0;
+
+  const go = useCallback((next, who = "auto") => {
+    setView((v) => {
+      const n = Math.max(-1, Math.min(LAST_SPREAD, next));
+      return n === v.s ? v : { s: n, from: v.s, by: who };
+    });
+  }, []);
+  const turnTo = (next) => {
+    touched.current = true;
+    go(next, "user");
+  };
+
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.5 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Open the book the first time it comes into view, unless the visitor has
+  // already turned to a page.
+  useEffect(() => {
+    if (!inView || opened.current || touched.current || s !== -1) return;
+    const t = setTimeout(() => {
+      opened.current = true;
+      go(0);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [inView, s, go]);
+
+  // Turn to the next spread after a pause; from the last one, riffle back to
+  // the first and carry on.
+  useEffect(() => {
+    if (!running) return;
+    const t = setTimeout(() => go(s >= LAST_SPREAD ? 0 : s + 1), by === "user" ? WAIT_AFTER_USER : TURN_EVERY);
+    return () => clearTimeout(t);
+  }, [running, s, by, go]);
+
+  // Once a jump has finished turning, clear its delays so hovering a page
+  // lifts it at once.
+  useEffect(() => {
+    if (from === s) return;
+    const steps = Math.abs(s - from);
+    const t = setTimeout(() => setView((v) => (v.s === s ? { ...v, from: v.s } : v)), 700 + steps * 60);
+    return () => clearTimeout(t);
+  }, [s, from]);
+
+  const onPointerDown = (e) => {
+    swipe.current = { x: e.clientX, moved: false };
+  };
+  const onPointerUp = (e) => {
+    const dx = e.clientX - swipe.current.x;
+    if (Math.abs(dx) < 40) return;
+    swipe.current.moved = true;
+    turnTo(dx < 0 ? s + 1 : s - 1);
+  };
+  const onLeafClick = (leaf) => {
+    if (swipe.current.moved) {
+      swipe.current.moved = false;
+      return;
+    }
+    if (leaf === s + 1 || (s === -1 && leaf === 0)) turnTo(s + 1);
+    else if (leaf === s) turnTo(s - 1);
+  };
+
+  const shown = s < 0 ? [] : [2 * s, 2 * s + 1];
+
+  return (
+    <section className={`vz-services rb-section relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+      <div className={`${WRAP} grid gap-8 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:items-center lg:gap-12 xl:gap-16`}>
+        {/* min-w-0: the phone row of pages must not widen the column. */}
+        <div className="min-w-0">
+          <Rule />
+          <h2 className={`reveal mt-5 ${H2_SANS} ${H2_FIT} short:mt-3`}>
+            Why Authors <Accent>Choose Us</Accent>
+          </h2>
+
+          {/* Contents: each reason with its page number; picks its spread. */}
+          <ol className="rb-toc mt-7 hidden lg:block short:mt-4">
+            {reasons.map(({ title }, i) => {
+              const current = shown.includes(i);
+              return (
+                <li key={title}>
+                  <button
+                    type="button"
+                    onClick={() => turnTo(Math.floor(i / 2))}
+                    aria-current={current ? "true" : undefined}
+                    className="rb-toc-item group flex w-full items-baseline gap-2 rounded-md py-[5px] text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-violet short:py-[3px]"
+                  >
+                    <span className="rb-toc-mark" aria-hidden="true" />
+                    <span className="rb-toc-title">{title}</span>
+                    <span className="rb-toc-leader" aria-hidden="true" />
+                    <span className="rb-toc-no" aria-hidden="true">
+                      {pageNo(i)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+
+        <div className="min-w-0">
+          {/* The book (tablets and up). */}
+          <div
+            ref={stageRef}
+            className="rb-stage hidden md:block"
+            onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(true)}
+            onPointerLeave={() => setHovered(false)}
+            onFocus={(e) => e.target.matches(":focus-visible") && setFocused(true)}
+            onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setFocused(false)}
+          >
+            <div
+              className="rb-book"
+              data-closed={s < 0 || undefined}
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
+            >
+              <div className="rb-body">
+                <span className="rb-shadow" aria-hidden="true" />
+                <span className="rb-board" aria-hidden="true">
+                  <span className="rb-ribbon" />
+                </span>
+                <div className="rb-base rb-paper rb-paper--right">
+                  <ReasonPage index={reasons.length + 1} />
+                </div>
+
+                {Array.from({ length: BOOK_LEAVES }, (_, leaf) => {
+                  const turned = leaf <= s;
+                  // Turned leaves stack up on the left, the latest on top;
+                  // the rest wait on the right, the next one on top.
+                  const z = turned ? leaf + 1 : BOOK_LEAVES - leaf + 1;
+                  const delay =
+                    from < s && leaf > from && leaf <= s
+                      ? (leaf - from - 1) * 60
+                      : s < from && leaf > s && leaf <= from
+                        ? (from - leaf) * 60
+                        : 0;
+                  const backIndex = leaf === 0 ? 0 : 2 * leaf;
+                  const frontIndex = 2 * leaf - 1;
+                  const isNext = leaf === s + 1;
+                  const isPrev = leaf === s;
+                  // Leaves turning right now: their faces shade as they lift.
+                  const turning = from !== s && leaf > Math.min(from, s) && leaf <= Math.max(from, s);
+                  return (
+                    <div
+                      key={leaf}
+                      className={`rb-leaf ${leaf === 0 ? "rb-leaf--cover" : ""}`}
+                      data-turned={turned || undefined}
+                      data-turning={turning || undefined}
+                      data-next={isNext || undefined}
+                      data-prev={isPrev || undefined}
+                      style={{ zIndex: z, "--d": `${delay}ms` }}
+                      onClick={() => onLeafClick(leaf)}
+                    >
+                      <div className={`rb-face rb-face--front ${leaf === 0 ? "rb-cover" : "rb-paper rb-paper--right"}`} aria-hidden={!isNext}>
+                        {leaf === 0 ? (
+                          <>
+                            <span className="rb-cover-dots" />
+                            <span className="rb-cover-frame" />
+                            <span className="rb-cover-medal">
+                              <img src="/assets/image/veritaz-logo.webp" alt="" />
+                            </span>
+                          </>
+                        ) : (
+                          <ReasonPage index={frontIndex} />
+                        )}
+                      </div>
+                      <div className={`rb-face rb-face--back ${leaf === 0 ? "rb-endpaper" : "rb-paper rb-paper--left"}`} aria-hidden={!isPrev}>
+                        {leaf === 0 ? (
+                          <div className="rb-paper rb-paper--left rb-pasted">
+                            <ReasonPage index={backIndex} />
+                          </div>
+                        ) : (
+                          <ReasonPage index={backIndex} />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-8 flex items-center justify-center gap-4 short:mt-5">
+              <button type="button" onClick={() => turnTo(s - 1)} disabled={s < 0} aria-label="Previous page" className={ROUND_LIGHT}>
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <span className="rb-progress" aria-hidden="true">
+                <span style={{ transform: `scaleX(${(s + 1) / BOOK_LEAVES})` }} />
+              </span>
+              <button type="button" onClick={() => turnTo(s + 1)} disabled={s >= LAST_SPREAD} aria-label="Next page" className={ROUND_LIGHT}>
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Phones: the pages in a row to swipe through. */}
+          <ol className="rb-strip -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6 pt-2 sm:-mx-6 sm:px-6 md:hidden">
+            {reasons.map(({ title }, i) => (
+              <li key={title} className="rb-card rb-paper rb-paper--right flex-none snap-center">
+                <ReasonPage index={i} />
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Testimonials: each review set as a press clipping taped up, with the
+ *  previous and next clippings fanned out behind it. The reviews change by
+ *  themselves, holding while the pointer or focus is on them (not for
+ *  visitors who ask for less motion); the arrows, the side clippings and the
+ *  authors' portraits pick one directly. Every clipping stays in the page so
+ *  each change slides them between places. The tm-* styles live in index.css. */
+function Testimonials({ testimonials }) {
+  const [index, setIndex] = useState(0);
+  const [calm] = useState(prefersCalm);
+  const [held, setHeld] = useState(false);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const count = testimonials.length;
+
+  useEffect(() => {
+    if (count < 2 || calm || held || videoUrl) return undefined;
+    const timer = setInterval(() => setIndex((i) => (i + 1) % count), 7000);
+    return () => clearInterval(timer);
+  }, [count, calm, held, videoUrl]);
+
+  useEffect(() => {
+    if (!videoUrl) return undefined;
+    const onKey = (e) => e.key === "Escape" && setVideoUrl(null);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [videoUrl]);
+
+  if (!count) return null;
+
+  const at = (i) => ((i % count) + count) % count;
+  const current = at(index);
+  const go = (step) => setIndex((i) => at(i + step));
+  // Where each clipping sits: in front, tucked behind to either side, or put away.
+  const roleOf = (i) => {
+    if (i === current) return "front";
+    if (count > 1 && i === at(current + 1)) return "next";
+    if (count > 2 && i === at(current - 1)) return "prev";
+    return "away";
+  };
+
+  return (
+    <section className={`vz-draft relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+      <div
+        className={`${WRAP} grid gap-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:items-center lg:gap-x-16`}
+        onMouseEnter={() => setHeld(true)}
+        onMouseLeave={() => setHeld(false)}
+        onFocus={() => setHeld(true)}
+        onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setHeld(false)}
+      >
+        <div className="min-w-0">
+          <Rule />
+          <h2 className={`reveal mt-5 ${H2_SANS} ${H2_FIT}`}>
+            In our authors&apos; <Accent>words</Accent>
+          </h2>
+
+          {count > 1 && (
+            <>
+              {/* The authors' portraits: each brings up their clipping. */}
+              <ul className="mt-8 flex flex-wrap gap-2.5 short:mt-5">
+                {testimonials.map((t, i) => (
+                  <li key={t.id ?? i}>
+                    <button
+                      type="button"
+                      onClick={() => setIndex(i)}
+                      aria-label={t.name || `Testimonial ${i + 1}`}
+                      aria-current={i === current ? "true" : undefined}
+                      className="tm-face rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sf-violet"
+                    >
+                      <Avatar src={t.avatar_url} name={t.name} size="h-11 w-11 text-base" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-6 flex items-center gap-2 short:mt-4">
+                <button type="button" onClick={() => go(-1)} aria-label="Previous testimonial" className={ROUND_LIGHT}>
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <button type="button" onClick={() => go(1)} aria-label="Next testimonial" className={ROUND_LIGHT}>
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+                <span className="ml-3 text-sm font-bold tabular-nums text-slate-500">
+                  {current + 1} / {count}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="tm-stage min-w-0">
+          <span className="tm-dots" aria-hidden="true" />
+          {testimonials.map((t, i) => {
+            const role = roleOf(i);
+            const front = role === "front";
+            const hasVideo = front && (t.is_video_testimonial === true || t.is_video_testimonial === 1) && t.video_url;
+            const long = (t.content || "").length > 280;
+            const turn = role === "prev" ? () => go(-1) : role === "next" ? () => go(1) : undefined;
+            return (
+              <figure
+                key={t.id ?? i}
+                className="tm-clip"
+                data-role={role}
+                aria-hidden={front ? undefined : "true"}
+                inert={role === "away" || undefined}
+                onClick={turn}
+              >
+                <span className="tm-tape" aria-hidden="true" />
+                <div className="tm-paper">
+                  <span className="tm-mark" aria-hidden="true">
+                    &ldquo;
+                  </span>
+                  <blockquote
+                    className={`mb-6 font-medium leading-relaxed text-vz-ink short:mb-4 ${long ? "text-[15px] lg:text-base" : "text-base lg:text-[17px]"}`}
+                  >
+                    {t.content}
+                  </blockquote>
+                  <figcaption className="tm-byline mt-auto flex flex-wrap items-center gap-4 pt-5 short:pt-4">
+                    <span className="rounded-full bg-[linear-gradient(135deg,var(--color-sf-indigo),var(--color-sf-violet))] p-[2px]">
+                      <Avatar src={t.avatar_url} name={t.name} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-bold text-vz-ink">{t.name}</p>
+                      <p className="text-sm text-slate-600">{t.designation}</p>
+                      <div className="mt-1 flex gap-0.5" role="img" aria-label={`${t.rating || 5} out of 5 stars`}>
+                        {Array.from({ length: Number(t.rating) || 5 }).map((_, k) => (
+                          <Star key={k} className="h-3.5 w-3.5 fill-brand-gold text-brand-gold" aria-hidden="true" />
+                        ))}
+                      </div>
+                    </div>
+                    {hasVideo && (
+                      <Pill onClick={() => setVideoUrl(t.video_url)} icon={Play} className="h-11 px-5 text-sm sm:ml-auto short:h-11">
+                        Watch Video
+                      </Pill>
+                    )}
+                  </figcaption>
+                </div>
+              </figure>
+            );
+          })}
+        </div>
+      </div>
+
+      {videoUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Testimonial video"
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-sf-navy/85 p-4"
+          onClick={(e) => e.target === e.currentTarget && setVideoUrl(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setVideoUrl(null)}
+            aria-label="Close video"
+            className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <video src={videoUrl} className="w-full max-w-3xl rounded-2xl" controls autoPlay />
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** Reach out: the page closes on an invitation to get in touch, on a violet
+ *  card with a desk photo, two real book covers and a telephone receiver
+ *  hanging in from the top that sways a little as the card scrolls by. The
+ *  button leads to the Contact page. The ro-* styles live in index.css. */
+function ReachOut() {
+  return (
+    <section className={`vz-draft relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+      <div className={WRAP}>
+        <div className="ro-card relative isolate overflow-hidden rounded-[2.5rem] text-white lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-stretch">
+          <span className="ro-dots" aria-hidden="true" />
+
+          <div className="relative z-10 px-6 pb-4 pt-12 sm:px-12 lg:py-16 lg:pl-16 xl:pl-20 short:py-10">
+            <Rule tone="dark" />
+            <h2 className={`reveal mt-5 ${H2_FIT} leading-[1.1] text-white short:mt-3`}>
+              Ready To Publish Your <Accent tone="light">Book?</Accent>
+            </h2>
+            <p className="mt-5 max-w-lg text-base leading-relaxed text-white/85 lg:text-[17px] short:mt-4">
+              Tell us about your book and our team will get back to you within 24 hours.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap short:mt-6">
+              <Pill to="/contact" variant="light" arrow>
+                Get in Touch
+              </Pill>
+              <Pill href="tel:+916380658876" variant="outline-light" icon={Phone}>
+                +91 6380658876
+              </Pill>
+            </div>
+            <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-white/85 short:mt-5">
+              <li>
+                <a
+                  href="mailto:info@veritazinternational.com"
+                  className="inline-flex items-center gap-2 break-all transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                >
+                  <Mail className="h-4 w-4 flex-none text-amber-300" aria-hidden="true" />
+                  info@veritazinternational.com
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://wa.me/916380658876"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                >
+                  <MessageCircle className="h-4 w-4 flex-none text-amber-300" aria-hidden="true" />
+                  Join WhatsApp
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* The picture: desk photo, book covers and the hanging receiver. */}
+          <div className="ro-visual relative" aria-hidden="true">
+            <img src="/assets/image/our-company/laptop-books.webp" alt="" loading="lazy" className="ro-photo" />
+            <img src={FALLBACK_COVERS[1]} alt="" loading="lazy" className="ro-cover ro-cover--back" />
+            <img src={FALLBACK_COVERS[0]} alt="" loading="lazy" className="ro-cover ro-cover--front" />
+            <img src="/assets/image/contact-phone.webp" alt="" loading="lazy" className="ro-phone" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
+  const [books, setBooks] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
+  const [booksReady, setBooksReady] = useState(false);
 
-    const bSliderRef = useRef(null);
-    const modalRef = useRef(null);
-    const videoRef = useRef(null);
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      const [bookResult, testimonialResult] = await Promise.all([
+        supabase
+          .from("veritaz_books")
+          .select("id, title, authors, cover1")
+          .eq("status", "In Stock")
+          .order("id", { ascending: false })
+          .limit(24),
+        supabase.from("veritaz_testimonials").select("*").order("id", { ascending: true }),
+      ]);
 
-    let isPaused = false;
-    let autoScrollInterval = null;
+      if (bookResult.error) console.error("Error fetching books:", bookResult.error);
+      else setBooks((bookResult.data || []).filter((b) => b.cover1 && b.title));
 
-    const scrollGrid = (dir) => {
-        const bSlider = bSliderRef.current;
-        if (!bSlider) return;
-
-        const firstCard = bSlider.querySelector(".snap-start");
-        if (!firstCard) return;
-
-        const cardWidth = firstCard.clientWidth + 32;
-
-        if (dir === "left") {
-            bSlider.scrollLeft -= cardWidth;
-        } else {
-            bSlider.scrollLeft += cardWidth;
-        }
+      if (testimonialResult.error) console.error("Error fetching testimonials:", testimonialResult.error);
+      else setTestimonials(testimonialResult.data || []);
     };
 
-    const [testimonials, setTestimonials] = useState([]);
-
-    useEffect(() => {
-        const fetchTestimonials = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from("veritaz_testimonials")
-                    .select("*")
-                    .order("id", { ascending: true });
-
-                if (error) throw error;
-
-                setTestimonials(data || []);
-            } catch (error) {
-                console.error("Error fetching testimonials:", error);
-            }
-        };
-
-        fetchTestimonials();
-    }, []);
-
-    useEffect(() => {
-        const bSlider = bSliderRef.current;
-        if (!bSlider) return;
-
-        autoScrollInterval = setInterval(() => {
-            if (!isPaused) {
-                if (
-                    bSlider.scrollLeft + bSlider.clientWidth >=
-                    bSlider.scrollWidth - 10
-                ) {
-                    bSlider.scrollTo({ left: 0, behavior: "smooth" });
-                } else {
-                    scrollGrid("right");
-                }
-            }
-        }, 4000);
-
-        const handleMouseEnter = () => (isPaused = true);
-        const handleMouseLeave = () => (isPaused = false);
-
-        bSlider.addEventListener("mouseenter", handleMouseEnter);
-        bSlider.addEventListener("mouseleave", handleMouseLeave);
-
-        return () => {
-            clearInterval(autoScrollInterval);
-            bSlider.removeEventListener("mouseenter", handleMouseEnter);
-            bSlider.removeEventListener("mouseleave", handleMouseLeave);
-        };
-    }, []);
-
-    const openVideoModal = (videoSrc) => {
-        const modal = modalRef.current;
-        const video = videoRef.current;
-
-        if (!modal || !video) return;
-
-        video.src = videoSrc;
-        modal.classList.remove("hidden");
-
-        setTimeout(() => {
-            modal.classList.remove("opacity-0");
-        }, 10);
-
-        video.play();
-    };
-
-    const closeVideoModal = () => {
-        const modal = modalRef.current;
-        const video = videoRef.current;
-
-        if (!modal || !video) return;
-
-        modal.classList.add("opacity-0");
-
-        setTimeout(() => {
-            modal.classList.add("hidden");
-            video.pause();
-            video.src = "";
-        }, 300);
-    };
-
-    useSeo(PAGES["/"]);
-
-
-    return (
-        <>
-
-            <header
-                style={{
-                    backgroundImage:
-                        "url('https://img.freepik.com/premium-photo/plain-background-copy-space_198067-677668.jpg')",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                }}
-                className="hero-gradient pt-5 sm:pt-5 lg:pt-15 xl:pt-14 pb-24 md:pb-32 px-6 lg:px-20 relative overflow-hidden"
-            >
-                <div className="flex flex-col lg:flex-row items-center justify-between">
-
-                    <div className="w-full lg:w-1/2 space-y-4 text-center lg:text-left flex flex-col items-center lg:items-start">
-                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold leading-tight text-gray-900">
-                            Best publishing <br className="hidden md:block" />
-                            practices in <br className="hidden md:block" />
-                            one book
-                        </h1>
-
-                        <p className="text-gray-700 text-lg max-w-md">
-                            Start your learning journey by browsing millions of books from our library.
-                        </p>
-                    </div>
-
-                    <div className="w-full lg:w-1/2 mt-10 lg:mt-0 flex justify-center items-center lg:items-end perspective-1000">
-                        <div className="relative flex items-center justify-center">
-
-                            <div className="w-32 h-44 sm:w-22 sm:h-50 md:w-48 md:h-64 lg:w-40 lg:h-52 xl:w-48 xl:h-64 rounded shadow-xl transform -rotate-12 -translate-x-8 md:-translate-x-12 translate-y-4 transition duration-500 hover:rotate-0 hover:z-30">
-                                <img
-                                    src="assets/image/books/index-1.png"
-                                    alt="Book 1"
-                                    className="w-full h-full object-cover rounded"
-                                />
-                            </div>
-
-                            <div className="w-32 h-44 sm:w-22 sm:h-50 md:w-48 md:h-64 lg:w-40 lg:h-52 xl:w-48 xl:h-64 rounded shadow-2xl z-20 scale-110 md:scale-125 transition duration-500 hover:scale-135">
-                                <img
-                                    src="assets/image/books/index-2.png"
-                                    alt="Book 2"
-                                    className="w-full h-full object-cover rounded"
-                                />
-                            </div>
-
-                            <div className="w-32 h-44 sm:w-22 sm:h-50 md:w-48 md:h-64 lg:w-40 lg:h-52 xl:w-48 xl:h-64 rounded shadow-xl transform rotate-12 translate-x-8 md:translate-x-12 translate-y-4 transition duration-500 hover:rotate-0 hover:z-30">
-                                <img
-                                    src="assets/image/books/index-3.png"
-                                    alt="Book 3"
-                                    className="w-full h-full object-cover rounded"
-                                />
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-            </header>
-
-            <section className="relative py-2 lg:py-5 px-6 lg:px-24 overflow-hidden bg-gray-50">
-
-                {/* Background elements */}
-                <div className="absolute top-10 left-5 w-72 h-72 bg-red-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-                <div className="absolute bottom-10 right-5 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float animation-delay-2000"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-2 bg-gradient-to-r from-process-start via-process-mid to-process-end opacity-5 rounded-full"></div>
-
-                <div className="relative">
-
-                    {/* Header */}
-                    <div className="text-center mb-10">
-                        <span className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-process-start to-process-mid text-gray-800 font-bold tracking-widest uppercase text-sm">
-                            <i className="fas fa-route mr-2"></i>
-                            Veritaz International Press
-                        </span>
-
-                        <h2 className="text-xl md:text-2xl lg:text-4xl font-black text-gray-900 mt-6 tracking-tight">
-                            Our Comprehensive Service Process
-                        </h2>
-
-                        <p className="text-gray-600 mt-3 text-sm lg:text-lg leading-relaxed text-justify">
-                            Our structured process guides you through each critical phase of academic achievement, ensuring comprehensive support at every step.
-                        </p>
-                    </div>
-
-                    {/* Grid */}
-                    <div className="grid gap-4 sm:gap-6 lg:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-
-                        {/* Card 01 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-blue-200 transition-colors leading-none">
-                                    01
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-book text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Textbook Publications
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                International publishing with ISBN. Full distribution support on Amazon and Flipkart for maximum author reach.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    National
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    International
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 02 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-orange-200 transition-colors leading-none">
-                                    02
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-500 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-gavel text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Patent Grant Support
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Expert assistance for National and International patent filing across 12 countries to protect your innovations.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    IPR Protection
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    12 Countries
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 03 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-purple-200 transition-colors leading-none">
-                                    03
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-users text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Educational Events
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Professional organization of International Conferences, FDPs, Workshops, and Academic Seminars.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Conferences
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Workshops
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 04 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-pink-200 transition-colors leading-none">
-                                    04
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-pink-500 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-graduation-cap text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Ph.D. Assistance
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Comprehensive end-to-end guidance for doctoral candidates, from topic selection to thesis completion.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Mentorship
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Research
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 05 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-teal-200 transition-colors leading-none">
-                                    05
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-teal-600 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-network-wired text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                IEEE Conference Publications
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Dedicated support for publishing high-standard papers in prestigious IEEE conferences globally.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Technical
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Global Standard
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 06 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-yellow-200 transition-colors leading-none">
-                                    06
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-microscope text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                SCI & Scopus Journal
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Achieve publication in top-tier indexed journals with our professional review and submission support.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-yellow-700 bg-yellow-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Scopus Indexed
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-yellow-700 bg-yellow-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    High Impact
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 07 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-indigo-200 transition-colors leading-none">
-                                    07
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-pen-nib text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Research Paper Support
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Expert drafting, formatting, and technical editing services to polish your research for submission.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Technical Writing
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Proofreading
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card 08 */}
-                        <div className="group h-full bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 lg:mb-6">
-                                <div className="flex-shrink-0 text-3xl sm:text-4xl font-black text-gray-100 group-hover:text-emerald-200 transition-colors leading-none">
-                                    08
-                                </div>
-                                <span className="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-600 rounded-lg flex items-center justify-center text-white flex-shrink-0 mt-0.5">
-                                    <i className="fas fa-laptop-code text-xs sm:text-sm"></i>
-                                </span>
-                            </div>
-
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                                Upskilling Programs
-                            </h3>
-
-                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 flex-grow">
-                                Modern training modules designed to enhance professional skills and academic competencies.
-                            </p>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Skill Development
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                    Certificate
-                                </span>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
-
-            <section className="overflow-hidden py-8">
-                <div className="relative z-10 px-4 lg:px-8">
-                    <div>
-                        <div className="flex flex-col lg:flex-row items-center">
-
-                            {/* LEFT CONTENT */}
-                            <div className="lg:w-1/2 mb-12 lg:mb-0">
-
-                                <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
-                                    <span className="text-black text-sm font-semibold uppercase tracking-wider">
-                                        Trusted by 500+ Authors
-                                    </span>
-                                </div>
-
-                                <h2 className="text-xl md:text-3xl lg:text-5xl font-bold text-gray-900 mb-2 lg:mb-6 leading-tight">
-                                    Transform Your{" "}
-                                    <span className="gradient-text">Knowledge</span>{" "}
-                                    Into Impact
-                                </h2>
-
-                                <p className="text-sm md:text-xl lg:text-xl text-gray-600 mb-8 leading-relaxed">
-                                    Veritaz International Press bridges the gap between innovative ideas and global recognition through comprehensive publishing, patent, and research solutions.
-                                </p>
-
-                                {/* Buttons */}
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <a
-                                        href="#publish-form"
-                                        className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover-lift flex items-center justify-center"
-                                    >
-                                        <i className="fas fa-pen-nib mr-3"></i>
-                                        Start Publishing Today
-                                    </a>
-
-                                    <a
-                                        href="contact.php"
-                                        className="px-4 py-2 bg-white text-gray-800 rounded-xl font-semibold text-lg border-2 border-gray-200 hover:border-blue-600 transition-all duration-300 hover-lift flex items-center justify-center"
-                                    >
-                                        <i className="fas fa-phone mr-3 text-blue-600"></i>
-                                        Contact Us
-                                    </a>
-                                </div>
-
-                                {/* Stats */}
-                                <div className="mt-2 lg:mt-12 md:mt-8 grid grid-cols-3 gap-4">
-                                    <div className="text-center">
-                                        <div className="text-lg md:text-xl lg:text-3xl font-bold text-blue-600 mb-2">
-                                            500+
-                                        </div>
-                                        <div className="text-gray-600 text-xs">Books Published</div>
-                                    </div>
-
-                                    <div className="text-center">
-                                        <div className="text-lg md:text-xl lg:text-3xl font-bold text-orange-500 mb-2">
-                                            200+
-                                        </div>
-                                        <div className="text-gray-600 text-xs">Patents Filed</div>
-                                    </div>
-
-                                    <div className="text-center">
-                                        <div className="text-lg md:text-xl lg:text-3xl font-bold text-purple-600 mb-2">
-                                            98%
-                                        </div>
-                                        <div className="text-gray-600 text-xs">Client Satisfaction</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* RIGHT FORM */}
-                            <div className="lg:w-1/2 lg:pl-12">
-                                <div className="relative">
-                                    <div className="relative bg-white rounded-2xl shadow-2xl p-8 book-shadow transform transition-transform duration-500">
-
-                                        {/* Badge */}
-                                        <div className="absolute -top-4 -right-4 w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-lg">
-                                            <i className="fas fa-award text-2xl"></i>
-                                        </div>
-
-                                        <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                                            Publish Your Book
-                                        </h3>
-
-                                        {/* FORM */}
-                                        <form id="web3form" className="space-y-4" noValidate>
-
-                                            <input
-                                                type="hidden"
-                                                name="access_key"
-                                                value="351a2b0f-5bed-4078-a9ce-dc3cdb628eb5"
-                                            />
-
-                                            <input
-                                                type="hidden"
-                                                name="subject"
-                                                value="New Book Publishing Inquiry"
-                                            />
-
-                                            <input
-                                                type="checkbox"
-                                                name="botcheck"
-                                                style={{ display: "none" }}
-                                            />
-
-                                            {/* Name */}
-                                            <div className="relative">
-                                                <i className="fas fa-user absolute left-4 top-4 text-gray-400"></i>
-                                                <input
-                                                    type="text"
-                                                    id="name"
-                                                    name="name"
-                                                    placeholder="Your Name"
-                                                    required
-                                                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-50"
-                                                />
-                                            </div>
-
-                                            {/* Email */}
-                                            <div className="relative">
-                                                <i className="fas fa-envelope absolute left-4 top-4 text-gray-400"></i>
-                                                <input
-                                                    type="email"
-                                                    id="email"
-                                                    name="email"
-                                                    placeholder="Email Address"
-                                                    required
-                                                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-50"
-                                                />
-                                            </div>
-
-                                            {/* Phone */}
-                                            <div className="relative">
-                                                <i className="fas fa-phone absolute left-4 top-4 text-gray-400"></i>
-                                                <input
-                                                    type="tel"
-                                                    id="phone"
-                                                    name="phone"
-                                                    placeholder="Phone Number"
-                                                    required
-                                                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-50"
-                                                />
-                                            </div>
-
-                                            {/* Message */}
-                                            <div className="relative">
-                                                <i className="fas fa-file-alt absolute left-4 top-4 text-gray-400"></i>
-                                                <input
-                                                    type="text"
-                                                    id="message"
-                                                    name="message"
-                                                    placeholder="Message"
-                                                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 bg-gray-50"
-                                                />
-                                            </div>
-
-                                            <button
-                                                type="submit"
-                                                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center"
-                                            >
-                                                <i className="fas fa-paper-plane mr-2"></i>
-                                                Send Inquiry
-                                            </button>
-
-                                            <p id="result" className="text-center text-sm mt-2"></p>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section className="bg-gray-100 py-20 px-4 overflow-hidden">
-                <div className="max-w-7xl mx-auto">
-
-                    {/* Header */}
-                    <div className="text-center mb-16 relative">
-                        <h4 className="text-gray-700 text-7xl font-bold opacity-10 absolute left-1/2 -translate-x-1/2 -top-16 select-none uppercase">
-                            Client
-                        </h4>
-
-                        <p className="text-gray-800 text-4xl font-black relative z-10 tracking-tight">
-                            OUR TESTIMONIALS
-                        </p>
-
-                        <div className="w-20 h-1 bg-teal-500 mx-auto mt-4 rounded-full"></div>
-                    </div>
-
-                    {/* Slider */}
-                    <div
-                        ref={bSliderRef}
-                        className="flex gap-8 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-12"
-                        style={{ scrollBehavior: "smooth", scrollbarWidth: "none", msOverflowStyle: "none" }}
-                    >
-                        {testimonials.map((test, index) => {
-                            // Normalize potential Boolean vs Binary Int values (e.g. true or 1) safely
-                            const hasVideo = test.is_video_testimonial === true || test.is_video_testimonial === 1;
-
-                            return (
-                                <div
-                                    key={index}
-                                    className="min-w-full md:min-w-full lg:min-w-[calc(50%-16px)] xl:min-w-[calc(33.333%-22px)] snap-start"
-                                >
-                                    <div className="bg-[#E7F2EF] rounded-3xl p-1 relative flex flex-col md:flex-row gap-3 items-center min-h-[220px] transition-transform hover:scale-[1.02] duration-300">
-
-                                        {/* Avatar Container with Conditional Hover Play Button Overlay */}
-                                        <div
-                                            onClick={() => hasVideo && openVideoModal(test.video_url)}
-                                            className={`w-24 h-24 bg-white/20 rounded-full flex-shrink-0 border-2 border-white/30 overflow-hidden relative ${hasVideo ? "group cursor-pointer" : ""
-                                                }`}
-                                        >
-                                            <img
-                                                src={test.avatar_url}
-                                                className="w-full h-full object-cover"
-                                                alt={test.name || "Client Avatar"}
-                                                onError={(e) => {
-                                                    e.target.src = "https://via.placeholder.com/100x100?text=User";
-                                                }}
-                                            />
-
-                                            {/* Conditional Hover Overlay Play Button */}
-                                            {hasVideo && (
-                                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    <svg className="w-8 h-8 text-white pl-1" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M8 5v14l11-7z" />
-                                                    </svg>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Text Details Box */}
-                                        <div className="text-black text-center md:text-left flex-1 px-2 md:px-0">
-                                            <h5 className="font-bold text-lg tracking-tight flex items-center justify-center md:justify-start gap-2">
-                                                {test.name}
-
-                                                {/* Conditional Inline "Watch Video" Button Pill */}
-                                                {hasVideo && (
-                                                    <button
-                                                        onClick={() => openVideoModal(test.video_url)}
-                                                        className="text-[10px] bg-red-500 text-white px-2 py-1 rounded-full flex items-center gap-1 hover:bg-red-600 transition-colors shadow-sm font-normal"
-                                                    >
-                                                        <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M8 5v14l11-7z" />
-                                                        </svg>{" "}
-                                                        Watch Video
-                                                    </button>
-                                                )}
-                                            </h5>
-
-                                            <p className="text-[11px] opacity-80 mb-2 font-semibold">
-                                                {test.designation}
-                                            </p>
-
-                                            <div className="flex justify-center md:justify-start gap-1 mb-3 text-yellow-500 text-xs">
-                                                {Array.from({ length: test.rating || 5 }).map((_, i) => (
-                                                    <span key={i}>★</span>
-                                                ))}
-                                            </div>
-
-                                            <p className="text-[11px] leading-relaxed opacity-90 line-clamp-4 text-justify">
-                                                {test.content}
-                                            </p>
-                                        </div>
-
-                                        {/* Speech Bubble Arrow Indicator styling */}
-                                        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[20px] border-t-[#E7F2EF]"></div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Controls */}
-                    <div className="flex flex-col items-center mt-12 gap-6">
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => scrollGrid("left")}
-                                className="p-3 rounded-full border border-white/10 text-black hover:bg-green-200 transition-all"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-
-                            <button
-                                onClick={() => scrollGrid("right")}
-                                className="p-3 rounded-full border border-white/10 text-black hover:bg-green-200 transition-all"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-                <div
-                    ref={modalRef}
-                    id="videoModal"
-                    className="fixed inset-0 bg-black/70 hidden opacity-0 transition-opacity flex items-center justify-center z-50"
-                    onClick={(e) => {
-                        if (e.target.id === "videoModal") closeVideoModal();
-                    }}
-                >
-                    <video
-                        ref={videoRef}
-                        className="w-[90%] max-w-3xl rounded-xl"
-                        controls
-                    />
-                </div>
-            </section>
-
-            <section className="py-5 px-4 lg:px-8">
-                <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-800 mb-10 text-center">
-                    Why Authors Choose Us
-                </h2>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-6 text-gray-700">
-
-                    {/* Left Column */}
-                    <div className="space-y-6">
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Book will be published with <strong className="text-gray-900">ISBN</strong>.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Lowest Publication Fee.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>A Govt registered Company and Registered under MSME.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Complementary Books to each Author.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Partnership with global distributors like Amazon, Flipkart etc.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Bestselling titles in Research and Engineering in Colleges.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>As per UGC and other accreditation bodies, it adds points to API and self-appraisal.</p>
-                        </div>
-
-                    </div>
-
-                    {/* Right Column */}
-                    <div className="space-y-6">
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Publication certificate hardcopy will be provided to each author.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Free Online Promotion and Distribution through Flipkart, Amazon, Publisher website etc.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Publishing books in all regional languages.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>High-quality 80gsm paper with black & white/color printing and glossy lamination.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Personalized approach and exceptional 24/7 customer service.</p>
-                        </div>
-
-                        <div className="flex items-start gap-4">
-                            <CheckCircle className="w-6 h-6 text-sky-500 fill-sky-500 text-white flex-shrink-0 mt-0.5" />
-                            <p>Best seller in the market.</p>
-                        </div>
-
-                    </div>
-
-                </div>
-            </section>
-
-        </>
-    )
+    fetchHomeData().finally(() => setBooksReady(true));
+  }, []);
+
+  useSeo(PAGES["/"]);
+
+  const covers = useMemo(() => books.map((b) => b.cover1), [books]);
+
+  return (
+    <main>
+      <Hero covers={covers} booksReady={booksReady} />
+      <Services covers={covers} />
+      <FromDraft />
+      <Shelf books={books.slice(0, 12)} />
+      <Reasons />
+      <Testimonials testimonials={testimonials} />
+      <ReachOut />
+    </main>
+  );
 }

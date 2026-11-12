@@ -9,6 +9,20 @@ export default defineConfig(({ mode }) => ({
   // file and builds sitemap.xml; it reads books and events with the same
   // public Supabase settings the app uses.
   plugins: [react(), tailwindcss(), seo({ env: loadEnv(mode, process.cwd(), 'VITE_') })],
+  build: {
+    rolldownOptions: {
+      output: {
+        // Libraries in their own files: they change rarely, so browsers keep
+        // them cached across site updates, and the app's own code stays small.
+        codeSplitting: {
+          groups: [
+            { name: 'react', test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/, priority: 20 },
+            { name: 'supabase', test: /node_modules[\\/]@supabase[\\/]/, priority: 10 },
+          ],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     host: true,

@@ -11,8 +11,8 @@ export const SITE_URL = "https://www.veritazinternational.com";
 export const SITE_NAME = "Veritaz International Press";
 
 const DEFAULT_IMAGE = "/og-image.jpg";
-const DEFAULT_IMAGE_ALT = "Veritaz International Press: Best publishing practices in one book";
-const LOGO = "/assets/image/veritazlogo.png";
+const DEFAULT_IMAGE_ALT = "Veritaz International Press: Where Great Writing Becomes a Printed Reality";
+const LOGO = "/assets/image/veritaz-logo.webp";
 const EMAIL = "info@veritazinternational.com";
 const PHONE = "+91-6380658876";
 const SOCIALS = [

@@ -1,0 +1,709 @@
+/* Styles for the conference page(s), in the site's "press" look. Imported from index.css. */
+
+/* ---------------------------------------------------------------------------
+   Conference page (pages/Conference.jsx).
+
+   The home page's press look: a dark stage hero with the poster on a violet
+   backing (or the globe-on-a-book artwork on a navy disc when there is no
+   poster), then white, lavender and navy bands with glossy badges, glass
+   cards on navy, a bound proceedings volume and a night-indigo help card.
+   Nothing moves on its own: hover effects and scroll-linked touches only, and
+   only under prefers-reduced-motion: no-preference.
+   --------------------------------------------------------------------------- */
+
+/* Hero: a patch of violet halftone in the top-right corner. */
+.cf-hero-dots {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 0;
+  width: min(48vw, 680px);
+  height: 75%;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgb(124 58 237 / 0.16) 1.3px, transparent 1.9px);
+  background-size: 16px 16px;
+  mask-image: radial-gradient(60% 60% at 85% 15%, #000, transparent 75%);
+}
+
+/* The acronym's trailing rule, fading out towards the diamond. */
+.cf-code-line {
+  background-image: linear-gradient(90deg, rgb(79 70 229 / 0.55), rgb(124 58 237 / 0.12));
+}
+
+/* Date, mode and ISBN chips: frosted white with a small gradient disc. */
+.cf-chip {
+  background-color: rgb(255 255 255 / 0.8);
+  box-shadow:
+    inset 0 0 0 1px #fff,
+    0 10px 24px -16px rgb(76 29 149 / 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.cf-chip-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #fff;
+  background-image: linear-gradient(140deg, var(--color-sf-indigo), var(--color-sf-violet));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4);
+}
+.cf-chip-icon--sky {
+  background-image: linear-gradient(140deg, #38bdf8, #0284c7);
+}
+.cf-chip-icon--pink {
+  background-image: linear-gradient(140deg, #f472b6, #db2777);
+}
+
+/* The poster: framed in white on a violet backing set off to one side, with
+   a patch of halftone behind its top corner. */
+.cf-poster-back {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 1.25rem;
+  translate: 18px 18px;
+  background-image: linear-gradient(135deg, var(--color-sf-indigo), var(--color-sf-violet) 60%, var(--color-sf-pink));
+}
+.cf-dots {
+  position: absolute;
+  z-index: -2;
+  left: -36px;
+  top: -36px;
+  width: 150px;
+  height: 150px;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgb(79 70 229 / 0.32) 1.4px, transparent 2px);
+  background-size: 14px 14px;
+}
+.cf-poster {
+  box-shadow:
+    0 0 0 6px #fff,
+    0 40px 80px -36px rgb(49 46 129 / 0.65);
+}
+
+/* No poster: the globe on an open book, standing on a navy disc with a white
+   halo and a dashed orbit. The disc is centred on the globe in the artwork
+   (1719 x 915, globe centre at 49% across and 0.22 of the width down). */
+.cf-globe-stage {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 36rem);
+  aspect-ratio: 1 / 0.7;
+  margin-inline: auto;
+}
+@media (min-width: 1024px) {
+  .cf-globe-stage {
+    width: min(100%, 40rem, calc((100svh - 14rem) / 0.7));
+  }
+}
+.cf-globe-disc {
+  position: absolute;
+  z-index: -1;
+  left: 18.3%;
+  top: 7.8%;
+  width: 62%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-image:
+    radial-gradient(circle at 50% 42%, rgb(129 140 248 / 0.55), transparent 62%),
+    linear-gradient(160deg, #312e81, var(--color-sf-navy) 55%, #4c1d95);
+  box-shadow:
+    0 0 0 12px rgb(255 255 255 / 0.6),
+    0 0 0 13px rgb(124 58 237 / 0.18),
+    0 40px 80px -30px rgb(49 46 129 / 0.6);
+}
+.cf-globe-disc::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image: radial-gradient(circle, rgb(255 255 255 / 0.18) 1.2px, transparent 1.8px);
+  background-size: 12px 12px;
+  mask-image: radial-gradient(circle at 25% 25%, #000, transparent 55%);
+}
+.cf-globe-disc::after {
+  content: "";
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  border: 1.5px dashed rgb(124 58 237 / 0.35);
+}
+.cf-globe-img {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 24px 26px rgb(49 46 129 / 0.35));
+}
+
+/* About: the rest of the text set off as a quiet pull-quote. */
+.cf-callout {
+  border-left: 3px solid var(--color-sf-violet);
+  background-image: linear-gradient(90deg, var(--color-sf-mist), rgb(238 242 255 / 0));
+}
+
+/* Key Details: a white card with the brand sweep along its top, and a rail
+   through the date badges that draws down as it scrolls into view. */
+.cf-keycard {
+  box-shadow:
+    inset 0 0 0 1px var(--color-vz-line),
+    0 40px 80px -40px rgb(76 29 149 / 0.45);
+}
+.cf-keycard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background-image: linear-gradient(90deg, var(--color-sf-sky), var(--color-sf-indigo) 40%, var(--color-sf-violet) 70%, var(--color-sf-pink));
+}
+.cf-rail {
+  position: absolute;
+  left: calc(1.5rem + 19px);
+  top: calc(1.5rem + 24px);
+  bottom: calc(1.5rem + 24px);
+  width: 2px;
+  translate: -50% 0;
+  overflow: hidden;
+  border-radius: 2px;
+  background-color: var(--color-vz-line);
+}
+@media (min-width: 640px) {
+  .cf-rail {
+    left: calc(1.75rem + 19px);
+  }
+}
+@media (min-width: 1024px) and (max-height: 760px) {
+  .cf-rail {
+    top: calc(1rem + 22px);
+    bottom: calc(1rem + 22px);
+  }
+}
+.cf-rail-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: top;
+  background-image: linear-gradient(180deg, var(--color-sf-sky), var(--color-sf-pink) 50%, var(--color-sf-violet));
+}
+
+/* Navy bands: a patch of lilac halftone in the top-right corner. */
+.cf-band-dots {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgb(167 139 250 / 0.22) 1.3px, transparent 1.9px);
+  background-size: 18px 18px;
+  mask-image: radial-gradient(40% 55% at 100% 0%, #000, transparent 75%);
+}
+
+/* Glass cards on navy. */
+.cf-glass {
+  background-color: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+.cf-glass--hover:hover,
+.cf-fee-card:hover {
+  background-color: rgb(255 255 255 / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.28);
+}
+/* Fee cards: a violet glow in the corner, and the fee in white fading to lavender. */
+.cf-fee-card::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -45%;
+  right: -30%;
+  width: 80%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(167 139 250 / 0.28), transparent);
+  pointer-events: none;
+}
+.cf-fee {
+  padding-bottom: 0.08em;
+  background-image: linear-gradient(90deg, #fff, var(--color-sf-lavender));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Each fee card's icon, large and faint in its corner. */
+.cf-watermark {
+  position: absolute;
+  z-index: -1;
+  right: -22px;
+  bottom: -22px;
+  width: 120px;
+  height: 120px;
+  rotate: -12deg;
+  color: rgb(255 255 255 / 0.06);
+  pointer-events: none;
+}
+
+/* Verification details: white tags on a dashed, stamp-like panel. */
+.cf-verify {
+  background-color: rgb(255 255 255 / 0.5);
+  border: 1.5px dashed rgb(124 58 237 / 0.3);
+}
+.cf-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  background-color: #fff;
+  padding: 0.5rem 1rem;
+  box-shadow:
+    inset 0 0 0 1px var(--color-vz-line),
+    0 10px 20px -16px rgb(76 29 149 / 0.45);
+}
+
+/* Proceedings: a deep violet card with gold halftone and a bound volume
+   (the press's mark on a pale cover, its pages showing on the fore-edge). */
+.cf-proc {
+  background-color: var(--color-sf-navy);
+  background-image:
+    radial-gradient(60% 80% at 90% 10%, rgb(124 58 237 / 0.55), transparent 70%),
+    radial-gradient(50% 70% at 0% 100%, rgb(79 70 229 / 0.5), transparent 70%),
+    linear-gradient(135deg, var(--color-sf-navy), #312e81 55%, var(--color-sf-purple));
+  box-shadow: 0 30px 60px -30px rgb(17 24 68 / 0.75);
+}
+.cf-proc-dots {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgb(252 211 77 / 0.2) 1.3px, transparent 1.9px);
+  background-size: 15px 15px;
+  mask-image: radial-gradient(45% 60% at 100% 100%, #000, transparent 75%);
+}
+.cf-volume {
+  position: relative;
+  display: block;
+  flex: none;
+  align-self: flex-start;
+  width: 7.5rem;
+  aspect-ratio: 3 / 4;
+  margin: 0 14px 8px 4px;
+  rotate: 5deg;
+}
+@media (min-width: 640px) {
+  .cf-volume {
+    align-self: center;
+    width: clamp(7.5rem, 11vw, 10rem);
+  }
+}
+.cf-volume::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  right: -10px;
+  width: 12px;
+  border-radius: 0 4px 4px 0;
+  background: repeating-linear-gradient(90deg, #f8fafc 0 2px, #cbd5e1 2px 3px);
+  box-shadow: 0 24px 30px -14px rgb(0 0 0 / 0.6);
+}
+.cf-volume-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12%;
+  padding: 14% 10% 14% 16%;
+  border-radius: 3px 10px 10px 3px;
+  background-image: linear-gradient(150deg, #ffffff, #eef2ff 50%, #ddd6fe);
+  box-shadow:
+    inset 7px 0 0 var(--color-sf-indigo),
+    inset 9px 0 0 rgb(255 255 255 / 0.5),
+    0 30px 50px -18px rgb(0 0 0 / 0.65);
+}
+.cf-volume-cover img {
+  width: 64%;
+  height: auto;
+}
+.cf-volume-band {
+  width: 70%;
+  height: 5px;
+  border-radius: 9999px;
+  background-image: linear-gradient(90deg, var(--color-sf-amber), #fcd34d);
+}
+.cf-volume-lines {
+  width: 70%;
+  height: 19px;
+  background: repeating-linear-gradient(180deg, rgb(79 70 229 / 0.28) 0 3px, transparent 3px 8px);
+  mask-image: linear-gradient(90deg, #000 60%, transparent);
+}
+
+/* Topics: the desk photo tilted on a white mat with halftone behind it, and
+   the topic numbers in the brand gradient. */
+.cf-desk {
+  isolation: isolate;
+}
+.cf-desk::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -28px;
+  bottom: -28px;
+  width: 140px;
+  height: 140px;
+  background-image: radial-gradient(circle, rgb(79 70 229 / 0.3) 1.4px, transparent 2px);
+  background-size: 14px 14px;
+}
+.cf-desk img {
+  rotate: -2deg;
+  box-shadow:
+    0 0 0 6px #fff,
+    0 30px 60px -30px rgb(49 46 129 / 0.55);
+}
+.cf-num {
+  padding-bottom: 0.08em;
+  background-image: linear-gradient(140deg, var(--color-sf-indigo), var(--color-sf-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Keynote speakers: portraits in a gradient ring. */
+.cf-speaker-photo {
+  display: block;
+  flex: none;
+  width: min(12rem, 100%);
+  aspect-ratio: 1;
+  overflow: hidden;
+  padding: 4px;
+  border-radius: 50%;
+  background-image: conic-gradient(
+    from 210deg,
+    var(--color-sf-sky),
+    var(--color-sf-indigo),
+    var(--color-sf-violet),
+    var(--color-sf-pink),
+    var(--color-sf-amber),
+    var(--color-sf-sky)
+  );
+  box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.7);
+}
+@media (min-width: 1024px) {
+  .cf-speaker-photo {
+    width: max(7.5rem, min(12rem, calc(100svh - 33rem)));
+  }
+}
+.cf-speaker-photo > img {
+  display: block;
+}
+.cf-speaker-photo > * {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid var(--color-sf-navy);
+  background-color: var(--color-sf-mist);
+  object-fit: cover;
+}
+.vz-draft .cf-speaker-photo > *,
+.vz-services .cf-speaker-photo > * {
+  border-color: #fff;
+}
+
+/* Committee initials: a white disc in a coloured ring. */
+.cf-initials {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-sf-indigo-deep);
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(140deg, var(--c1, #4f46e5), var(--c2, #a855f7)) border-box;
+  box-shadow:
+    0 0 0 4px rgb(238 242 255 / 0.9),
+    0 12px 22px -12px rgb(76 29 149 / 0.55);
+}
+.cf-initials--amber {
+  --c1: #fbbf24;
+  --c2: #d97706;
+}
+.cf-initials--pink {
+  --c1: #f472b6;
+  --c2: #db2777;
+}
+.cf-initials--sky {
+  --c1: #7dd3fc;
+  --c2: #0284c7;
+}
+.cf-initials--emerald {
+  --c1: #34d399;
+  --c2: #059669;
+}
+/* On the navy help card: a dark disc with white letters. */
+.cf-initials--glass {
+  width: 48px;
+  height: 48px;
+  color: #fff;
+  background:
+    linear-gradient(#1e1b4b, #1e1b4b) padding-box,
+    linear-gradient(140deg, var(--c1, #818cf8), var(--c2, #c084fc)) border-box;
+  box-shadow: none;
+}
+
+/* Need assistance: a night-indigo card with a violet glow and gold halftone. */
+.cf-help {
+  background-color: var(--color-sf-navy);
+  background-image:
+    radial-gradient(55% 80% at 100% 0%, rgb(124 58 237 / 0.55), transparent 65%),
+    radial-gradient(45% 70% at 0% 100%, rgb(79 70 229 / 0.5), transparent 70%),
+    linear-gradient(125deg, var(--color-sf-navy), #312e81 55%, var(--color-sf-purple));
+  box-shadow: 0 40px 80px -40px rgb(17 24 68 / 0.75);
+}
+.cf-help-dots {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgb(252 211 77 / 0.2) 1.3px, transparent 1.9px);
+  background-size: 15px 15px;
+  mask-image: radial-gradient(45% 60% at 0% 100%, #000, transparent 75%);
+}
+
+/* Without conveners, the help card's right side holds concentric rings round
+   a glossy mail badge, with two smaller badges on the rings. */
+.cf-help-art {
+  height: 15rem;
+}
+.cf-help-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.16);
+}
+.cf-help-ring--1 {
+  width: 7.5rem;
+  background-color: rgb(255 255 255 / 0.06);
+}
+.cf-help-ring--2 {
+  width: 12rem;
+  border-style: dashed;
+  border-color: rgb(196 181 253 / 0.35);
+}
+.cf-help-ring--3 {
+  width: 17rem;
+  border-color: rgb(255 255 255 / 0.1);
+}
+.cf-help-badge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+}
+.cf-help-badge--a {
+  translate: calc(-50% - 5.6rem) calc(-50% - 2.4rem);
+}
+.cf-help-badge--b {
+  translate: calc(-50% + 5.4rem) calc(-50% + 2.8rem);
+}
+
+/* ---------------------------------------------------------------------------
+   The hero as a conference stage: deep navy lit violet behind the poster and
+   indigo from the top left, two soft spotlights falling from above, a faint
+   grid like a stage floor plan, and white halftone in the corner. The chips
+   turn to frosted glass and the poster gets a violet glow.
+   --------------------------------------------------------------------------- */
+.cf-stage {
+  background-color: var(--color-sf-night);
+  background-image:
+    radial-gradient(42% 55% at 78% 45%, rgb(124 58 237 / 0.5), transparent 70%),
+    radial-gradient(40% 50% at 8% 0%, rgb(79 70 229 / 0.5), transparent 70%),
+    radial-gradient(55% 35% at 50% 100%, rgb(56 189 248 / 0.12), transparent 70%),
+    linear-gradient(180deg, var(--color-sf-navy), var(--color-sf-night));
+}
+.cf-beams {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(80% 70% at 50% 30%, #000 30%, transparent);
+}
+.cf-beams::before,
+.cf-beams::after {
+  content: "";
+  position: absolute;
+  top: -12%;
+  width: 34%;
+  height: 125%;
+  transform-origin: 50% 0;
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+  filter: blur(3px);
+}
+.cf-beams::before {
+  left: 6%;
+  rotate: 17deg;
+  background-image: linear-gradient(180deg, rgb(196 181 253 / 0.26), rgb(196 181 253 / 0) 72%);
+}
+.cf-beams::after {
+  right: 10%;
+  rotate: -15deg;
+  background-image: linear-gradient(180deg, rgb(252 211 77 / 0.16), rgb(252 211 77 / 0) 70%);
+}
+.cf-stage .cf-hero-dots {
+  background-image: radial-gradient(circle, rgb(255 255 255 / 0.14) 1.3px, transparent 1.9px);
+}
+.cf-stage .cf-code-line {
+  background-image: linear-gradient(90deg, rgb(196 181 253 / 0.7), rgb(196 181 253 / 0.1));
+}
+.cf-stage .cf-chip {
+  background-color: rgb(255 255 255 / 0.08);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.16),
+    0 10px 24px -16px rgb(0 0 0 / 0.6);
+}
+.cf-stage .cf-dots {
+  background-image: radial-gradient(circle, rgb(196 181 253 / 0.4) 1.4px, transparent 2px);
+}
+.cf-stage .cf-poster {
+  box-shadow:
+    0 0 0 6px rgb(255 255 255 / 0.95),
+    0 40px 80px -30px rgb(0 0 0 / 0.75);
+}
+.cf-poster-glow {
+  position: absolute;
+  inset: -14%;
+  z-index: -3;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(124 58 237 / 0.6), rgb(245 158 11 / 0.12) 62%, transparent);
+  filter: blur(12px);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   The section bar: a frosted white pill of links under the hero, sticking
+   under the site navbar and floating over the bands as you scroll; the band
+   in view is marked in the brand gradient. Bands land below it when linked.
+   --------------------------------------------------------------------------- */
+.cf-page section[id] {
+  scroll-margin-top: 9.5rem;
+}
+.cf-subnav-bar {
+  background-color: rgb(255 255 255 / 0.88);
+  -webkit-backdrop-filter: saturate(1.3) blur(12px);
+  backdrop-filter: saturate(1.3) blur(12px);
+  box-shadow:
+    inset 0 0 0 1px var(--color-vz-line),
+    0 18px 40px -20px rgb(17 24 68 / 0.45);
+  scrollbar-width: none;
+}
+.cf-subnav-link {
+  color: #475569;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+.cf-subnav-link:hover {
+  color: var(--color-vz-ink);
+  background-color: var(--color-sf-mist);
+}
+.cf-subnav-link[aria-current="true"] {
+  color: #fff;
+  background-image: linear-gradient(100deg, var(--color-sf-indigo), var(--color-sf-violet));
+  box-shadow: 0 8px 18px -10px rgb(79 70 229 / 0.7);
+}
+
+/* Keynote speakers: a soft spotlight falling on each portrait. */
+.cf-spot {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 50%;
+  width: 90%;
+  height: 72%;
+  translate: -50% 0;
+  clip-path: polygon(36% 0, 64% 0, 100% 100%, 0 100%);
+  background-image: linear-gradient(180deg, rgb(196 181 253 / 0.3), rgb(196 181 253 / 0) 85%);
+  pointer-events: none;
+}
+.vz-draft .cf-spot,
+.vz-services .cf-spot {
+  background-image: linear-gradient(180deg, rgb(124 58 237 / 0.12), rgb(124 58 237 / 0) 85%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The poster's backing slides out a little on hover. */
+  .cf-poster-back,
+  .cf-dots {
+    transition: translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .cf-poster-wrap:hover .cf-poster-back {
+    translate: 26px 26px;
+  }
+  .cf-poster-wrap:hover .cf-dots {
+    translate: -8px -8px;
+  }
+
+  /* The proceedings volume straightens and lifts on hover. */
+  .cf-volume {
+    transition:
+      rotate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+      translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .cf-proc:hover .cf-volume {
+    rotate: -2deg;
+    translate: 0 -8px;
+  }
+
+  /* Glass cards lift; portraits grow a little; the desk photo straightens. */
+  .cf-glass--hover,
+  .cf-fee-card {
+    transition:
+      background-color 0.3s ease,
+      box-shadow 0.3s ease,
+      translate 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .cf-glass--hover:hover,
+  .cf-fee-card:hover {
+    translate: 0 -4px;
+  }
+  .cf-speaker-photo {
+    transition: scale 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  li:hover > .cf-speaker-photo {
+    scale: 1.04;
+  }
+  .cf-desk img {
+    transition: rotate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .cf-desk:hover img {
+    rotate: 0deg;
+  }
+
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes cf-rail-draw {
+      from {
+        transform: scaleY(0);
+      }
+    }
+    .cf-rail-fill {
+      animation: cf-rail-draw linear both;
+      animation-timeline: view();
+      animation-range: cover 10% cover 45%;
+    }
+  }
+}

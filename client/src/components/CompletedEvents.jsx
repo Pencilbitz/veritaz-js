@@ -1,113 +1,127 @@
-import React from "react";
-import { MapPin, Calendar, Clock, Users } from "lucide-react";
+import { MapPin, Calendar, Users, CalendarCheck2, CheckCheck } from "lucide-react";
 import StateFilterBar from "./StateFilterBar";
+
+/* The completed events on the events page: a toolbar holding the list's
+   title and the state filter, then the events as cards. Each card shows its
+   poster in a white mat like a printed proof, with an emerald "done" stamp on
+   its corner, then the college, date and place. The ev-* styles live in
+   styles/events.css. */
+
+// speakerContact may be an array, a plain string, or a JSON-encoded string
+function speakerList(speakerContact) {
+  if (Array.isArray(speakerContact)) return speakerContact;
+  if (!speakerContact) return [];
+  try {
+    const parsed = JSON.parse(speakerContact);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    return [speakerContact];
+  }
+}
+
+const META_ICON = "flex h-7 w-7 flex-none items-center justify-center rounded-full";
 
 export default function CompletedEvents({ events = [], states = [], stateFilter = "", onStateFilterChange = () => {} }) {
   return (
-    <section className="bg-gray-50 min-h-screen py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <div>
+      <div className="ev-toolbar rounded-3xl p-4 sm:p-5 lg:px-6">
+        <div className="flex items-center gap-3">
+          <span aria-hidden="true" className="svc-badge svc-badge--xs svc-badge--emerald">
+            <CalendarCheck2 className="relative z-10 h-[18px] w-[18px]" strokeWidth={1.8} />
+          </span>
+          <h3 className="text-lg font-bold text-vz-ink">Completed Events</h3>
+        </div>
 
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-10">
-          Completed Events
-        </h2>
+        <StateFilterBar
+          states={states}
+          value={stateFilter}
+          onChange={onStateFilterChange}
+          className="mt-4 border-t border-dashed border-vz-line pt-4"
+        />
+      </div>
 
-        <StateFilterBar states={states} value={stateFilter} onChange={onStateFilterChange} />
+      <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3 lg:gap-7">
+        {events.map((event, index) => {
+          const speakersArray = speakerList(event.speakerContact);
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          return (
+            <li
+              key={event.id || event._id || index}
+              className="svc-card group relative isolate flex flex-col overflow-hidden rounded-3xl bg-white"
+            >
+              <span aria-hidden="true" className="svc-card-glow" />
 
-          {events.map((event, index) => {
-            // speakerContact may be an array, a plain string, or a JSON-encoded string
-            let speakersArray = [];
-            if (Array.isArray(event.speakerContact)) {
-              speakersArray = event.speakerContact;
-            } else if (event.speakerContact) {
-              try {
-                const parsed = JSON.parse(event.speakerContact);
-                speakersArray = Array.isArray(parsed) ? parsed : [parsed];
-              } catch (e) {
-                speakersArray = [event.speakerContact];
-              }
-            }
-
-            return (
-              <div
-                key={event.id || event._id || index}
-                className="bg-white rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between"
-              >
-                <div>
-                  {/* Event Poster Area — aspect ratio matches the actual
-                      (landscape) poster shape so there's no letterbox bars,
-                      object-contain keeps the full poster visible */}
-                  <div className="relative overflow-hidden aspect-[8/5] bg-gray-100">
-                    <img
-                      src={`${event.poster}`}
-                      alt={event.eventTitle || "Completed Event"}
-                      className="w-full h-full object-contain hover:scale-101 transition duration-300"
-                      onError={(e) => { e.target.src = "https://placehold.co/480x300/EEE/31343C?text=No+Poster" }}
-                    />
-
-
-                  </div>
-
-                  {/* Details Area */}
-                  <div className="p-5 space-y-3 flex-grow">
-                    {/* Institution Label */}
-                    {event.collegeName && (
-                      <span className="text-xs font-bold text-blue-600 uppercase tracking-wide block">
-                        {event.collegeName}
-                      </span>
-                    )}
-
-                    {/* Event Date */}
-                    {event.date && (
-                      <div className="flex items-start gap-2 text-gray-600 text-sm">
-                        <Calendar
-                          size={16}
-                          className="text-blue-600 mt-0.5 flex-shrink-0"
-                        />
-                        <span className="line-clamp-2">{event.date}</span>
-                      </div>
-                    )}
-
-                    {/* Physical Location Field Display */}
-                    {event.location && (
-                      <div className="flex items-start gap-2 text-gray-600 text-sm">
-                        <MapPin
-                          size={16}
-                          className="text-emerald-600 mt-0.5 flex-shrink-0"
-                        />
-                        <span className="line-clamp-2">{event.location}</span>
-                      </div>
-                    )}
-                  </div>
+              {/* Poster in its mat. The frame keeps the posters' landscape
+                  shape so nothing is letterboxed; object-contain keeps any
+                  other shape whole. */}
+              <div className="relative p-2.5 pb-0">
+                <div className="ev-proof relative aspect-[1024/724] overflow-hidden rounded-2xl">
+                  <img
+                    src={`${event.poster}`}
+                    alt={event.eventTitle || "Completed Event"}
+                    loading="lazy"
+                    className="ev-poster-img h-full w-full object-contain"
+                    onError={(e) => { e.target.src = "https://placehold.co/480x300/EEE/31343C?text=No+Poster" }}
+                  />
                 </div>
+                <span aria-hidden="true" className="ev-stamp">
+                  <CheckCheck className="relative h-5 w-5" strokeWidth={2.2} />
+                </span>
+              </div>
 
-                {/* Speakers Section — cleanly handles multi-speaker arrays if present */}
-                {speakersArray.length > 0 && (
-                  <div className="p-5 pt-0 border-t border-gray-100 mt-auto">
-                    <div className="flex items-start gap-2 pt-3 text-gray-600 text-sm">
-                      <Users size={16} className="text-orange-500 mt-0.5 flex-shrink-0" />
-                      <div className="w-full">
-                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">
-                          Speakers / Contacts
-                        </span>
-                        <div className="flex flex-wrap gap-1">
-                          {speakersArray.map((speaker, idx) => (
-                            <span key={idx} className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded font-medium border border-gray-200">
-                              {speaker}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+              {/* Details */}
+              <div className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-6">
+                {event.collegeName && (
+                  <h4 className="pr-14 text-[13px] font-bold uppercase leading-snug tracking-[0.05em] text-sf-indigo-deep">
+                    {event.collegeName}
+                  </h4>
+                )}
+
+                {event.date && (
+                  <div className="flex items-center gap-2.5 text-sm text-slate-600">
+                    <span aria-hidden="true" className={`${META_ICON} bg-sf-mist text-sf-indigo`}>
+                      <Calendar size={14} strokeWidth={2} />
+                    </span>
+                    <span className="line-clamp-2">{event.date}</span>
+                  </div>
+                )}
+
+                {event.location && (
+                  <div className="flex items-center gap-2.5 text-sm text-slate-600">
+                    <span aria-hidden="true" className={`${META_ICON} bg-emerald-50 text-emerald-700`}>
+                      <MapPin size={14} strokeWidth={2} />
+                    </span>
+                    <span className="line-clamp-2">{event.location}</span>
                   </div>
                 )}
               </div>
-            );
-          })}
 
-        </div>
-      </div>
-    </section>
+              {/* Speakers, when listed */}
+              {speakersArray.length > 0 && (
+                <div className="mt-auto border-t border-dashed border-vz-line px-5 pb-5 pt-4">
+                  <div className="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span aria-hidden="true" className={`${META_ICON} bg-amber-50 text-amber-700`}>
+                      <Users size={14} strokeWidth={2} />
+                    </span>
+                    <div className="w-full">
+                      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                        Speakers / Contacts
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {speakersArray.map((speaker, idx) => (
+                          <span key={idx} className="rounded-full bg-sf-mist px-2.5 py-0.5 text-xs font-medium text-sf-indigo-deep">
+                            {speaker}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

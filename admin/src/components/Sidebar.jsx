@@ -11,9 +11,10 @@ import {
   MdAutoStories,
   MdEvent,
   MdWork,
-  MdAssignment,
   MdGroups,
   MdCloudUpload,
+  MdMail,
+  MdContactPhone,
 } from 'react-icons/md';
 import { FaBookOpen } from 'react-icons/fa';
 
@@ -27,7 +28,8 @@ const navItems = [
   // exists but is reachable only by typing the URL, which is how a content
   // screen ends up unused.
   { path: '/admin/careers', icon: MdWork, label: 'Careers' },
-  { path: '/admin/meet-our-team', icon: MdAssignment, label: 'Meet Our Team' },
+  { path: '/admin/enquiries', icon: MdMail, label: 'User Enquiries' },
+  { path: '/admin/team-contacts', icon: MdContactPhone, label: 'Team Contacts' },
 ];
 
 const sidebarVariants = {

@@ -1,689 +1,397 @@
-import React from "react";
-
 import {
-    ArrowRight,
-    Award,
-    Star,
-    Check,
-    PenTool,
-    Megaphone,
+    BookOpen,
     Globe,
-    Wallet,
+    Users,
+    Headphones,
+    Target,
+    Eye,
+    Copy,
+    GraduationCap,
+    Package,
+    Truck,
+    ArrowUpRight,
+    BadgeCheck,
+    Building2,
+    CircleCheck,
+    HeartHandshake,
+    ShieldCheck,
+    Sparkles,
+    Star,
 } from "lucide-react";
+import { Accent, Eyebrow, Pill, Rule } from "../components/PressUI";
+import { BADGE_TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
 import { useSeo } from "../seo/useSeo";
 import { PAGES } from "../seo/site";
+
+/* Our Company, in the home page's "press" look: lavender, white and navy
+   bands, headings with an italic accent word and a brush stroke, glossy icon
+   badges, and each section sized to one screen on wide screens. The oc-*
+   styles live under "Our Company page." in index.css. */
+
+const IMG = "/assets/image/our-company";
+const LOGO = "/assets/image/veritaz-logo.webp";
+const COVERS = ["/assets/image/books/index-1.webp", "/assets/image/books/index-2.webp", "/assets/image/books/index-3.webp"];
+const H2 = `${H2_FIT} leading-[1.1] text-vz-ink`;
+const H2_LIGHT = `${H2_FIT} leading-[1.1] text-white`;
+const LEAD = "text-base leading-relaxed text-slate-600 lg:text-[17px] short:text-[15px]";
+
+const STATS = [
+    { number: "500+", title: "Books Published", Icon: BookOpen },
+    { number: "50+", title: "Countries Reached", Icon: Globe },
+    { number: "98%", title: "Author Satisfaction", Icon: Users },
+    { number: "24/7", title: "Author Support", Icon: Headphones },
+];
+
+const KNOWLEDGE = [
+    { Icon: Target, text: "We specialize in bringing high-quality textbooks, conference proceedings, patents, and academic works to life fueling innovation and career advancement across disciplines. Beyond complete book production, we manage Faculty Development Programs (FDPs), national and international academic conferences, and comprehensive patent filing to secure your intellectual property." },
+    { Icon: Eye, text: "Whether you are an established scholar, educator, or first-time writer, our dedicated team supports your complete workflow: professional manuscript editing, custom cover design, official ISBN registration, precision book printing, worldwide eBook distribution, and full patent grant assistance." },
+];
+
+const FEATURES = [
+    {
+        title: "Multiformat Book Publishing",
+        text: "From precision paperback printing to digital formatting, we make your work accessible across every platform with full ISBN registration and custom cover design.",
+        Icon: Copy,
+    },
+    {
+        title: "Targeted Academic Visibility",
+        text: "Connect with institutions, scholars, and key readers using tailored positioning strategies designed specifically for academic textbooks and professional works.",
+        Icon: GraduationCap,
+    },
+    {
+        title: "Global eBook & Print Distribution",
+        text: "Our expansive international distribution network places your title into leading online booksellers and library catalogs worldwide.",
+        Icon: Truck,
+    },
+    {
+        title: "Cost-Effective Author Solutions",
+        text: "Budget-friendly self-publishing packages crafted to maintain standard setting quality, fast turnaround times, and maximum global reach.",
+        Icon: Package,
+    },
+];
+
+const BENEFITS = [
+    ["Academic Community Impact:", "Authorship serves as a foundational benchmark for advancing curriculum standards and supporting higher education."],
+    ["Career Advancement & Appraisal:", "Published textbooks directly strengthen eligibility for academic promotions, salary increments, and institutional appraisals."],
+    ["Institutional Accreditation Alignment:", "Detailed publication metrics directly support submission criteria for NAAC, UGC, NIRF, NBA, and global ranking frameworks."],
+    ["Elevated Professional Profile:", "Having formal publications adds weightage to your CV, establishing lasting academic authority in your discipline."],
+    ["Global ISBN Recognition:", "Official ISBN assignment ensures unique worldwide identification, cataloging, and international availability across digital and print networks."],
+];
+const BENEFIT_ICONS = [GraduationCap, ArrowUpRight, ShieldCheck, Star, BadgeCheck];
+
+/** The three things the purpose section promises, set large. */
+const PURPOSE = [
+    { word: "Respect", Icon: CircleCheck },
+    { word: "Credibility", Icon: ShieldCheck },
+    { word: "Global Reach", Icon: Truck },
+];
+const PURPOSE_TONES = ["", "svc-badge--pink", "svc-badge--emerald"];
+
+/** Hero: the desk photo full width under a deep navy shade, the title and
+ *  lead left-aligned in white with a gold rule, and the four figures in a
+ *  frosted strip along the foot. */
+function Hero() {
+    return (
+        <header className="oc-hero relative isolate flex flex-col overflow-hidden text-white lg:min-h-[calc(100svh-7.6rem)]">
+            <img
+                src={`${IMG}/hero-books.webp`}
+                alt=""
+                fetchPriority="high"
+                className="absolute inset-0 -z-20 h-full w-full object-cover object-[72%_50%]"
+            />
+            <span className="oc-hero-shade" aria-hidden="true" />
+
+            <div className={`${WRAP} flex flex-1 items-center py-16 lg:py-12 short:py-8`}>
+                <div className="max-w-2xl">
+                    <Eyebrow tone="light" icon={BadgeCheck}>
+                        Trusted Academic Publisher
+                    </Eyebrow>
+                    <h1 className="mt-6 text-[2.25rem] leading-[1.1] text-white sm:text-5xl lg:text-[clamp(2.4rem,min(4vw,7.4svh),3.6rem)] short:mt-4">
+                        About <span className="hero-accent hero-accent--light">Veritaz</span>
+                        <br />
+                        International Press
+                    </h1>
+                    <span className="oc-hero-rule mt-6 block h-1 w-20 rounded-full short:mt-4" aria-hidden="true" />
+                    <p className="mt-6 text-base leading-relaxed text-white/80 lg:text-[17px] short:mt-4 short:text-[15px]">
+                        We provide complete book publishing with editing, custom cover design, official ISBN registration, precision printing, and global eBook distribution. We deliver full patent filing and registration support to protect intellectual property for authors, scholars, and innovators.
+                    </p>
+                </div>
+            </div>
+
+            <div className="oc-hero-stats">
+                <dl className={`${WRAP} grid grid-cols-2 sm:grid-cols-4`}>
+                    {STATS.map(({ number, title, Icon }, i) => (
+                        <div
+                            key={title}
+                            className={`flex flex-col-reverse gap-1 py-5 sm:py-6 short:py-4 ${i % 2 ? "pl-5" : ""} ${i ? "sm:border-l sm:border-white/15 sm:pl-6 lg:pl-8" : ""} ${i > 1 ? "border-t border-white/15 sm:border-t-0" : ""}`}
+                        >
+                            <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-white/65">{title}</dt>
+                            <dd className="flex items-center gap-3">
+                                <span className="oc-hero-icon" aria-hidden="true">
+                                    <Icon className="h-[18px] w-[18px]" strokeWidth={1.6} />
+                                </span>
+                                <span className="font-display text-[2rem] font-bold leading-none text-white tabular-nums lg:text-[2.25rem]">{number}</span>
+                            </dd>
+                        </div>
+                    ))}
+                </dl>
+            </div>
+        </header>
+    );
+}
+
+/** About our company: the bookshelf photo on a violet backing with the logo
+ *  as a seal, beside the welcome text. */
+function About() {
+    return (
+        <section className={`vz-draft relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+            <div className={`${WRAP} grid items-center gap-16 lg:grid-cols-2 lg:gap-20`}>
+                <div className="oc-frame relative mx-3 mb-4 sm:mx-8 lg:m-0 lg:mr-6">
+                    <span className="oc-frame-back" aria-hidden="true" />
+                    <img
+                        src={`${IMG}/bookshelf.webp`}
+                        alt="Our Team"
+                        loading="lazy"
+                        className="oc-frame-img reveal relative aspect-[4/3] w-full rounded-[2rem] object-cover lg:aspect-auto lg:h-[min(28rem,calc(100svh-13rem))]"
+                    />
+                    <span className="oc-seal" aria-hidden="true">
+                        <img src={LOGO} alt="" />
+                    </span>
+                </div>
+
+                <div className="min-w-0">
+                    <Eyebrow icon={Building2}>ABOUT OUR COMPANY</Eyebrow>
+                    <h2 className={`reveal mt-5 ${H2} short:mt-3`}>
+                        Empowering Authors &amp; Innovators <Accent>Worldwide</Accent>
+                    </h2>
+                    <p className={`mt-6 ${LEAD} short:mt-4`}>
+                        <strong className="font-bold text-vz-ink">Welcome to Veritaz International Press</strong>,
+                        a trusted destination for comprehensive publication services and patent solutions. We support educators, scholars, and institutions by advancing careers and turning original intellectual work into globally recognized publications.
+                    </p>
+                    <p className="oc-callout mt-5 rounded-r-2xl py-4 pl-5 pr-4 text-base leading-relaxed text-slate-700 short:py-3">
+                        From initial concept to multi channel reach, our dedicated team ensures your work achieves maximum impact, authority, and professional credibility.
+                    </p>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+/** Publishing knowledge without limits: a navy band, the two statements on
+ *  glass cards, and the pen-and-book photo glowing violet beside them. */
+function Knowledge() {
+    return (
+        <section className={`vz-shelf-band relative isolate overflow-hidden text-white ${SCREEN_PAD} ${SCREEN}`}>
+            <div className={`${WRAP} grid items-center gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-16`}>
+                <div className="min-w-0">
+                    <Rule tone="dark" />
+                    <h2 className={`reveal mt-5 ${H2_LIGHT} short:mt-3`}>
+                        Publishing Knowledge <Accent tone="light">Without Limits</Accent>
+                    </h2>
+                    <ul className="mt-8 grid gap-4 short:mt-5 short:gap-3">
+                        {KNOWLEDGE.map(({ Icon, text }, i) => (
+                            <li key={i} className="oc-glass reveal flex gap-5 rounded-3xl p-6 short:p-4">
+                                <span aria-hidden="true" className={`svc-badge svc-badge--sm ${i ? "svc-badge--pink" : ""}`}>
+                                    <Icon className="relative z-10 h-5 w-5" strokeWidth={1.8} />
+                                </span>
+                                <p className="text-[15px] leading-relaxed text-white/85 lg:text-base short:text-sm">{text}</p>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                <div className="oc-photo relative mx-3 sm:mx-8 lg:mx-0">
+                    <img
+                        src={`${IMG}/pen-book.webp`}
+                        alt=""
+                        loading="lazy"
+                        className="reveal h-[22rem] w-full rounded-[2rem] object-cover object-[50%_70%] sm:h-[26rem] lg:h-[min(32rem,calc(100svh-12rem))]"
+                    />
+                </div>
+            </div>
+        </section>
+    );
+}
+
+/** Why authors trust us: the heading and lead in a row, then the four
+ *  strengths two by two, each with a glossy badge beside its text and its
+ *  icon faint in the corner. */
+function WhyTrust() {
+    return (
+        <section className={`vz-services relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+            <div className={WRAP}>
+                <div className="grid gap-5 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-16">
+                    <div className="min-w-0">
+                        <Rule />
+                        <h2 className={`reveal mt-5 ${H2} short:mt-3`}>
+                            Why Authors Trust Veritaz International <Accent>Press</Accent>
+                        </h2>
+                    </div>
+                    <div className="reveal">
+                        <p className="text-base font-bold text-vz-ink lg:text-[17px]">
+                            We don't just publish books—we bring intellectual work to life.
+                        </p>
+                        <p className="mt-3 text-[15px] leading-relaxed text-slate-600 lg:text-base short:text-sm">
+                            From initial manuscript editing and official ISBN assignment to precision printing and patent filing, we deliver complete solutions that transform original ideas into globally recognized publications.
+                        </p>
+                    </div>
+                </div>
+
+                <ul className="mt-10 grid gap-4 md:grid-cols-2 lg:mt-12 short:mt-6 short:gap-3">
+                    {FEATURES.map(({ title, text, Icon }, i) => (
+                        <li key={title} className="svc-card reveal group relative isolate flex items-start gap-5 overflow-hidden rounded-3xl bg-white p-6 short:p-4">
+                            <span aria-hidden="true" className="svc-card-glow" />
+                            <Icon className="oc-watermark" strokeWidth={1.2} aria-hidden="true" />
+                            <span aria-hidden="true" className={`svc-badge ${BADGE_TONES[[0, 2, 4, 1][i]]}`}>
+                                <Icon className="relative z-10 h-6 w-6" strokeWidth={1.8} />
+                            </span>
+                            <div className="min-w-0">
+                                <h3 className="text-lg font-bold leading-snug text-vz-ink short:text-base">{title}</h3>
+                                <p className="mt-2 text-[15px] leading-relaxed text-slate-600 short:mt-1 short:text-sm">{text}</p>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </section>
+    );
+}
+
+/** Technical benefits: the heading and a desk photo on the left; the five
+ *  benefits down a rail on the right, which draws itself as it scrolls in. */
+function Benefits() {
+    return (
+        <section className={`vz-draft relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+            <div className={`${WRAP} grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center lg:gap-20`}>
+                <div className="min-w-0">
+                    <Rule />
+                    <h2 className={`reveal mt-5 ${H2} short:mt-3`}>
+                        Technical <Accent>Benefits</Accent>
+                    </h2>
+                    <p className={`reveal mt-5 max-w-md ${LEAD}`}>
+                        What a published, ISBN-registered book does for your teaching, your career and your academic profile.
+                    </p>
+                    <img
+                        src={`${IMG}/laptop-books.webp`}
+                        alt=""
+                        loading="lazy"
+                        className="oc-tilt reveal mt-10 hidden aspect-[4/3] w-full max-w-sm rounded-[1.75rem] object-cover object-[50%_60%] lg:block short:hidden"
+                    />
+                </div>
+
+                <div className="relative min-w-0">
+                    <span className="oc-rail" aria-hidden="true">
+                        <span className="oc-rail-fill" />
+                    </span>
+                    <ol className="relative grid gap-3 short:gap-2">
+                        {BENEFITS.map(([label, text], i) => {
+                            const Icon = BENEFIT_ICONS[i];
+                            return (
+                                <li key={label} className="reveal relative flex items-center gap-4 sm:gap-5">
+                                    <span aria-hidden="true" className={`svc-badge svc-badge--sm z-10 ${BADGE_TONES[i % BADGE_TONES.length]}`}>
+                                        <Icon className="relative z-10 h-5 w-5" strokeWidth={1.8} />
+                                    </span>
+                                    <div className="svc-card relative isolate min-w-0 flex-1 overflow-hidden rounded-2xl bg-white px-5 py-4 short:py-2.5">
+                                        <span aria-hidden="true" className="svc-card-glow" />
+                                        <h3 className="text-base font-bold leading-snug text-vz-ink lg:text-[17px] short:text-[15px]">{label.replace(/:$/, "")}</h3>
+                                        <p className="mt-1 text-sm leading-relaxed text-slate-600 short:text-[13px] short:leading-snug">{text}</p>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ol>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+/** Our purpose: the text on the left; the three promises set huge on the
+ *  right, each filling with colour as it scrolls into view. */
+function Purpose() {
+    return (
+        <section className={`vz-services relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
+            <div className={`${WRAP} grid items-center gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-20`}>
+                <div className="min-w-0">
+                    <Eyebrow icon={HeartHandshake}>Our Purpose</Eyebrow>
+                    <h2 className={`reveal mt-5 ${H2} short:mt-3`}>
+                        Author Advancement
+                        <br />
+                        &amp; <Accent>Support</Accent>
+                    </h2>
+                    <p className={`mt-6 max-w-xl ${LEAD} short:mt-4`}>
+                        Behind every textbook, patent, and scholarly contribution is a personal vision to inspire others and advance knowledge. At <strong className="font-bold text-vz-ink">Veritaz International Press</strong>, we share that purpose. Whether you are taking your first courageous step as an author or adding another proud achievement to your career, our team supports your vision with genuine care, ensuring your work achieves the respect, credibility, and global reach it truly deserves.
+                    </p>
+                </div>
+
+                <ul className="min-w-0">
+                    {PURPOSE.map(({ word, Icon }, i) => (
+                        <li key={word} className="oc-word-row flex items-center gap-5 border-b border-vz-line py-5 last:border-0 sm:gap-7 short:py-3">
+                            <span aria-hidden="true" className={`svc-badge ${PURPOSE_TONES[i]}`}>
+                                <Icon className="relative z-10 h-6 w-6" strokeWidth={1.8} />
+                            </span>
+                            <span className={`oc-word oc-word--${i} font-display text-[clamp(2.5rem,min(5.4vw,10svh),4.5rem)] font-bold leading-none tracking-[-0.015em]`}>
+                                {word}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </section>
+    );
+}
+
+/** The close: a night-indigo card asking authors to publish with us, with
+ *  three real books standing fanned on a lit shelf; they spread on hover. */
+function PublishCta() {
+    return (
+        <section className="relative isolate overflow-hidden bg-white py-16 lg:py-20 short:py-12">
+            <div className={WRAP}>
+                <div className="oc-cta relative isolate overflow-hidden rounded-[2.5rem] text-white lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-center">
+                    <span className="oc-cta-dots" aria-hidden="true" />
+                    <div className="relative z-10 px-6 pb-2 pt-12 sm:px-12 lg:py-16 lg:pl-16 xl:pl-20">
+                        <Eyebrow tone="light" icon={Sparkles}>
+                            Publish with Veritaz
+                        </Eyebrow>
+                        <h2 className={`mt-5 ${H2_LIGHT}`}>
+                            Ready To Publish Your <Accent tone="light">Book?</Accent>
+                        </h2>
+                        <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/85 lg:text-[17px]">
+                            We publish textbooks, edited books, thesis books, poetry, short stories and fiction, and guide you from manuscript to finished book.
+                        </p>
+                        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                            <Pill to="/book-publishing" variant="light" arrow>
+                                Explore Publishing
+                            </Pill>
+                            <Pill to="/contact" variant="outline-light">
+                                Get In Touch
+                            </Pill>
+                        </div>
+                    </div>
+
+                    <div className="oc-cta-books relative" aria-hidden="true">
+                        <span className="oc-cta-shelf" />
+                        {COVERS.map((src, i) => (
+                            <img key={src} src={src} alt="" loading="lazy" className={`oc-cta-book oc-cta-book--${i}`} />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
 
 export default function OurCompany() {
     useSeo(PAGES["/our-company"]);
     return (
-        <>
-
-            <div style={{ maxWidth: "1520px" }} className="container mx-auto bg-gray-50">
-
-                {/* ================= HERO SECTION ================= */}
-                <header className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-900 to-purple-900 text-white">
-
-                    {/* Background Effects */}
-                    <div className="absolute inset-0 select-none pointer-events-none">
-                        {/* Scaled down blur effects to fit tighter within the section */}
-                        <div className="absolute top-5 left-10 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-                        <div className="absolute bottom-0 right-0 w-64 h-64 bg-pink-500/15 rounded-full blur-3xl animate-pulse delay-700"></div>
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,.12),transparent_40%)]"></div>
-                        <div className="absolute inset-0 bg-black/25"></div>
-                    </div>
-
-                    {/* Reduced vertical padding (py-16 lg:py-24 instead of py-24 lg:py-36) */}
-                    <div className="relative max-w-7xl mx-auto px-6 py-16 lg:py-24">
-                        <div className="max-w-4xl mx-auto text-center">
-
-                            {/* Badge - Tighter margin */}
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6">
-                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                                <span className="text-xs tracking-widest uppercase font-semibold text-gray-200">
-                                    Trusted Academic Publisher
-                                </span>
-                            </div>
-
-                            {/* Heading - Shifted down slightly from text-7xl to a clean, readable text-5xl/6xl max */}
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight">
-                                About{" "}
-                                <span className="bg-gradient-to-r from-cyan-300 via-white to-pink-300 bg-clip-text text-transparent">
-                                    Veritaz
-                                </span>
-                                <br />
-                                International Press
-                            </h1>
-
-                            {/* Description - Adjusted spacing and optimized width */}
-                            <p className="mt-5 text-base md:text-lg text-gray-200/90 leading-relaxed max-w-2xl mx-auto">
-                                Empowering researchers, educators, and authors with world-class
-                                publishing solutions, innovative academic services, and global
-                                distribution that transforms ideas into lasting impact.
-                            </p>
-
-                            {/* Buttons space */}
-                        </div>
-                    </div>
-
-                    {/* Bottom Wave */}
-                    <svg
-                        className="absolute bottom-0 left-0 w-full text-white block"
-                        viewBox="0 0 1440 120"
-                        fill="currentColor"
-                        preserveAspectRatio="none"
-                        style={{ height: '40px' }} // Controls the maximum height of the wave mask to keep it clean
-                    >
-                        <path d="M0,64L80,69.3C160,75,320,85,480,90.7C640,96,800,96,960,80C1120,64,1280,32,1360,16L1440,0L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" />
-                    </svg>
-                </header>
-
-                {/* ================= WHO ARE WE ================= */}
-
-                <main className="relative py-24 overflow-hidden bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
-
-                    {/* Background Decorations */}
-
-                    <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-200 rounded-full blur-3xl opacity-20"></div>
-
-                    <div className="absolute bottom-10 right-10 w-80 h-80 bg-purple-300 rounded-full blur-3xl opacity-20"></div>
-
-                    <div className="max-w-7xl mx-auto px-6">
-
-                        <div className="grid lg:grid-cols-2 gap-20 items-center">
-
-                            {/* LEFT CONTENT */}
-
-                            <div>
-
-                                <span className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 font-semibold tracking-wide mb-6">
-                                    ABOUT OUR COMPANY
-                                </span>
-
-                                <h2 className="text-4xl lg:text-5xl font-black text-slate-900 leading-tight mb-6">
-                                    Empowering
-                                    <span className="block text-indigo-600">
-                                        Authors & Researchers
-                                    </span>
-                                    Worldwide
-                                </h2>
-
-                                <p className="text-lg text-slate-600 leading-8 text-justify mb-6">
-                                    <strong>Welcome to Veritaz International Press</strong>,
-                                    your trusted partner for publication services and patent
-                                    grant solutions. We empower educators, innovators,
-                                    researchers, and institutions through world-class academic
-                                    publishing, intellectual property support, and professional
-                                    development.
-                                </p>
-
-                                <p className="text-lg text-slate-600 leading-8 text-justify mb-10">
-                                    Whether you're publishing textbooks, protecting innovative
-                                    designs, or expanding your academic career, our experienced
-                                    team provides personalized guidance from concept to global
-                                    distribution, ensuring quality, credibility, and long-term
-                                    impact.
-                                </p>
-
-
-                            </div>
-
-                            {/* RIGHT IMAGE */}
-
-                            <div className="relative flex justify-center">
-
-                                {/* Glow */}
-
-                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-[40px] blur-3xl opacity-20 scale-90"></div>
-
-                                {/* Image */}
-
-                                <img
-                                    src="https://i.pinimg.com/736x/ae/bf/f0/aebff0ed085370362da5a37c09fb39ae.jpg"
-                                    alt="Our Team"
-                                    className="relative rounded-[32px] shadow-2xl w-full max-w-lg object-cover hover:scale-105 transition duration-500"
-                                />
-
-
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </main>
-
-                {/* ================= ABOUT VERITAZ ================= */}
-
-                <section className="relative py-24 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-indigo-50">
-
-                    {/* Background Decorations */}
-
-                    <div className="absolute -top-32 -left-20 w-96 h-96 bg-indigo-200 rounded-full blur-3xl opacity-20"></div>
-
-                    <div className="absolute bottom-0 right-0 w-[420px] h-[420px] bg-purple-200 rounded-full blur-3xl opacity-20"></div>
-
-                    <div className="max-w-7xl mx-auto px-6">
-
-                        <div className="grid lg:grid-cols-2 gap-20 items-center">
-
-                            {/* IMAGE SECTION */}
-
-                            <div className="relative flex justify-center">
-
-                                {/* Glow */}
-
-                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 blur-3xl opacity-20 rounded-[40px] scale-90"></div>
-
-                                <img
-                                    src="https://img.freepik.com/fotos-premium/fondo-regreso-escuela-libros-sobre-pizarra-pila-libros-escolares-sobre-mesa-ai-generado_502505-1160.jpg"
-                                    alt="About Veritaz"
-                                    className="relative rounded-[32px] shadow-2xl object-cover w-full max-w-xl hover:scale-105 transition duration-500"
-                                />
-
-
-                            </div>
-
-                            {/* CONTENT */}
-
-                            <div>
-
-                                <span className="inline-flex items-center rounded-full bg-indigo-100 text-indigo-700 px-5 py-2 text-sm font-semibold tracking-wider uppercase mb-6">
-                                    About Veritaz
-                                </span>
-
-                                <h2 className="text-4xl lg:text-5xl font-black text-slate-900 leading-tight mb-6">
-
-                                    Publishing
-                                    <span className="block text-indigo-600">
-                                        Knowledge Without Limits
-                                    </span>
-
-                                </h2>
-
-                                <p className="text-lg text-slate-600 leading-8 text-justify mb-8">
-                                    Veritaz International Press specializes in publishing
-                                    high-quality textbooks, scholarly journals, conference
-                                    proceedings, patents, and research publications that inspire
-                                    innovation and academic excellence.
-                                </p>
-
-                                <p className="text-lg text-slate-600 leading-8 text-justify mb-10">
-                                    Whether you're an experienced researcher, educator, or a
-                                    first-time author, our dedicated publishing experts guide
-                                    you through editing, design, ISBN registration, printing,
-                                    and worldwide distribution—making your publishing journey
-                                    smooth, professional, and impactful.
-                                </p>
-
-
-
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </section>
-                <section className="relative py-24 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-indigo-50">
-
-                    {/* Background Decorations */}
-
-                    <div className="absolute -top-32 -left-32 w-[420px] h-[420px] rounded-full bg-indigo-200/30 blur-3xl"></div>
-
-                    <div className="absolute -bottom-32 -right-32 w-[420px] h-[420px] rounded-full bg-purple-300/30 blur-3xl"></div>
-
-                    <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(#6366f1_1px,transparent_1px),linear-gradient(90deg,#6366f1_1px,transparent_1px)] bg-[size:60px_60px]"></div>
-
-                    <div className="relative max-w-7xl mx-auto px-6">
-
-                        {/* ================= HEADER ================= */}
-
-                        <div className="text-center mb-20">
-
-                            <span className="inline-flex items-center rounded-full bg-indigo-100 px-5 py-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-700 shadow-sm">
-
-                                ✦ Why Choose Us
-
-                            </span>
-
-                            <h2 className="mt-6 text-4xl md:text-6xl font-black leading-tight text-slate-900">
-
-                                Why Authors Trust
-
-                                <span className="block bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
-
-                                    Veritaz International Press
-
-                                </span>
-
-                            </h2>
-
-                            <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-slate-600">
-
-                                We don't just publish books—we empower authors with the
-                                tools, expertise, global reach, and dedicated support
-                                needed to turn knowledge into worldwide impact.
-
-                            </p>
-
-                            {/* Decorative Divider */}
-
-                            <div className="mt-10 flex justify-center items-center gap-3">
-
-                                <span className="w-16 h-[2px] bg-indigo-300 rounded-full"></span>
-
-                                <span className="w-4 h-4 rounded-full bg-indigo-500 shadow-lg shadow-indigo-300 animate-pulse"></span>
-
-                                <span className="w-16 h-[2px] bg-purple-300 rounded-full"></span>
-
-                            </div>
-
-                        </div>
-
-                        {/* ================= MAIN GRID ================= */}
-
-                        <div className="grid lg:grid-cols-3 gap-14 items-start">
-
-                            {/* LEFT PREMIUM CIRCLE */}
-
-                            <div className="relative flex justify-center px-8 sm:px-0">
-
-                                {/* Glow */}
-
-                                <div className="absolute w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 blur-3xl opacity-20"></div>
-
-                                {/* Outer Ring */}
-
-                                <div className="relative w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-[2px] shadow-2xl">
-
-                                    {/* Inner Ring */}
-
-                                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-
-                                        {/* Content */}
-
-                                        <div className="w-[88%] h-[88%] rounded-full bg-gradient-to-br from-indigo-50 to-white flex flex-col items-center justify-center text-center p-8">
-
-                                            <Award className="w-16 h-16 text-indigo-600 mb-5" />
-
-                                            <h3 className="text-2xl font-black text-slate-900">
-
-                                                Your Success
-
-                                            </h3>
-
-                                            <p className="text-lg text-slate-600 mt-2">
-
-                                                Is Our Priority
-
-                                            </p>
-
-                                            <div className="mt-6 w-16 h-1 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                                {/* Floating Star */}
-
-                                <div className="absolute top-5 right-6 w-16 h-16 rounded-2xl bg-yellow-400 shadow-xl flex items-center justify-center rotate-12">
-
-                                    <Star className="w-8 h-8 text-white fill-white" />
-
-                                </div>
-
-                                {/* Floating Check */}
-
-                                <div className="absolute bottom-8 left-2 w-14 h-14 rounded-xl bg-green-500 shadow-xl flex items-center justify-center -rotate-12">
-
-                                    <Check className="w-7 h-7 text-white" />
-
-                                </div>
-
-                                {/* Floating Publication Card */}
-
-                                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-2xl px-6 py-4 border border-slate-100">
-
-                                    <h4 className="text-3xl font-black text-indigo-600">
-
-                                        500+
-
-                                    </h4>
-
-                                    <p className="text-sm text-slate-500 whitespace-nowrap">
-
-                                        Successful Publications
-
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                            {/* RIGHT COLUMN STARTS HERE */}
-
-                            <div className="lg:col-span-2">
-
-                                <div className="grid md:grid-cols-2 gap-7">
-
-                                    {/* Part 2 starts here */}
-                                    {/* ================= Feature Card 1 ================= */}
-
-                                    <div className="group relative overflow-hidden rounded-3xl border border-indigo-100 bg-white/80 backdrop-blur-xl p-7 shadow-lg transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl">
-
-                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-
-                                        <div className="relative flex items-start gap-5">
-
-                                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg group-hover:rotate-6 transition duration-500">
-
-                                                <PenTool className="h-8 w-8 text-white" />
-
-                                            </div>
-
-                                            <div>
-
-                                                <h3 className="text-xl font-bold text-slate-900 mb-3">
-                                                    Multiformat Publishing
-                                                </h3>
-
-                                                <p className="text-slate-600 leading-7">
-                                                    From print to digital, we ensure your work is accessible
-                                                    across every platform with our comprehensive publishing
-                                                    solutions.
-                                                </p>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                    {/* ================= Feature Card 2 ================= */}
-
-                                    <div className="group relative overflow-hidden rounded-3xl border border-purple-100 bg-white/80 backdrop-blur-xl p-7 shadow-lg transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl">
-
-                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-
-                                        <div className="relative flex items-start gap-5">
-
-                                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg group-hover:rotate-6 transition duration-500">
-
-                                                <Megaphone className="h-8 w-8 text-white" />
-
-                                            </div>
-
-                                            <div>
-
-                                                <h3 className="text-xl font-bold text-slate-900 mb-3">
-                                                    Strategic Book Marketing
-                                                </h3>
-
-                                                <p className="text-slate-600 leading-7">
-                                                    Reach the right audience with our proven marketing
-                                                    strategies tailored specifically for your genre and
-                                                    target readers.
-                                                </p>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                    {/* ================= Feature Card 3 ================= */}
-
-                                    <div className="group relative overflow-hidden rounded-3xl border border-pink-100 bg-white/80 backdrop-blur-xl p-7 shadow-lg transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl">
-
-                                        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-
-                                        <div className="relative flex items-start gap-5">
-
-                                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 shadow-lg group-hover:rotate-6 transition duration-500">
-
-                                                <Globe className="h-8 w-8 text-white" />
-
-                                            </div>
-
-                                            <div>
-
-                                                <h3 className="text-xl font-bold text-slate-900 mb-3">
-                                                    Global Distribution
-                                                </h3>
-
-                                                <p className="text-slate-600 leading-7">
-                                                    Our worldwide distribution network ensures your books
-                                                    reach readers through leading online marketplaces and
-                                                    physical bookstores.
-                                                </p>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                    {/* ================= Feature Card 4 ================= */}
-
-                                    <div className="group relative overflow-hidden rounded-3xl border border-green-100 bg-white/80 backdrop-blur-xl p-7 shadow-lg transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl">
-
-                                        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-
-                                        <div className="relative flex items-start gap-5">
-
-                                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg group-hover:rotate-6 transition duration-500">
-
-                                                <Wallet className="h-8 w-8 text-white" />
-
-                                            </div>
-
-                                            <div>
-
-                                                <h3 className="text-xl font-bold text-slate-900 mb-3">
-                                                    Affordable Solutions
-                                                </h3>
-
-                                                <p className="text-slate-600 leading-7">
-                                                    Professional publishing packages designed to be
-                                                    cost-effective without compromising quality,
-                                                    creativity, or global visibility.
-                                                </p>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                                {/* ================= Premium Award Banner ================= */}
-
-                                <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 mt-12 p-[1px] shadow-2xl">
-
-                                    <div className="rounded-[30px] bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-8 py-8">
-
-                                        <div className="absolute top-0 right-0 w-56 h-56 bg-white/10 rounded-full blur-3xl"></div>
-
-                                        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-
-                                            <div className="flex items-start gap-5">
-
-                                                <div className="w-20 h-20 rounded-3xl bg-white/15 backdrop-blur-lg flex items-center justify-center border border-white/20">
-
-                                                    <Award className="w-10 h-10 text-white" />
-
-                                                </div>
-
-                                                <div>
-
-                                                    <span className="uppercase tracking-[0.3em] text-sm text-indigo-100 font-semibold">
-                                                        Trusted Excellence
-                                                    </span>
-
-                                                    <h3 className="text-3xl font-black text-white mt-2">
-                                                        Award-Winning Support
-                                                    </h3>
-
-                                                    <p className="text-indigo-100 mt-4 leading-7 max-w-2xl">
-                                                        Our dedicated author support team has been
-                                                        recognized for excellence in the publishing
-                                                        industry, providing personalized assistance
-                                                        from manuscript preparation to worldwide
-                                                        distribution.
-                                                    </p>
-
-                                                </div>
-
-                                            </div>
-
-                                            <button className="shrink-0 rounded-2xl bg-white px-8 py-4 font-semibold text-indigo-700 shadow-xl transition hover:scale-105 hover:bg-slate-100">
-
-                                                Learn More →
-
-                                            </button>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-                                {/* ================= Statistics ================= */}
-
-                                <div className="mt-20">
-
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-
-                                        {[
-                                            {
-                                                number: "500+",
-                                                title: "Books Published",
-                                                icon: "📚",
-                                            },
-                                            {
-                                                number: "50+",
-                                                title: "Countries Reached",
-                                                icon: "🌍",
-                                            },
-                                            {
-                                                number: "98%",
-                                                title: "Author Satisfaction",
-                                                icon: "⭐",
-                                            },
-                                            {
-                                                number: "24/7",
-                                                title: "Author Support",
-                                                icon: "🤝",
-                                            },
-                                        ].map((item) => (
-
-                                            <div
-                                                key={item.title}
-                                                className="group relative overflow-hidden rounded-3xl bg-white p-8 shadow-lg border border-slate-100 transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl"
-                                            >
-
-                                                {/* Hover Glow */}
-
-                                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-
-                                                <div className="relative text-center">
-
-                                                    <div className="text-5xl mb-5 transition-transform duration-500 group-hover:scale-125">
-
-                                                        {item.icon}
-
-                                                    </div>
-
-                                                    <h3 className="text-5xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-
-                                                        {item.number}
-
-                                                    </h3>
-
-                                                    <p className="mt-3 text-slate-600 font-medium">
-
-                                                        {item.title}
-
-                                                    </p>
-
-                                                </div>
-
-                                            </div>
-
-                                        ))}
-
-                                    </div>
-
-                                </div>
-
-                                {/* ================= Bottom CTA ================= */}
-
-
-
-                            </div>
-                        </div>
-                    </div>
-
-                </section>
-                {/* ================= TECHNICAL BENEFITS ================= */}
-
-                <section className="py-16 md:py-24 bg-white">
-                    <div className="container mx-auto px-6 max-w-6xl">
-
-                        <h2 className="text-3xl md:text-4xl font-bold text-indigo-900 mb-8">
-                            TECHNICAL BENEFITS
-                        </h2>
-
-                        <ol className="list-decimal pl-8 space-y-5 text-lg text-gray-700 leading-relaxed">
-
-                            <li>
-                                Writing a textbook is one of the standard approaches of helping
-                                Students and the Academic Community.
-                            </li>
-
-                            <li>
-                                Increases leverage in the direction of increments based on
-                                publication.
-                            </li>
-
-                            <li>
-                                Author(s) can use the details for NAAC, UGC, NIRF, NBA, etc.
-                            </li>
-
-                            <li>
-                                It adds weightage to your professional profile.
-                            </li>
-
-                            <li>
-                                ISBN gives your publication unique global recognition.
-                            </li>
-
-                        </ol>
-
-                        {/* Bottom Description */}
-
-                        <div className="mt-12 rounded-3xl bg-gradient-to-r from-indigo-600 to-purple-600 p-8 shadow-xl">
-
-                            <p className="text-lg md:text-xl leading-relaxed text-white text-justify">
-                                At <strong>Veritaz International Press</strong>, we're more than
-                                just a service provider—we are your partner in growth and
-                                innovation. Whether you're publishing your first book,
-                                securing a patent for your invention, or looking to advance
-                                your academic career, we're here to support you every step of
-                                the way.
-                            </p>
-
-                        </div>
-
-                    </div>
-                </section>
-
-            </div>
-
-        </>
+        <main className="overflow-x-clip bg-white text-slate-800">
+            <Hero />
+            <About />
+            <Knowledge />
+            <WhyTrust />
+            <Benefits />
+            <Purpose />
+            <PublishCta />
+        </main>
     );
 }

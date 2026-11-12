@@ -1,7 +1,5 @@
 import { 
-  Download, 
-  Mail, 
-  MessageCircle,
+  Download,
   FileText,
   Award,
   HeartPulse,
@@ -20,8 +18,8 @@ export default function TemplateICMARD({ conference }) {
   const getIconForTopic = (idx) => {
     const icons = [HeartPulse, Cpu, Leaf, Lightbulb];
     const Icon = icons[idx % icons.length];
-    const colors = ["text-blue-500", "text-green-500", "text-orange-500", "text-purple-500"];
-    const bgColors = ["bg-blue-50", "bg-green-50", "bg-orange-50", "bg-purple-50"];
+    const colors = ["text-indigo-500", "text-green-500", "text-orange-500", "text-purple-500"];
+    const bgColors = ["bg-indigo-50", "bg-green-50", "bg-orange-50", "bg-purple-50"];
     return { Icon, color: colors[idx % colors.length], bg: bgColors[idx % bgColors.length] };
   };
 
@@ -29,7 +27,7 @@ export default function TemplateICMARD({ conference }) {
     <div className="min-h-screen bg-slate-50">
       
       {/* 1. Header Banner */}
-      <section className="bg-gradient-to-r from-blue-900 to-indigo-800 text-white py-20 px-4 flex flex-col items-center text-center">
+      <section className="bg-gradient-to-r from-indigo-900 to-indigo-800 text-white py-20 px-4 flex flex-col items-center text-center">
         <div className="max-w-4xl space-y-6 flex flex-col items-center">
           <span className="inline-block bg-orange-600 text-white px-6 py-1.5 rounded-full text-xs font-bold tracking-widest shadow-md">
             OFFICIAL PROCEEDINGS | ISBN: 978-93-47597-52-7
@@ -37,7 +35,7 @@ export default function TemplateICMARD({ conference }) {
           <h1 className="text-3xl md:text-5xl font-black uppercase leading-tight tracking-wide drop-shadow-lg">
             {conference.title}
           </h1>
-          <p className="text-lg font-bold text-blue-200">
+          <p className="text-lg font-bold text-indigo-200">
             Call for Full Paper Publication - {conference.conferenceName}
           </p>
         </div>
@@ -50,7 +48,7 @@ export default function TemplateICMARD({ conference }) {
           
           {/* Left Column (Summary & Downloads) */}
           <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm p-8">
-            <h2 className="text-xl font-bold text-blue-900 flex items-center gap-3 border-l-4 border-orange-500 pl-4 mb-6">
+            <h2 className="text-xl font-bold text-indigo-900 flex items-center gap-3 border-l-4 border-orange-500 pl-4 mb-6">
               CONFERENCE SUMMARY
             </h2>
             <p className="text-gray-600 text-sm leading-relaxed mb-8">
@@ -58,7 +56,7 @@ export default function TemplateICMARD({ conference }) {
             </p>
 
             <div className="border border-gray-200 rounded-xl p-6 relative overflow-hidden">
-              <h3 className="text-lg font-bold text-blue-900 border-l-4 border-orange-500 pl-4 mb-4">
+              <h3 className="text-lg font-bold text-indigo-900 border-l-4 border-orange-500 pl-4 mb-4">
                 FULL PAPER SUBMISSION & DOWNLOAD
               </h3>
               <p className="text-xs text-gray-600 font-semibold mb-6">
@@ -120,7 +118,7 @@ export default function TemplateICMARD({ conference }) {
               <div className="space-y-4 text-xs font-bold">
                 <div className="flex justify-between border-b border-slate-700 pb-2">
                   <span className="text-gray-300">Abstract Due</span>
-                  <span className="text-blue-300">{conference.dates?.abstractSubmission}</span>
+                  <span className="text-indigo-300">{conference.dates?.abstractSubmission}</span>
                 </div>
                 <div className="flex justify-between border-b border-slate-700 pb-2">
                   <span className="text-gray-300">Full Paper Due</span>
@@ -135,7 +133,7 @@ export default function TemplateICMARD({ conference }) {
 
             {/* Fees */}
             <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-              <h3 className="font-bold text-sm text-blue-900 tracking-wider text-center mb-6">REGISTRATION FEE</h3>
+              <h3 className="font-bold text-sm text-indigo-900 tracking-wider text-center mb-6">REGISTRATION FEE</h3>
               <div className="space-y-4 text-xs font-bold text-gray-600 mb-8">
                 <div className="flex justify-between border-b border-gray-100 pb-2">
                   <span>Academicians</span>
@@ -151,8 +149,8 @@ export default function TemplateICMARD({ conference }) {
                 </div>
               </div>
 
-              <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4">
-                <h4 className="text-[10px] font-bold text-blue-800 uppercase tracking-widest mb-2">Payment Info</h4>
+              <div className="bg-indigo-50/50 border border-indigo-100 rounded-lg p-4">
+                <h4 className="text-[10px] font-bold text-indigo-800 uppercase tracking-widest mb-2">Payment Info</h4>
                 <p className="text-[10px] text-gray-500 leading-relaxed">
                   Bank Name: State Bank of India<br/>
                   A/C: 1234567890<br/>
@@ -168,7 +166,7 @@ export default function TemplateICMARD({ conference }) {
         {/* 3. Topics */}
         {conference.topics?.length > 0 && (
           <div className="pt-8">
-            <h2 className="text-xl font-bold text-blue-900 text-center uppercase tracking-wide mb-8">
+            <h2 className="text-xl font-bold text-indigo-900 text-center uppercase tracking-wide mb-8">
               CALL FOR PAPERS: MULTIDISCIPLINARY TRACKS
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
