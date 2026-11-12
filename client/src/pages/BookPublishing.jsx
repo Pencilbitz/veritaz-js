@@ -790,7 +790,7 @@ function CallToAction() {
 
 export default function BookPublishing() {
   useEffect(() => {
-    document.title = "Book Publishing Services in India | Veritaz International";
+    document.title = "Book Publication Services in India | Veritaz International";
 
     // 1. Meta Description
     let metaDescription = document.querySelector('meta[name="description"]');
@@ -799,7 +799,7 @@ export default function BookPublishing() {
       metaDescription.name = "description";
       document.head.appendChild(metaDescription);
     }
-    metaDescription.content = "Publish your book with Veritaz International. We offer professional book publishing,ISBN ,editing,cover design,printing and global distribution services.";
+    metaDescription.content = "Book publication services in India and book publishing services in Coimbatore by Veritaz International: editing, ISBN, cover design, printing and distribution.";
 
     // 2. Meta Keywords
     let metaKeywords = document.querySelector('meta[name="keywords"]');
@@ -808,7 +808,7 @@ export default function BookPublishing() {
       metaKeywords.name = "keywords";
       document.head.appendChild(metaKeywords);
     }
-    metaKeywords.content = "book publishing services Veritaz, textbook publication India, academic book publishing, professional editing and ISBN, research paper and book publication, author publishing services";
+    metaKeywords.content = "Book Publication Services in India, Book Publishing Services in Coimbatore, book publishing services Veritaz, textbook publication India, academic book publishing, professional editing and ISBN, research paper and book publication, author publishing services";
 
     // 3. Robots Tag
     let metaRobots = document.querySelector('meta[name="robots"]');
