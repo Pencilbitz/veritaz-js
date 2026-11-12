@@ -12,6 +12,7 @@ import Contacts from "./pages/Contacts";
 import HRDepartment from "./pages/HRDepartment";
 import Careers from "./pages/Careers";
 import Conference from "./pages/Conference";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/hr" element={<HRDepartment />} />
         <Route path="/careers" element={<Careers />} />
         <Route path="/conferences/:confname" element={<Conference />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
     </>

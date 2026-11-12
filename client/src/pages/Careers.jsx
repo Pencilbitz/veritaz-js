@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
+import { useSeo } from "../seo/useSeo";
+import { PAGES } from "../seo/site";
 
 /**
  * Careers — the public "we are open to applications" page.
@@ -101,6 +103,7 @@ const SectionHeading = ({ children }) => (
 );
 
 export default function Careers() {
+  useSeo(PAGES["/careers"]);
   // `roles` starts empty rather than null, because the empty state and the
   // "nothing loaded yet" state are not the same thing here and `loading` is what
   // separates them. Collapsing the two would make a failed fetch indistinguishable

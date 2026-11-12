@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Search, Barcode } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useSeo } from "../seo/useSeo";
+import { PAGES, bookPath } from "../seo/site";
 
 export default function BookStore() {
   const [books, setBooks] = useState([]);
@@ -37,45 +39,7 @@ export default function BookStore() {
     );
   });
 
-  useEffect(() => {
-    document.title = "Academic Books Online India | Veritaz International";
-
-    // 1. Meta Description
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.name = "description";
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.content = "Buy academic books online in India from Veritaz International. Shop ISBN college textbooks in Coimbatore for engineering, research, AI and technology.";
-
-    // 2. Meta Keywords
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.name = "keywords";
-      document.head.appendChild(metaKeywords);
-    }
-    metaKeywords.content = "Academic Books Online India, College Textbooks in Coimbatore, online bookstore Veritaz, buy academic books, research publications, textbook store India, peer-reviewed books online, order scholarly publications";
-
-    // 3. Robots Tag
-    let metaRobots = document.querySelector('meta[name="robots"]');
-    if (!metaRobots) {
-      metaRobots = document.createElement('meta');
-      metaRobots.name = "robots";
-      document.head.appendChild(metaRobots);
-    }
-    metaRobots.content = "index, follow";
-
-    // 4. Canonical Link
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = "canonical";
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.href = "https://www.veritazinternational.com/book-store";
-  }, []);
+  useSeo(PAGES["/book-store"]);
 
   return (
     <div className="bg-gray-50 min-h-screen py-16">
@@ -110,7 +74,7 @@ export default function BookStore() {
           {filteredBooks.map((book) => (
             <Link
               key={book.id}
-              to={`/books/${book.title.replace(/\s+/g, '-').toLowerCase()}-${book.id}`}
+              to={bookPath(book)}
               className="bg-white rounded-xl shadow border border-gray-100 p-4 hover:scale-105 transition"
             >
               {/* FIX 3: Changed book.cover to book.cover1 to match API structure */}

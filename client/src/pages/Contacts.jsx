@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from "../lib/supabase";
+import { useSeo } from "../seo/useSeo";
+import { PAGES } from "../seo/site";
 
 export default function Contacts() {
   // Form submission state
@@ -82,45 +84,7 @@ export default function Contacts() {
     }
   };
 
-  useEffect(() => {
-    document.title = "Book Publishers in Coimbatore | Contact Veritaz International";
-
-    // 1. Meta Description
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.name = "description";
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.content = "Contact Veritaz International, book publishers in Coimbatore and academic publishers in Tamil Nadu, for book publishing, ISBN, patent and copyright support.";
-
-    // 2. Meta Keywords
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.name = "keywords";
-      document.head.appendChild(metaKeywords);
-    }
-    metaKeywords.content = "Book Publishers in Coimbatore, Academic Publishers in Tamil Nadu, contact Veritaz International, publisher support, publishing inquiry, author help, academic publishing contact India, reach Veritaz team";
-    
-    // 3. Robots Tag
-    let metaRobots = document.querySelector('meta[name="robots"]');
-    if (!metaRobots) {
-      metaRobots = document.createElement('meta');
-      metaRobots.name = "robots";
-      document.head.appendChild(metaRobots);
-    }
-    metaRobots.content = "index, follow";
-
-    // 4. Canonical Link
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = "canonical";
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.href = "https://www.veritazinternational.com/contact";
-  }, []);
+  useSeo(PAGES["/contact"]);
 
   return (
     <div style={{ maxWidth: '1520px' }} className="container mx-auto bg-gray-50 font-sans">

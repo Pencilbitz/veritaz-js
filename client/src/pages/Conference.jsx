@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { supabase } from "../lib/supabase";
+import { useSeo } from "../seo/useSeo";
+import { NOT_FOUND, conferenceMeta } from "../seo/site";
 
 export default function Conference() {
   const { confname } = useParams();
@@ -19,15 +21,12 @@ export default function Conference() {
 
         const conferences = data || [];
 
-        console.log("All Conferences:", conferences);
-        console.log("URL confname:", confname);
 
         const selectedConference = conferences.find((item) => {
           const itemName = item.conferencename || item.conferenceName || "";
           return itemName.replace(/\s+/g, "-").toLowerCase() === confname;
         });
 
-        console.log("Selected:", selectedConference);
 
         if (selectedConference) {
           const normalize = (value, fallback) => {
@@ -74,45 +73,7 @@ export default function Conference() {
     fetchConference();
   }, [confname]);
 
-  useEffect(() => {
-        document.title = "Conference Paper Listings";
-    
-        // 1. Meta Description
-        let metaDescription = document.querySelector('meta[name="description"]');
-        if (!metaDescription) {
-          metaDescription = document.createElement('meta');
-          metaDescription.name = "description";
-          document.head.appendChild(metaDescription);
-        }
-        metaDescription.content = "Explore academic conferences, research symposiums, and publishing workshops hosted by Veritaz International. Join scholarly discussions and events.";
-        
-        // 2. Meta Keywords
-        let metaKeywords = document.querySelector('meta[name="keywords"]');
-        if (!metaKeywords) {
-          metaKeywords = document.createElement('meta');
-          metaKeywords.name = "keywords";
-          document.head.appendChild(metaKeywords);
-        }
-        metaKeywords.content = "Veritaz conferences, academic conferences India, research symposiums, publishing workshops, scholarly events, author seminars, academic webinars Veritaz";
-
-        // 3. Robots Tag
-        let metaRobots = document.querySelector('meta[name="robots"]');
-        if (!metaRobots) {
-          metaRobots = document.createElement('meta');
-          metaRobots.name = "robots";
-          document.head.appendChild(metaRobots);
-        }
-        metaRobots.content = "index, follow";
-    
-        // 4. Canonical Link
-        let canonicalLink = document.querySelector('link[rel="canonical"]');
-        if (!canonicalLink) {
-          canonicalLink = document.createElement('link');
-          canonicalLink.rel = "canonical";
-          document.head.appendChild(canonicalLink);
-        }
-        canonicalLink.href = "https://www.veritazinternational.com/conferences";
-      }, []);
+  useSeo(conference && !conference.message ? conferenceMeta(conference) : loading ? null : NOT_FOUND);
 
   if (loading) {
     

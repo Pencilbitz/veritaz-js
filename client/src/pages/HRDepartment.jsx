@@ -12,6 +12,8 @@ import {
 
 import { submitVerificationRequest } from '../services/hrVerificationService';
 import { HRMS_REQUEST_URL, HRMS_STATUS_URL } from '../config/hrms';
+import { useSeo } from "../seo/useSeo";
+import { PAGES } from "../seo/site";
 
 /**
  * Employment verification, for an employer checking a current or former member
@@ -83,6 +85,7 @@ const SectionHeading = ({ children }) => (
 );
 
 export default function HRDepartment() {
+  useSeo(PAGES["/hr-department"]);
   const [form, setForm] = useState(EMPTY_REQUEST);
   const [consentFile, setConsentFile] = useState(null);
   const [fileError, setFileError] = useState(null);

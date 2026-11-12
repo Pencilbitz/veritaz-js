@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { useSeo } from "../seo/useSeo";
+import { PAGES } from "../seo/site";
 
 export default function Home() {
 
@@ -109,44 +111,7 @@ export default function Home() {
         }, 300);
     };
 
-    useEffect(() => {
-        document.title = "Book Publishing Company in India | Veritaz International";
-
-        // 1. Meta Description
-        let metaDescription = document.querySelector('meta[name="description"]');
-        if (!metaDescription) {
-            metaDescription = document.createElement('meta');
-            metaDescription.name = "description";
-            document.head.appendChild(metaDescription);
-        }
-        metaDescription.content = "Veritaz International is a trusted book publishing company in India and academic book publishers in Coimbatore for textbooks, research books and journals.";
-
-        // 2. Meta Keywords
-        let metaKeywords = document.querySelector('meta[name="keywords"]');
-        if (!metaKeywords) {
-            metaKeywords = document.createElement('meta');
-            metaKeywords.name = "keywords";
-            document.head.appendChild(metaKeywords);
-        }
-        metaKeywords.content = "Book Publishing Company in India, Academic Book Publishers in Coimbatore, Textbook Publishing India, Patent Filing Services, ISBN Registration, Copyright Services, Veritaz International Press, Academic Publishing";
-        // 3. Robots Tag
-        let metaRobots = document.querySelector('meta[name="robots"]');
-        if (!metaRobots) {
-            metaRobots = document.createElement('meta');
-            metaRobots.name = "robots";
-            document.head.appendChild(metaRobots);
-        }
-        metaRobots.content = "index, follow";
-
-        // 4. Canonical Link
-        let canonicalLink = document.querySelector('link[rel="canonical"]');
-        if (!canonicalLink) {
-            canonicalLink = document.createElement('link');
-            canonicalLink.rel = "canonical";
-            document.head.appendChild(canonicalLink);
-        }
-        canonicalLink.href = "https://www.veritazinternational.com/";
-    }, []);
+    useSeo(PAGES["/"]);
 
 
     return (
