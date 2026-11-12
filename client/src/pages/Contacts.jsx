@@ -83,7 +83,7 @@ export default function Contacts() {
   };
 
   useEffect(() => {
-    document.title = "Contact Veritaz International | Book Publishing Experts";
+    document.title = "Book Publishers in Coimbatore | Contact Veritaz International";
 
     // 1. Meta Description
     let metaDescription = document.querySelector('meta[name="description"]');
@@ -92,7 +92,7 @@ export default function Contacts() {
       metaDescription.name = "description";
       document.head.appendChild(metaDescription);
     }
-    metaDescription.content = "Contact Veritaz International for book publishing, ISBN registration, patent support, copyright services, research publication, and academic assistance.";
+    metaDescription.content = "Contact Veritaz International, book publishers in Coimbatore and academic publishers in Tamil Nadu, for book publishing, ISBN, patent and copyright support.";
 
     // 2. Meta Keywords
     let metaKeywords = document.querySelector('meta[name="keywords"]');
@@ -101,7 +101,7 @@ export default function Contacts() {
       metaKeywords.name = "keywords";
       document.head.appendChild(metaKeywords);
     }
-    metaKeywords.content = "contact Veritaz International, publisher support, publishing inquiry, author help, academic publishing contact India, reach Veritaz team";
+    metaKeywords.content = "Book Publishers in Coimbatore, Academic Publishers in Tamil Nadu, contact Veritaz International, publisher support, publishing inquiry, author help, academic publishing contact India, reach Veritaz team";
     
     // 3. Robots Tag
     let metaRobots = document.querySelector('meta[name="robots"]');

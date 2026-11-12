@@ -38,7 +38,7 @@ export default function BookStore() {
   });
 
   useEffect(() => {
-    document.title = "Academic Book Store | ISBN Books | Veritaz International";
+    document.title = "Academic Books Online India | Veritaz International";
 
     // 1. Meta Description
     let metaDescription = document.querySelector('meta[name="description"]');
@@ -47,7 +47,7 @@ export default function BookStore() {
       metaDescription.name = "description";
       document.head.appendChild(metaDescription);
     }
-    metaDescription.content = "Browse academic, engineering, research, AI and technology books published with ISBN by Veritaz International. Find quality textbooks by expert authors.";
+    metaDescription.content = "Buy academic books online in India from Veritaz International. Shop ISBN college textbooks in Coimbatore for engineering, research, AI and technology.";
 
     // 2. Meta Keywords
     let metaKeywords = document.querySelector('meta[name="keywords"]');
@@ -56,7 +56,7 @@ export default function BookStore() {
       metaKeywords.name = "keywords";
       document.head.appendChild(metaKeywords);
     }
-    metaKeywords.content = "online bookstore Veritaz, buy academic books, research publications, textbook store India, peer-reviewed books online, order scholarly publications";
+    metaKeywords.content = "Academic Books Online India, College Textbooks in Coimbatore, online bookstore Veritaz, buy academic books, research publications, textbook store India, peer-reviewed books online, order scholarly publications";
 
     // 3. Robots Tag
     let metaRobots = document.querySelector('meta[name="robots"]');

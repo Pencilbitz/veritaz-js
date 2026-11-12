@@ -110,7 +110,7 @@ export default function Home() {
     };
 
     useEffect(() => {
-        document.title = "Best Book Publication Company in India | Veritaz International";
+        document.title = "Book Publishing Company in India | Veritaz International";
 
         // 1. Meta Description
         let metaDescription = document.querySelector('meta[name="description"]');
@@ -119,7 +119,7 @@ export default function Home() {
             metaDescription.name = "description";
             document.head.appendChild(metaDescription);
         }
-        metaDescription.content = "Publish textbooks, research papers, patents, copyrights and academic journals with Veritaz International. Trusted publication experts across India.";
+        metaDescription.content = "Veritaz International is a trusted book publishing company in India and academic book publishers in Coimbatore for textbooks, research books and journals.";
 
         // 2. Meta Keywords
         let metaKeywords = document.querySelector('meta[name="keywords"]');
@@ -128,7 +128,7 @@ export default function Home() {
             metaKeywords.name = "keywords";
             document.head.appendChild(metaKeywords);
         }
-        metaKeywords.content = "Textbook Publishing India, Patent Filing Services, ISBN Registration, Copyright Services, Book Publishing Company, Veritaz International Press, Academic Publishing";
+        metaKeywords.content = "Book Publishing Company in India, Academic Book Publishers in Coimbatore, Textbook Publishing India, Patent Filing Services, ISBN Registration, Copyright Services, Veritaz International Press, Academic Publishing";
         // 3. Robots Tag
         let metaRobots = document.querySelector('meta[name="robots"]');
         if (!metaRobots) {
