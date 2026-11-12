@@ -9,6 +9,8 @@ import { FaWhatsapp, FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
 import { supabase } from "../lib/supabase";
 import { Accent, Pill, Rule } from '../components/PressUI';
 import { H2_FIT, SCREEN, SCREEN_PAD, WRAP } from '../components/pressLayout';
+import { useSeo } from "../seo/useSeo";
+import { NOT_FOUND, bookMeta } from "../seo/site";
 
 /* Book Details, in the home page's "press" look: a lavender hero with the book
    standing in 3D on a violet disc (it turns round to show its back cover),
@@ -59,8 +61,6 @@ export default function BookDetails() {
 
         const books = data || [];
 
-        console.log("All Books:", books);
-        console.log("URL Param:", slug);
 
         // Find book by title-id slug (with fallback to ID direct match)[cite: 3]
         const targetId = slug ? slug.split('-').pop() : null;
@@ -84,7 +84,6 @@ export default function BookDetails() {
           return false;
         });
 
-        console.log("Selected Book:", bookData);
 
         if (!bookData) {
           setError("Book not found");
@@ -103,45 +102,7 @@ export default function BookDetails() {
     fetchBook();
   }, [slug]);
 
-  useEffect(() => {
-    document.title = "Academic Book Store | ISBN Books | Veritaz International";
-
-    // 1. Meta Description
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.name = "description";
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.content = "Browse academic, engineering, research, AI and technology books published with ISBN by Veritaz International. Find quality textbooks by expert authors.";
-
-    // 2. Meta Keywords
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.name = "keywords";
-      document.head.appendChild(metaKeywords);
-    }
-    metaKeywords.content = "online bookstore Veritaz, buy academic books, research publications, textbook store India, peer-reviewed books online, order scholarly publications";
-
-    // 3. Robots Tag
-    let metaRobots = document.querySelector('meta[name="robots"]');
-    if (!metaRobots) {
-      metaRobots = document.createElement('meta');
-      metaRobots.name = "robots";
-      document.head.appendChild(metaRobots);
-    }
-    metaRobots.content = "index, follow";
-
-    // 4. Canonical Link
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = "canonical";
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.href = "https://www.veritazinternational.com/books";
-  }, []);
+  useSeo(book ? bookMeta(book) : error ? NOT_FOUND : null);
 
   // Form states for checkout flow[cite: 3]
   const [custName, setCustName] = useState("");

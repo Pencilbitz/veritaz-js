@@ -18,9 +18,10 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
-  // Serverless functions (Vercel) run on Node, not in the browser.
+  // Serverless functions (Vercel) and the build config run on Node, not in the
+  // browser.
   {
-    files: ['api/**/*.js'],
+    files: ['api/**/*.js', 'vite.config.js', 'vite-plugin-seo.js'],
     languageOptions: {
       globals: globals.node,
     },

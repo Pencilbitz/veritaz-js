@@ -15,6 +15,8 @@ import {
 import { supabase } from '../lib/supabase';
 import { Accent, Pill, Rule } from '../components/PressUI';
 import { BADGE_TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from '../components/pressLayout';
+import { useSeo } from "../seo/useSeo";
+import { PAGES } from "../seo/site";
 
 /**
  * Careers — the public "we are open to applications" page.
@@ -115,6 +117,7 @@ const H2 = `${H2_FIT} leading-[1.1] text-vz-ink`;
 const H2_LIGHT = `${H2_FIT} leading-[1.1] text-white`;
 
 export default function Careers() {
+  useSeo(PAGES["/careers"]);
   // `roles` starts empty rather than null, because the empty state and the
   // "nothing loaded yet" state are not the same thing here and `loading` is what
   // separates them. Collapsing the two would make a failed fetch indistinguishable

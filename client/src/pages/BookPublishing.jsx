@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { Accent, Eyebrow, Pill, Rule, Swash } from "../components/PressUI";
 import { H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
+import { useSeo } from "../seo/useSeo";
+import { PAGES } from "../seo/site";
 
 /* Book Publishing, in the home page's "press" look: a lavender hero with a
    real book that opens on the desk, the services on white as tabs (each
@@ -789,45 +791,7 @@ function CallToAction() {
 }
 
 export default function BookPublishing() {
-  useEffect(() => {
-    document.title = "Book Publication Services in India | Veritaz International";
-
-    // 1. Meta Description
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.name = "description";
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.content = "Book publication services in India and book publishing services in Coimbatore by Veritaz International: editing, ISBN, cover design, printing and distribution.";
-
-    // 2. Meta Keywords
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.name = "keywords";
-      document.head.appendChild(metaKeywords);
-    }
-    metaKeywords.content = "Book Publication Services in India, Book Publishing Services in Coimbatore, book publishing services Veritaz, textbook publication India, academic book publishing, professional editing and ISBN, research paper and book publication, author publishing services";
-
-    // 3. Robots Tag
-    let metaRobots = document.querySelector('meta[name="robots"]');
-    if (!metaRobots) {
-      metaRobots = document.createElement('meta');
-      metaRobots.name = "robots";
-      document.head.appendChild(metaRobots);
-    }
-    metaRobots.content = "index, follow";
-
-    // 4. Canonical Link
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = "canonical";
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.href = "https://www.veritazinternational.com/book-publishing";
-  }, []);
+  useSeo(PAGES["/book-publishing"]);
 
   return (
     <main className="overflow-x-clip bg-white text-slate-800">

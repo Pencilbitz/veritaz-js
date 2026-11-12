@@ -7,6 +7,8 @@ import { sortByEventDate } from "../lib/eventDate";
 import StateFilterBar from "../components/StateFilterBar";
 import { Accent, Eyebrow, Rule, Swash } from "../components/PressUI";
 import { H2_FIT, WRAP } from "../components/pressLayout";
+import { useSeo } from "../seo/useSeo";
+import { PAGES } from "../seo/site";
 
 /* Events, in the home page's "press" look: a lavender hero for the upcoming
    events (their posters in a row you page through, or, when there are none,
@@ -278,45 +280,7 @@ export default function Events() {
         "desc"
     );
 
-    useEffect(() => {
-        document.title = "Academic Events & Conferences | Veritaz International";
-
-        // 1. Meta Description
-        let metaDescription = document.querySelector('meta[name="description"]');
-        if (!metaDescription) {
-            metaDescription = document.createElement('meta');
-            metaDescription.name = "description";
-            document.head.appendChild(metaDescription);
-        }
-        metaDescription.content = "Explore Veritaz International's academic conferences, FDPs, workshops, seminars, and research events for students, researchers, faculty, and professionals.";
-
-        // 2. Meta Keywords
-        let metaKeywords = document.querySelector('meta[name="keywords"]');
-        if (!metaKeywords) {
-            metaKeywords = document.createElement('meta');
-            metaKeywords.name = "keywords";
-            document.head.appendChild(metaKeywords);
-        }
-        metaKeywords.content = "academic events, publishing workshops, research conferences, author seminars, webinar schedule, Veritaz International events, scholarly workshops India";
-
-        // 3. Robots Tag
-        let metaRobots = document.querySelector('meta[name="robots"]');
-        if (!metaRobots) {
-            metaRobots = document.createElement('meta');
-            metaRobots.name = "robots";
-            document.head.appendChild(metaRobots);
-        }
-        metaRobots.content = "index, follow";
-
-        // 4. Canonical Link
-        let canonicalLink = document.querySelector('link[rel="canonical"]');
-        if (!canonicalLink) {
-            canonicalLink = document.createElement('link');
-            canonicalLink.rel = "canonical";
-            document.head.appendChild(canonicalLink);
-        }
-        canonicalLink.href = "https://www.veritazinternational.com/events";
-    }, []);
+    useSeo(PAGES["/events"]);
 
     return (
         <main className="overflow-x-clip bg-white text-slate-800">

@@ -17,6 +17,8 @@ import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter } from "react-icons/f
 import { supabase } from "../lib/supabase";
 import { Accent, Eyebrow, Rule, Swash } from "../components/PressUI";
 import { H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
+import { useSeo } from "../seo/useSeo";
+import { PAGES } from "../seo/site";
 
 /* Contact, in the home page's "press" look: a lavender hero with the
    telephone receiver hanging in over a violet disc and the conversation in
@@ -117,45 +119,7 @@ export default function Contacts() {
     }
   };
 
-  useEffect(() => {
-    document.title = "Book Publishers in Coimbatore | Contact Veritaz International";
-
-    // 1. Meta Description
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.name = "description";
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.content = "Contact Veritaz International, book publishers in Coimbatore and academic publishers in Tamil Nadu, for book publishing, ISBN, patent and copyright support.";
-
-    // 2. Meta Keywords
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.name = "keywords";
-      document.head.appendChild(metaKeywords);
-    }
-    metaKeywords.content = "Book Publishers in Coimbatore, Academic Publishers in Tamil Nadu, contact Veritaz International, publisher support, publishing inquiry, author help, academic publishing contact India, reach Veritaz team";
-
-    // 3. Robots Tag
-    let metaRobots = document.querySelector('meta[name="robots"]');
-    if (!metaRobots) {
-      metaRobots = document.createElement('meta');
-      metaRobots.name = "robots";
-      document.head.appendChild(metaRobots);
-    }
-    metaRobots.content = "index, follow";
-
-    // 4. Canonical Link
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = "canonical";
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.href = "https://www.veritazinternational.com/contact";
-  }, []);
+  useSeo(PAGES["/contact"]);
 
   return (
     <main className="overflow-x-clip bg-white text-slate-800">

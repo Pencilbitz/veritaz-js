@@ -5,6 +5,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { Accent, Rule } from "../components/PressUI";
 import { WRAP } from "../components/pressLayout";
+import { useSeo } from "../seo/useSeo";
+import { PAGES, bookPath } from "../seo/site";
 
 /* Book Store, in the home page's "press" look: a lavender hero with the
    search set large and our books spine out in a walnut bookcase, then the catalogue
@@ -20,7 +22,6 @@ const ORDER_WHATSAPP = "919042007413";
 
 const NO_COVER = "https://via.placeholder.com/150x200?text=No+Cover";
 
-const bookPath = (book) => `/books/${book.title.replace(/\s+/g, "-").toLowerCase()}-${book.id}`;
 
 const whatsappOrderHref = (book) => {
   const lines = [
@@ -115,45 +116,7 @@ export default function BookStore() {
     if (searchParams.has("page")) setSearchParams({}, { replace: true });
   };
 
-  useEffect(() => {
-    document.title = "Academic Books Online India | Veritaz International";
-
-    // 1. Meta Description
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.name = "description";
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.content = "Buy academic books online in India from Veritaz International. Shop ISBN college textbooks in Coimbatore for engineering, research, AI and technology.";
-
-    // 2. Meta Keywords
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.name = "keywords";
-      document.head.appendChild(metaKeywords);
-    }
-    metaKeywords.content = "Academic Books Online India, College Textbooks in Coimbatore, online bookstore Veritaz, buy academic books, research publications, textbook store India, peer-reviewed books online, order scholarly publications";
-
-    // 3. Robots Tag
-    let metaRobots = document.querySelector('meta[name="robots"]');
-    if (!metaRobots) {
-      metaRobots = document.createElement('meta');
-      metaRobots.name = "robots";
-      document.head.appendChild(metaRobots);
-    }
-    metaRobots.content = "index, follow";
-
-    // 4. Canonical Link
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = "canonical";
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.href = "https://www.veritazinternational.com/book-store";
-  }, []);
+  useSeo(PAGES["/book-store"]);
 
   const shelfBooks = books.filter((b) => b.title);
 

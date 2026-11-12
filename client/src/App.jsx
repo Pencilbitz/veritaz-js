@@ -16,6 +16,7 @@ const Contacts = lazy(() => import("./pages/Contacts"));
 const HRDepartment = lazy(() => import("./pages/HRDepartment"));
 const Careers = lazy(() => import("./pages/Careers"));
 const Conference = lazy(() => import("./pages/Conference"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
           <Route path="/hr" element={<HRDepartment />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/conferences/:confname" element={<Conference />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
       <Footer />

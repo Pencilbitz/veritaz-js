@@ -33,6 +33,8 @@ import {
 import { supabase } from "../lib/supabase";
 import { Accent, Pill, Rule, Swash } from "../components/PressUI";
 import { BADGE_TONES as TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
+import { useSeo } from "../seo/useSeo";
+import { PAGES, bookPath } from "../seo/site";
 
 /* Home page in the "night press" look: night-ink bands lit by the logo's
    cyan-violet-orchid sweep, a display grotesque for headings, square corners
@@ -96,19 +98,7 @@ const reasons = [
   { title: "Market Presence", text: "Proven track record with multiple national bestsellers across genres.", icon: Trophy },
 ];
 
-const bookPath = (book) => `/books/${book.title.replace(/\s+/g, "-").toLowerCase()}-${book.id}`;
-
 const prefersCalm = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-function setMeta(selector, create, value) {
-  let el = document.head.querySelector(selector);
-  if (!el) {
-    el = document.createElement(create.tag);
-    Object.assign(el, create.attrs);
-    document.head.appendChild(el);
-  }
-  el[create.prop] = value;
-}
 
 /** Counts up once when scrolled into view. The real value is rendered first,
  *  so it is still correct with reduced motion or if this effect never runs. */
@@ -1265,16 +1255,7 @@ export default function Home() {
     fetchHomeData().finally(() => setBooksReady(true));
   }, []);
 
-  useEffect(() => {
-    document.title = "Book Publishing Company in India | Veritaz International";
-    setMeta('meta[name="description"]', { tag: "meta", attrs: { name: "description" }, prop: "content" },
-      "Veritaz International is a trusted book publishing company in India and academic book publishers in Coimbatore for textbooks, research books and journals.");
-    setMeta('meta[name="keywords"]', { tag: "meta", attrs: { name: "keywords" }, prop: "content" },
-      "Book Publishing Company in India, Academic Book Publishers in Coimbatore, Textbook Publishing India, Patent Filing Services, ISBN Registration, Copyright Services, Veritaz International Press, Academic Publishing");
-    setMeta('meta[name="robots"]', { tag: "meta", attrs: { name: "robots" }, prop: "content" }, "index, follow");
-    setMeta('link[rel="canonical"]', { tag: "link", attrs: { rel: "canonical" }, prop: "href" },
-      "https://www.veritazinternational.com/");
-  }, []);
+  useSeo(PAGES["/"]);
 
   const covers = useMemo(() => books.map((b) => b.cover1), [books]);
 

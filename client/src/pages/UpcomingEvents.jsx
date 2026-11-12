@@ -23,6 +23,8 @@ import {
 import { supabase, EVENT_SELECT } from "../lib/supabase";
 import { Accent, Eyebrow, Pill } from "../components/PressUI";
 import { BADGE_TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
+import { useSeo } from "../seo/useSeo";
+import { NOT_FOUND, eventMeta } from "../seo/site";
 
 /* One event, in the home page's "press" look: a lavender hero with the
    college and topic beside the poster (set in a white mat on a violet
@@ -93,14 +95,11 @@ export default function UpcomingEvents() {
 
         if (error) throw error;
 
-        console.log("All Events:", events);
-        console.log("Current eventId:", eventId);
 
         const selectedEvent = (events || []).find(
           (event) => String(event.id) === String(eventId)
         );
 
-        console.log("Selected Event:", selectedEvent);
 
         setEvent(selectedEvent || null);
       } catch (err) {
@@ -113,45 +112,7 @@ export default function UpcomingEvents() {
     fetchEvent();
   }, [eventId]);
 
-  useEffect(() => {
-          document.title = "Academic Events & Conferences | Veritaz International";
-
-          // 1. Meta Description
-          let metaDescription = document.querySelector('meta[name="description"]');
-          if (!metaDescription) {
-              metaDescription = document.createElement('meta');
-              metaDescription.name = "description";
-              document.head.appendChild(metaDescription);
-          }
-          metaDescription.content = "Explore Veritaz International's academic conferences, FDPs, workshops, seminars, and research events for students, researchers, faculty, and professionals.";
-
-          // 2. Meta Keywords
-          let metaKeywords = document.querySelector('meta[name="keywords"]');
-          if (!metaKeywords) {
-              metaKeywords = document.createElement('meta');
-              metaKeywords.name = "keywords";
-              document.head.appendChild(metaKeywords);
-          }
-          metaKeywords.content = "academic events, publishing workshops, research conferences, author seminars, webinar schedule, Veritaz International events, scholarly workshops India";
-
-          // 3. Robots Tag
-          let metaRobots = document.querySelector('meta[name="robots"]');
-          if (!metaRobots) {
-              metaRobots = document.createElement('meta');
-              metaRobots.name = "robots";
-              document.head.appendChild(metaRobots);
-          }
-          metaRobots.content = "index, follow";
-
-          // 4. Canonical Link
-          let canonicalLink = document.querySelector('link[rel="canonical"]');
-          if (!canonicalLink) {
-              canonicalLink = document.createElement('link');
-              canonicalLink.rel = "canonical";
-              document.head.appendChild(canonicalLink);
-          }
-          canonicalLink.href = "https://www.veritazinternational.com/upcoming-events";
-      }, []);
+  useSeo(event ? eventMeta(event) : loading ? null : NOT_FOUND);
 
   if (loading) {
     return (
