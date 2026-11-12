@@ -130,11 +130,9 @@ h2 {
   border-radius: 0;
   background-color: rgb(255 255 255 / 0.94);
   backdrop-filter: saturate(1.4) blur(14px);
-  box-shadow: 0 8px 24px -18px rgb(17 24 68 / 0.35);
   transition:
     inset 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
-    border-radius 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
-    box-shadow 0.45s ease;
+    border-radius 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 /* Hairline along the bottom edge (top of page only). */
 .vz-nav-island::after {
@@ -176,9 +174,6 @@ h2 {
 .vz-nav[data-scrolled] .vz-nav-island {
   inset: 8px max(10px, calc((100% - 1440px) / 2)) 0;
   border-radius: 9999px;
-  box-shadow:
-    0 18px 40px -16px rgb(17 24 68 / 0.3),
-    0 0 28px -10px rgb(79 70 229 / 0.3);
 }
 .vz-nav[data-scrolled] .vz-nav-island::before {
   opacity: 1;
@@ -209,11 +204,18 @@ h2 {
   padding-inline: 0.75rem 0.6rem;
 }
 
-/* Logo on a white tile with a soft ring. */
+/* Logo on a white tile with a fine ring. */
 .vz-nav-logo {
-  box-shadow:
-    0 0 0 1px var(--color-vz-line),
-    0 8px 18px -8px rgb(79 70 229 / 0.45);
+  box-shadow: 0 0 0 1px var(--color-vz-line);
+}
+
+/* The header is flat: no shadows on its buttons either (the gradient
+   buttons carry one elsewhere on the site). */
+.vz-nav .pill-primary,
+.vz-nav .pill-primary:hover,
+.vz-menu .pill-primary,
+.vz-menu .pill-primary:hover {
+  box-shadow: none;
 }
 
 /* Lilac tray holding the links, and the highlight that slides between them:
@@ -234,17 +236,11 @@ h2 {
   width: 0;
   border-radius: 9999px;
   background-image: linear-gradient(100deg, var(--color-sf-indigo), var(--color-sf-violet));
-  box-shadow:
-    0 6px 16px -4px rgb(79 70 229 / 0.6),
-    inset 0 1px 0 rgb(255 255 255 / 0.22);
   opacity: 0;
   pointer-events: none;
 }
 .vz-nav-pill[data-mode="hover"] {
   background-image: linear-gradient(100deg, #fcd34d, var(--color-sf-amber));
-  box-shadow:
-    0 6px 16px -4px rgb(245 158 11 / 0.6),
-    inset 0 1px 0 rgb(255 255 255 / 0.5);
 }
 .vz-nav-tray[data-ready] .vz-nav-pill {
   transition:
@@ -259,7 +255,7 @@ h2 {
   align-items: center;
   gap: 0.25rem;
   height: 2.5rem;
-  padding-inline: 0.6rem;
+  padding-inline: 0.45rem;
   border-radius: 9999px;
   font-size: 14px;
   font-weight: 600;
@@ -267,10 +263,17 @@ h2 {
   color: rgb(17 24 68 / 0.75);
   transition: color 0.2s ease;
 }
+/* Seven links have to fit beside the logo and Get in Touch at every
+   laptop width, so the spacing grows in steps. */
 @media (min-width: 1280px) {
   .vz-nav-link {
-    padding-inline: 1.05rem;
+    padding-inline: 0.75rem;
     font-size: 15px;
+  }
+}
+@media (min-width: 1440px) {
+  .vz-nav-link {
+    padding-inline: 1.05rem;
   }
 }
 /* Navy on the gold highlight. */
@@ -296,9 +299,7 @@ h2 {
 .vz-nav-panel {
   background-color: #fff;
   background-image: radial-gradient(70% 60% at 100% 0%, rgb(245 158 11 / 0.06), transparent 70%);
-  box-shadow:
-    0 0 0 1px var(--color-vz-line),
-    0 30px 60px -24px rgb(17 24 68 / 0.35);
+  box-shadow: 0 0 0 1px var(--color-vz-line);
 }
 /* The feature tile in the Conferences card, with the logo's diamond. */
 .vz-nav-feature {

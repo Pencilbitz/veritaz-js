@@ -254,7 +254,6 @@ export default function Events() {
 
                 if (error) throw error;
 
-                console.log("Events:", data);
                 setEvents(data || []);
             } catch (err) {
                 console.error("Error fetching events:", err);

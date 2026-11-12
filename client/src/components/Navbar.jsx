@@ -22,13 +22,12 @@ const socials = [
   { href: "https://www.instagram.com/veritazinternationalpress/", icon: FaInstagram, label: "Instagram" },
 ];
 
-// Events is hidden from navigation - add { to: "/events", label: "Events" }
-// after "Our Company" to restore it. The /events route and event detail pages
-// still resolve, so links already shared keep working, and the admin still
-// manages events.
+// `also` marks a link current on pages below it that live at another path:
+// an event's own page (/upcoming-events/:id) belongs to Events.
 const primaryLinks = [
   { to: "/", label: "Home", end: true },
   { to: "/our-company", label: "Our Company" },
+  { to: "/events", label: "Events", also: "/upcoming-events/" },
   { to: "/book-store", label: "Book Store" },
   { to: "/book-publishing", label: "Publishing" },
 ];
@@ -61,7 +60,8 @@ function Logo() {
       </span>
       <span className="leading-none">
         <span className="block font-display text-[1.35rem] font-bold tracking-[-0.01em] text-vz-ink">Veritaz</span>
-        <span className="mt-1 block whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.22em] text-sf-indigo">
+        {/* Hidden on small laptops (1024-1279px), where the seven links need the room. */}
+        <span className="mt-1 block whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.22em] text-sf-indigo lg:hidden xl:block">
           International Press
         </span>
       </span>
@@ -302,8 +302,16 @@ export default function Navbar() {
             >
               <span ref={pillRef} className="vz-nav-pill" aria-hidden="true" />
 
-              {primaryLinks.map(({ to, label, end }) => (
-                <NavLink key={to} to={to} end={end} className="vz-nav-link" onMouseEnter={onItemEnter} onFocus={onItemEnter}>
+              {primaryLinks.map(({ to, label, end, also }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  className="vz-nav-link"
+                  data-active={(also && location.pathname.startsWith(also)) || undefined}
+                  onMouseEnter={onItemEnter}
+                  onFocus={onItemEnter}
+                >
                   {label}
                 </NavLink>
               ))}
@@ -364,25 +372,34 @@ export default function Navbar() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Chat on WhatsApp"
-                className={`${ROUND_BUTTON} hidden text-[#1da851] hover:bg-[#25d366] hover:text-white xl:flex`}
+                className={`${ROUND_BUTTON} hidden text-[#1da851] hover:bg-[#25d366] hover:text-white min-[1440px]:flex`}
               >
                 <FaWhatsapp className="h-[18px] w-[18px]" aria-hidden="true" />
               </a>
               <a
                 href={PHONE_HREF}
                 aria-label={`Call ${PHONE_DISPLAY}`}
-                className={`${ROUND_BUTTON} text-sf-indigo hover:bg-amber-400 hover:text-sf-navy lg:hidden xl:flex`}
+                className={`${ROUND_BUTTON} hidden text-sf-indigo hover:bg-amber-400 hover:text-sf-navy sm:max-lg:flex min-[1440px]:flex`}
               >
                 <Phone className="h-[18px] w-[18px]" />
               </a>
               <Link
                 to="/contact"
-                className="pill-primary group/cta ml-1 hidden h-11 items-center gap-2 rounded-full pl-5 pr-5 text-sm font-bold whitespace-nowrap text-white transition-transform hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-indigo lg:flex xl:pr-1.5"
+                className="pill-primary group/cta ml-1 hidden h-11 items-center gap-2 rounded-full pl-5 pr-5 text-sm font-bold whitespace-nowrap text-white transition-transform hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-indigo sm:flex xl:pr-1.5"
               >
                 Get in Touch
                 <span className="hidden h-8 w-8 items-center justify-center rounded-full bg-amber-400 text-sf-navy xl:flex">
                   <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover/cta:rotate-45" />
                 </span>
+              </Link>
+              {/* Phones: the same link as a round gold button, so contact is
+                  one tap away at every width (the number is in the strip above). */}
+              <Link
+                to="/contact"
+                aria-label="Get in Touch"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-400 text-sf-navy transition-colors hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-indigo sm:hidden"
+              >
+                <Mail className="h-[18px] w-[18px]" />
               </Link>
               <button
                 ref={menuButtonRef}
@@ -423,7 +440,7 @@ export default function Navbar() {
         </div>
 
         <nav className={`${WRAP} flex-1 overflow-y-auto py-4`} aria-label="Mobile">
-          {primaryLinks.map(({ to, label, end }, i) => (
+          {primaryLinks.map(({ to, label, end, also }, i) => (
             <NavLink
               key={to}
               to={to}
@@ -434,7 +451,11 @@ export default function Navbar() {
               {({ isActive }) => (
                 <>
                   <span className="w-6 text-xs font-bold tabular-nums text-amber-500">{number(i)}</span>
-                  <span className={`font-display text-[1.7rem] font-bold leading-none tracking-[-0.01em] ${isActive ? "vz-gradient-text-deep" : ""}`}>
+                  <span
+                    className={`font-display text-[1.7rem] font-bold leading-none tracking-[-0.01em] ${
+                      isActive || (also && location.pathname.startsWith(also)) ? "vz-gradient-text-deep" : ""
+                    }`}
+                  >
                     {label}
                   </span>
                   <ArrowUpRight className="ml-auto h-5 w-5 self-center text-vz-ink/30 transition-colors group-hover:text-amber-500" />

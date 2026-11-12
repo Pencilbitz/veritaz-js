@@ -27,6 +27,7 @@ const columns = [
     links: [
       { to: "/", label: "Home" },
       { to: "/our-company", label: "About Us" },
+      { to: "/events", label: "Events" },
       { to: "/book-store", label: "Book Store" },
       { to: "/careers", label: "Careers" },
       { to: "/contact", label: "Contact" },
