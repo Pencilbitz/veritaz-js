@@ -25,8 +25,18 @@ function Hero({ service }) {
   const [before, accent, after] = h1;
   return (
     <header className="oc-hero relative isolate flex flex-col overflow-hidden text-white lg:min-h-[calc(100svh-7.6rem)]">
-      <img src={hero} alt="" fetchPriority="high" className="absolute inset-0 -z-20 h-full w-full object-cover object-[70%_50%]" />
-      <span className="oc-hero-shade" aria-hidden="true" />
+      <img
+        src={hero}
+        alt=""
+        fetchPriority="high"
+        decoding="async"
+        style={{
+          objectPosition: service.heroPosition || "72% 55%",
+          imageRendering: "-webkit-optimize-contrast",
+        }}
+        className="absolute inset-0 -z-20 h-full w-full object-cover"
+      />
+      <span className="sv-hero-shade" aria-hidden="true" />
 
       <div className={`${WRAP} flex flex-1 items-center py-14 lg:py-12 short:py-8`}>
         <div className="max-w-3xl">
@@ -82,6 +92,8 @@ function Overview({ data, band }) {
             src={image}
             alt={imageAlt}
             loading="lazy"
+            decoding="async"
+            style={{ imageRendering: "-webkit-optimize-contrast" }}
             className="oc-frame-img reveal relative aspect-[4/3] w-full rounded-[2rem] object-cover lg:aspect-auto lg:h-[min(28rem,calc(100svh-13rem))]"
           />
           <span className="oc-seal" aria-hidden="true">

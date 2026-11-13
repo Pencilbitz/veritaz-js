@@ -60,7 +60,8 @@ const CONTENT = [
     slug: "textbook-publications",
     summary:
       "National and international textbook publishing, from manuscript support and editing to ISBN registration and Flipkart distribution.",
-    hero: `${IMG}/textbook-hero.webp`,
+    hero: `${IMG}/textbook-hero-fhd.jpg`,
+    heroPosition: "center center",
     h1: ["", "Textbook", "Publications for Students, Educators & Institutions"],
     lead:
       "National & international textbook publishing with Flipkart distribution. We help educators and subject experts transform academic content into structured textbooks designed for students, institutions and professional learners.",
@@ -74,8 +75,8 @@ const CONTENT = [
     overview: {
       eyebrow: "The Transformation",
       title: ["From Academic Content to a Structured", "Textbook"],
-      image: `${IMG}/textbook-detail.webp`,
-      imageAlt: "Research papers, a laptop showing an academic publication and a stack of textbooks",
+      image: `${IMG}/textbook-detail-fhd.jpg`,
+      imageAlt: "A university classroom with an open laptop, potted plant, and a stack of academic textbooks on a wooden desk",
       body: [
         "Textbook publications provide high-quality academic and educational materials designed to meet modern curriculum standards and student needs. Our content is accurate, clear, and easy to understand.",
         "We also support faculty development programs, helping teachers improve their skills and knowledge through reliable educational resources.",
@@ -119,7 +120,8 @@ const CONTENT = [
     slug: "patent-grant-support",
     summary:
       "Patentability assessment, technical drafting, filing and examination support across India, the US, the UK, Germany, Japan, Australia, Canada and South Africa.",
-    hero: `${IMG}/patent-hero.webp`,
+    hero: `${IMG}/patent-hero-fhd.jpg`,
+    heroPosition: "center center",
     h1: ["Patent", "Grant", "& IP Registration Services"],
     lead:
       "Expert patent grant support with structured patent filing, patent registration, precise documentation, comprehensive IP services, and professional grant assistance for innovators, startups, and enterprises.",
@@ -133,8 +135,8 @@ const CONTENT = [
     overview: {
       eyebrow: "Why Veritaz",
       title: ["Why Choose Veritaz for Patent", "Services?"],
-      image: `${IMG}/patent-detail.webp`,
-      imageAlt: "A patented stamp being pressed onto a patent document",
+      image: `${IMG}/patent-detail-fhd.jpg`,
+      imageAlt: "Official patent grant certificate with gold seal, technical blueprints, and laptop on an executive legal desk",
       body: [
         "We specialize in assisting clients in securing their intellectual property rights across multiple jurisdictions, including India, the US, the UK, Germany, Japan, Australia, Canada, and South Africa.",
       ],
@@ -208,7 +210,8 @@ const CONTENT = [
     slug: "trademarks-copyright",
     summary:
       "Brand clearance searches, trademark filing and registration, and copyright protection for books, papers, media, code and artwork.",
-    hero: `${IMG}/trademark-hero.webp`,
+    hero: `${IMG}/trademark-hero-fhd.jpg`,
+    heroPosition: "center center",
     h1: ["Trademarks &", "Copyright", "Services"],
     lead:
       "Safeguard your brand identity, creative assets, and commercial innovations with comprehensive trademark and copyright services from Veritaz International Press.",
@@ -296,6 +299,7 @@ const CONTENT = [
     summary:
       "Manuscript preparation, IEEE formatting, technical editing and submission support for high-standard conference papers.",
     hero: `${IMG}/ieee-hero.webp`,
+    heroPosition: "center center",
     h1: ["IEEE", "Conference", "Publications"],
     lead:
       "End-to-end guidance for authors, scholars, and researchers aiming to publish high-standard papers in top-tier academic conferences and IEEE conference publications.",
@@ -309,8 +313,8 @@ const CONTENT = [
     overview: {
       eyebrow: "Peer-Review Ready",
       title: ["Built to Meet International Peer", "Review"],
-      image: `${IMG}/ieee-detail.webp`,
-      imageAlt: "A research paper with reviewer notes beside a peer-review evaluation form with ticked criteria",
+      image: `${IMG}/ieee-detail-fhd.jpg`,
+      imageAlt: "A researcher's desk with an annotated IEEE paper, peer-review submission portal on laptop, and conference proceedings",
       body: [
         "Veritaz International Press provides end-to-end guidance for authors, scholars, and researchers aiming to publish in top-tier academic conferences and IEEE conference publications.",
       ],
@@ -347,7 +351,8 @@ const CONTENT = [
     slug: "edited-book-chapters",
     summary:
       "Publisher selection, manuscript editing, plagiarism checks and publication support for chapters in SCI and Scopus indexed volumes.",
-    hero: `${IMG}/chapters-hero.webp`,
+    hero: `${IMG}/chapters-hero-fhd.jpg`,
+    heroPosition: "center center",
     h1: ["Scopus-Indexed", "Book Chapters", ""],
     lead: "Professional editing and formatting support to feature your work in SCI and Scopus indexed volumes.",
     cta: "Publish Your Book Chapter",
@@ -360,8 +365,8 @@ const CONTENT = [
     overview: {
       eyebrow: "SCI & Scopus Indexed Volumes",
       title: ["From Publisher Selection to Final", "Submission"],
-      image: `${IMG}/chapters-detail.webp`,
-      imageAlt: "A tree growing from the pages of an open book",
+      image: `${IMG}/chapters-detail-fhd.jpg`,
+      imageAlt: "An academic editor reviewing printed manuscript proofs with an indexed reference book and laptop",
       body: [
         "Veritaz International Press provides comprehensive SCI & Scopus publication support for scholars, offering end-to-end assistance from initial publisher selection to final submission.",
       ],
@@ -432,8 +437,8 @@ const CONTENT = [
     overview: {
       eyebrow: "Bring Knowledge Into Conversation",
       title: ["Academic Gatherings, Managed", "End to End"],
-      image: `${IMG}/events-detail.webp`,
-      imageAlt: "A speaker presenting to faculty members in a bright seminar room",
+      image: `${IMG}/events-detail-fhd.jpg`,
+      imageAlt: "A keynote speaker presenting at a prestigious international academic conference with attentive faculty and researchers",
       body: [
         "Veritaz International Press partners with educational institutions and organizations to design and execute impactful academic gatherings. From international conferences to specialized faculty development initiatives, we manage every detail to foster collaboration, learning, and professional excellence.",
       ],
@@ -505,7 +510,8 @@ const CONTENT = [
     slug: "professional-upskilling",
     summary:
       "Structured, high-impact learning modules that build technical knowledge, practical domain skills and professional efficiency.",
-    hero: `${IMG}/upskilling-hero.webp`,
+    hero: `${IMG}/upskilling-hero-fhd.jpg`,
+    heroPosition: "center center",
     h1: ["Professional", "Upskilling", "Services"],
     lead: "Targeted learning programs engineered to boost your professional capabilities.",
     cta: "Enquire About Upskilling",
@@ -518,8 +524,8 @@ const CONTENT = [
     overview: {
       eyebrow: "Upskilling Modules",
       title: ["Structured, High-Impact Upskilling", "Modules"],
-      image: `${IMG}/upskilling-detail.webp`,
-      imageAlt: "Three young professionals collaborating around a laptop in a modern office",
+      image: `${IMG}/upskilling-detail-fhd.jpg`,
+      imageAlt: "An instructor and a professional collaborating on an interactive learning module and analytics dashboard",
       body: [
         "Veritaz International Press delivers structured, high-impact upskilling modules designed to expand technical knowledge, refine practical domain skills, and enhance professional efficiency.",
       ],
