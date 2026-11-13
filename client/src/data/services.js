@@ -61,7 +61,6 @@ const CONTENT = [
     summary:
       "National and international textbook publishing, from manuscript support and editing to ISBN registration and Flipkart distribution.",
     hero: `${IMG}/textbook-hero.webp`,
-    eyebrow: "Textbook Publishing",
     h1: ["", "Textbook", "Publications for Students, Educators & Institutions"],
     lead:
       "National & international textbook publishing with Flipkart distribution. We help educators and subject experts transform academic content into structured textbooks designed for students, institutions and professional learners.",
@@ -110,7 +109,6 @@ const CONTENT = [
       ],
     },
     close: {
-      eyebrow: "Ready to publish?",
       title: ["Have Academic Content Ready to Become a", "Textbook?"],
       text: "Take the next step toward publishing your textbook. Work with Veritaz International Press to transform your academic content into a structured textbook.",
       also: { to: "/book-publishing", label: "See Book Publishing" },
@@ -122,7 +120,6 @@ const CONTENT = [
     summary:
       "Patentability assessment, technical drafting, filing and examination support across India, the US, the UK, Germany, Japan, Australia, Canada and South Africa.",
     hero: `${IMG}/patent-hero.webp`,
-    eyebrow: "Patents & IP",
     h1: ["Patent", "Grant", "& IP Registration Services"],
     lead:
       "Expert patent grant support with structured patent filing, patent registration, precise documentation, comprehensive IP services, and professional grant assistance for innovators, startups, and enterprises.",
@@ -202,7 +199,6 @@ const CONTENT = [
       ],
     },
     close: {
-      eyebrow: "Have an innovation in mind?",
       title: ["Let's Discuss Your Patent Support", "Needs"],
       text: "Secure your intellectual property rights across India, the US, the UK, Germany, Japan, Australia, Canada, and South Africa. Connect with Veritaz International Press to discuss your invention and the support available for it.",
     },
@@ -213,7 +209,6 @@ const CONTENT = [
     summary:
       "Brand clearance searches, trademark filing and registration, and copyright protection for books, papers, media, code and artwork.",
     hero: `${IMG}/trademark-hero.webp`,
-    eyebrow: "Trademarks & Copyright",
     h1: ["Trademarks &", "Copyright", "Services"],
     lead:
       "Safeguard your brand identity, creative assets, and commercial innovations with comprehensive trademark and copyright services from Veritaz International Press.",
@@ -291,7 +286,6 @@ const CONTENT = [
       ],
     },
     close: {
-      eyebrow: "Secure your intellectual property",
       title: ["Ready to Protect Your Brand and Creative", "Work?"],
       text: "Talk to Veritaz International Press about trademark search, filing, registration and copyright protection for your business, books and creative assets.",
     },
@@ -302,7 +296,6 @@ const CONTENT = [
     summary:
       "Manuscript preparation, IEEE formatting, technical editing and submission support for high-standard conference papers.",
     hero: `${IMG}/ieee-hero.webp`,
-    eyebrow: "Conference Papers",
     h1: ["IEEE", "Conference", "Publications"],
     lead:
       "End-to-end guidance for authors, scholars, and researchers aiming to publish high-standard papers in top-tier academic conferences and IEEE conference publications.",
@@ -345,7 +338,6 @@ const CONTENT = [
       ],
     },
     close: {
-      eyebrow: "Ready to submit?",
       title: ["Have a Paper Ready for a", "Conference?"],
       text: "Get end-to-end support for preparing, formatting, editing and submitting your paper to IEEE and top-tier academic conferences.",
     },
@@ -356,7 +348,6 @@ const CONTENT = [
     summary:
       "Publisher selection, manuscript editing, plagiarism checks and publication support for chapters in SCI and Scopus indexed volumes.",
     hero: `${IMG}/chapters-hero.webp`,
-    eyebrow: "SCI & Scopus Indexed",
     h1: ["Scopus-Indexed", "Book Chapters", ""],
     lead: "Professional editing and formatting support to feature your work in SCI and Scopus indexed volumes.",
     cta: "Publish Your Book Chapter",
@@ -418,7 +409,6 @@ const CONTENT = [
       ],
     },
     close: {
-      eyebrow: "Ready to publish?",
       title: ["Feature Your Work in an Indexed", "Volume"],
       text: "Get professional editing and formatting support to publish your chapter in SCI and Scopus indexed book volumes.",
     },
@@ -429,7 +419,6 @@ const CONTENT = [
     summary:
       "Complete organisation support for international conferences, faculty development programs, workshops and seminars.",
     hero: `${IMG}/events-hero.webp`,
-    eyebrow: "Academic Events",
     h1: ["Educational", "Event", "Management"],
     lead:
       "Complete organization support for International Conferences, Faculty Development Programs, workshops, and seminars.",
@@ -506,7 +495,6 @@ const CONTENT = [
       ],
     },
     close: {
-      eyebrow: "Let's bring your event to life",
       title: ["Let's Plan Your Next Academic", "Event"],
       text: "Have an FDP, workshop, seminar or conference in mind? Start a conversation with Veritaz International Press and share your event requirements with our team.",
       also: { to: "/events", label: "See Our Events" },
@@ -518,7 +506,6 @@ const CONTENT = [
     summary:
       "Structured, high-impact learning modules that build technical knowledge, practical domain skills and professional efficiency.",
     hero: `${IMG}/upskilling-hero.webp`,
-    eyebrow: "Upskilling",
     h1: ["Professional", "Upskilling", "Services"],
     lead: "Targeted learning programs engineered to boost your professional capabilities.",
     cta: "Enquire About Upskilling",
@@ -570,7 +557,6 @@ const CONTENT = [
       ],
     },
     close: {
-      eyebrow: "Boost your capabilities",
       title: ["Ready to Upskill Your Team or", "Faculty?"],
       text: "Share your learning goals with Veritaz International Press and we will shape a targeted upskilling program for your educators or professionals.",
     },

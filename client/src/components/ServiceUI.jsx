@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
-import { Accent, Eyebrow, Pill } from "./PressUI";
+import { Accent, Pill } from "./PressUI";
 import { BADGE_TONES, H2_FIT, WRAP } from "./pressLayout";
 import { servicePath } from "../data/services";
 
@@ -90,17 +90,14 @@ export function ServiceCard({ service, index, compact = false }) {
 
 /** The close: a night-indigo card with the call to action, and the service's
  *  icon on a stack of glass tiles beside it. */
-export function CloseCard({ eyebrow, eyebrowIcon, title, text, cta, also, Icon }) {
+export function CloseCard({ title, text, cta, also, Icon }) {
   return (
     <section className="relative isolate overflow-hidden bg-white py-16 lg:py-20 short:py-12">
       <div className={WRAP}>
         <div className="oc-cta relative isolate overflow-hidden rounded-[2.5rem] text-white lg:grid lg:grid-cols-[minmax(0,8fr)_minmax(0,4fr)] lg:items-center">
           <span className="oc-cta-dots" aria-hidden="true" />
           <div className="relative z-10 px-6 py-12 sm:px-12 lg:py-16 lg:pl-16 xl:pl-20">
-            <Eyebrow tone="light" icon={eyebrowIcon}>
-              {eyebrow}
-            </Eyebrow>
-            <Heading parts={title} tone="light" className="mt-5" />
+            <Heading parts={title} tone="light" />
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/85 lg:text-[17px]">{text}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Pill to="/contact" variant="light" arrow>

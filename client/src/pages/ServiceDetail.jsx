@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowRight, ChevronRight, CircleCheck, Sparkles } from "lucide-react";
+import { ArrowRight, CircleCheck, Sparkles } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { Eyebrow, Pill, Rule } from "../components/PressUI";
 import { BADGE_TONES, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
@@ -21,7 +21,7 @@ const LEAD = "text-base leading-relaxed text-slate-600 lg:text-[17px] short:text
 const LIGHT_BANDS = ["vz-draft", "vz-services"];
 
 function Hero({ service }) {
-  const { hero, eyebrow, Icon, h1, lead, cta, highlights, name } = service;
+  const { hero, h1, lead, cta, highlights } = service;
   const [before, accent, after] = h1;
   return (
     <header className="oc-hero relative isolate flex flex-col overflow-hidden text-white lg:min-h-[calc(100svh-7.6rem)]">
@@ -30,33 +30,7 @@ function Hero({ service }) {
 
       <div className={`${WRAP} flex flex-1 items-center py-14 lg:py-12 short:py-8`}>
         <div className="max-w-3xl">
-          <nav aria-label="Breadcrumb">
-            <ol className="flex flex-wrap items-center gap-1.5 text-sm text-white/70">
-              <li>
-                <Link to="/" className="hover:text-amber-300">
-                  Home
-                </Link>
-              </li>
-              <li aria-hidden="true">
-                <ChevronRight className="h-3.5 w-3.5" />
-              </li>
-              <li>
-                <Link to="/services" className="hover:text-amber-300">
-                  Services
-                </Link>
-              </li>
-              <li aria-hidden="true">
-                <ChevronRight className="h-3.5 w-3.5" />
-              </li>
-              <li aria-current="page" className="font-semibold text-white">
-                {name}
-              </li>
-            </ol>
-          </nav>
-          <Eyebrow tone="light" icon={Icon} className="mt-6 short:mt-4">
-            {eyebrow}
-          </Eyebrow>
-          <h1 className="mt-6 text-[2.25rem] leading-[1.1] text-white sm:text-5xl lg:text-[clamp(2.4rem,min(4vw,7.4svh),3.6rem)] short:mt-4">
+          <h1 className="text-[2.25rem] leading-[1.1] text-white sm:text-5xl lg:text-[clamp(2.4rem,min(4vw,7.4svh),3.6rem)]">
             {before && `${before} `}
             <span className="hero-accent hero-accent--light">{accent}</span>
             {after && ` ${after}`}
@@ -357,7 +331,7 @@ export default function ServiceDetail() {
       {coverage && <Coverage data={coverage} />}
       {audience && <Audience data={audience} band={band()} />}
       <MoreServices current={service.slug} band={band()} />
-      <CloseCard {...close} eyebrowIcon={Sparkles} cta={service.cta} Icon={service.Icon} />
+      <CloseCard {...close} cta={service.cta} Icon={service.Icon} />
     </main>
   );
 }

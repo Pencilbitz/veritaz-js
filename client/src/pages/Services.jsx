@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, CalendarCheck, Cpu, LayoutGrid, MessageCircleQuestion, ShieldCheck } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarCheck, Cpu, LayoutGrid, ShieldCheck } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
-import { Eyebrow, Pill, Rule } from "../components/PressUI";
+import { Pill, Rule } from "../components/PressUI";
 import { SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
 import { CloseCard, Heading, ServiceCard, WHATSAPP_HREF } from "../components/ServiceUI";
 import { ENGAGEMENT, SERVICES } from "../data/services";
@@ -33,10 +33,7 @@ function Hero() {
 
       <div className={`${WRAP} flex flex-1 items-center py-16 lg:py-12 short:py-8`}>
         <div className="max-w-2xl">
-          <Eyebrow tone="light" icon={LayoutGrid}>
-            What We Do
-          </Eyebrow>
-          <h1 className="mt-6 text-[2.25rem] leading-[1.1] text-white sm:text-5xl lg:text-[clamp(2.4rem,min(4vw,7.4svh),3.6rem)] short:mt-4">
+          <h1 className="text-[2.25rem] leading-[1.1] text-white sm:text-5xl lg:text-[clamp(2.4rem,min(4vw,7.4svh),3.6rem)]">
             Publishing, IP &amp; Academic <span className="hero-accent hero-accent--light">Services</span>
           </h1>
           <span className="oc-hero-rule mt-6 block h-1 w-20 rounded-full short:mt-4" aria-hidden="true" />
@@ -160,8 +157,6 @@ export default function Services() {
       <AllServices />
       <HowWeWork />
       <CloseCard
-        eyebrow="Not sure where to start?"
-        eyebrowIcon={MessageCircleQuestion}
         title={["Tell Us About Your", "Project"]}
         text="Share what you are working on, whether a manuscript, an invention, a paper or an event, and our team will point you to the right support."
         cta="Get in Touch"
