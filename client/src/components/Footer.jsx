@@ -27,6 +27,7 @@ const columns = [
     links: [
       { to: "/", label: "Home" },
       { to: "/our-company", label: "About Us" },
+      { to: "/services", label: "Our Services" },
       { to: "/events", label: "Events" },
       { to: "/book-store", label: "Book Store" },
       { to: "/careers", label: "Careers" },
@@ -40,7 +41,8 @@ const columns = [
       { to: "/book-publishing", label: "Book Publishing" },
       { to: "/book-publishing", label: "Editing & Proofreading" },
       { to: "/book-publishing", label: "ISBN Acquisition" },
-      { to: "/book-publishing", label: "Copyright Services" },
+      { to: "/services/patent-grant-support", label: "Patent Services" },
+      { to: "/services/trademarks-copyright", label: "Copyright Services" },
       { to: "/hr-department", label: "Employment Verification" },
     ],
   },

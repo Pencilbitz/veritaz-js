@@ -171,6 +171,135 @@ export const PAGES = {
 };
 PAGES["/hr"] = PAGES["/hr-department"];
 
+/** The service pages (their content is in data/services.js, which this file
+ *  cannot import: it carries React icons). Slugs and names must match it. */
+const SERVICE_SEO = [
+  {
+    slug: "textbook-publications",
+    name: "Textbook Publications",
+    title: "Textbook Publishing Services in India | Veritaz International",
+    description:
+      "Textbook publishing in India with Veritaz International: manuscript support, editing, formatting, cover design, ISBN registration and Flipkart distribution.",
+    keywords:
+      "Textbook Publishing Services in India, textbook publishers Coimbatore, academic textbook publication, ISBN registration, textbook editing and formatting, Flipkart book distribution, Veritaz International",
+  },
+  {
+    slug: "patent-grant-support",
+    name: "Patent Grant Support",
+    title: "Patent Filing & Grant Support in India | Veritaz International",
+    description:
+      "Patent grant support from Veritaz International: prior art search, technical drafting, filing and office actions in India, the US, UK, Germany, Japan and more.",
+    keywords:
+      "Patent Filing Services in India, patent grant support, patent registration Coimbatore, prior art search, patent drafting, international patent filing, IP registration services, Veritaz International",
+  },
+  {
+    slug: "trademarks-copyright",
+    name: "Trademarks & Copyright Services",
+    title: "Trademark & Copyright Registration | Veritaz International",
+    description:
+      "Trademark search, filing and registration, and copyright protection for books, academic papers, software and artwork, from Veritaz International.",
+    keywords:
+      "Trademark Registration India, Copyright Registration Services, brand clearance search, trademark filing Coimbatore, copyright for books and software, IP protection, Veritaz International",
+  },
+  {
+    slug: "ieee-conference-publications",
+    name: "IEEE Conference Publications",
+    title: "IEEE Conference Paper Publication Support | Veritaz International",
+    description:
+      "IEEE conference publication support from Veritaz International: manuscript preparation, IEEE formatting, technical editing and research paper submission.",
+    keywords:
+      "IEEE Conference Publication Support, IEEE paper formatting, conference paper editing, research paper submission, top-tier conference publication, Veritaz International",
+  },
+  {
+    slug: "edited-book-chapters",
+    name: "Scopus-Indexed Book Chapters",
+    title: "Scopus Indexed Book Chapter Publication | Veritaz International",
+    description:
+      "Publish book chapters in SCI and Scopus indexed volumes with Veritaz International: publisher selection, manuscript editing, plagiarism checks and submission.",
+    keywords:
+      "Scopus Indexed Book Chapter Publication, SCI indexed book chapters, edited book chapter publishing, Scopus publication support, plagiarism check, Veritaz International",
+  },
+  {
+    slug: "academic-events",
+    name: "Educational Event Management",
+    title: "Academic Event Management: Conferences & FDPs | Veritaz International",
+    description:
+      "Veritaz International organises international conferences, faculty development programs (FDPs), workshops and seminars for colleges and institutions.",
+    keywords:
+      "Academic Event Management, international conference organisers India, faculty development programs, FDP organisers Coimbatore, academic workshops and seminars, Veritaz International",
+  },
+  {
+    slug: "professional-upskilling",
+    name: "Professional Upskilling Services",
+    title: "Professional Upskilling Programs | Veritaz International",
+    description:
+      "Upskilling programs for educators and working professionals from Veritaz International, building technical knowledge, domain skills and professional efficiency.",
+    keywords:
+      "Professional Upskilling Programs, faculty upskilling, training for educators, professional development courses India, skill development programs, Veritaz International",
+  },
+];
+
+const breadcrumbs = (...crumbs) => ({
+  "@type": "BreadcrumbList",
+  itemListElement: [["Home", "/"], ...crumbs].map(([name, path], i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name,
+    item: absoluteUrl(path),
+  })),
+});
+
+PAGES["/services"] = {
+  path: "/services",
+  title: "Publishing, Patent & Academic Services | Veritaz International",
+  description:
+    "Veritaz International offers textbook publishing, patent and trademark filing, IEEE and Scopus publication support, academic events and upskilling programs.",
+  keywords:
+    "Veritaz International services, textbook publishing India, patent filing services, trademark and copyright registration, IEEE conference publication, Scopus book chapters, academic event management, professional upskilling",
+  jsonLd: {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ItemList",
+        name: "Services from Veritaz International Press",
+        itemListElement: SERVICE_SEO.map((s, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: s.name,
+          url: absoluteUrl(`/services/${s.slug}`),
+        })),
+      },
+      breadcrumbs(["Services", "/services"]),
+    ],
+  },
+};
+
+for (const s of SERVICE_SEO) {
+  const path = `/services/${s.slug}`;
+  PAGES[path] = {
+    path,
+    title: s.title,
+    description: s.description,
+    keywords: s.keywords,
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Service",
+          "@id": `${absoluteUrl(path)}#service`,
+          name: s.name,
+          serviceType: s.name,
+          description: s.description,
+          url: absoluteUrl(path),
+          provider: { "@id": `${SITE_URL}/#organization` },
+          areaServed: "IN",
+        },
+        breadcrumbs(["Services", "/services"], [s.name, path]),
+      ],
+    },
+  };
+}
+
 /** Missing pages: kept out of search results. */
 export const NOT_FOUND = {
   title: `Page Not Found | ${SITE_NAME}`,

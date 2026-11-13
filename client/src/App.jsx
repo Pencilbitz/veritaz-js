@@ -16,6 +16,8 @@ const Contacts = lazy(() => import("./pages/Contacts"));
 const HRDepartment = lazy(() => import("./pages/HRDepartment"));
 const Careers = lazy(() => import("./pages/Careers"));
 const Conference = lazy(() => import("./pages/Conference"));
+const Services = lazy(() => import("./pages/Services"));
+const ServiceDetail = lazy(() => import("./pages/ServiceDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function App() {
@@ -28,6 +30,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/our-company" element={<OurCompany />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/services/:slug" element={<ServiceDetail />} />
           <Route path="/events" element={<Events />} />
           <Route path="/upcoming-events/:eventId" element={<UpcomingEvents />} />
           <Route path="/book-store" element={<BookStore />} />

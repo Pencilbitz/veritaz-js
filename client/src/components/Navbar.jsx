@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { Menu, X, Phone, Mail, ChevronDown, ArrowUpRight, ShieldCheck, Briefcase } from "lucide-react";
 import { FaLinkedinIn, FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { supabase } from "../lib/supabase";
+import { SERVICE_LINKS, servicePath } from "../data/serviceLinks";
 
 /* Navbar: a dark contact strip that scrolls away, then a white bar that lifts
    into a floating pill once the page scrolls. A highlight slides between the
@@ -41,6 +42,9 @@ const hrLinks = [
   { to: "/careers", label: "Careers", hint: "Open roles & applications", icon: Briefcase },
 ];
 
+// Services menu: every service with its one-line hint (data/serviceLinks.js).
+const serviceLinks = SERVICE_LINKS.map((s) => ({ to: servicePath(s), label: s.navName || s.name, hint: s.short, icon: s.Icon }));
+
 const confNameOf = (conf) => conf.conferencename || conf.conferenceName || "";
 const confSlugOf = (conf) => confNameOf(conf).replace(/\s+/g, "-").toLowerCase();
 
@@ -60,7 +64,7 @@ function Logo() {
       </span>
       <span className="leading-none">
         <span className="block font-display text-[1.35rem] font-bold tracking-[-0.01em] text-vz-ink">Veritaz</span>
-        {/* Hidden on small laptops (1024-1279px), where the seven links need the room. */}
+        {/* Hidden on small laptops (1024-1279px), where the eight links need the room. */}
         <span className="mt-1 block whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.22em] text-sf-indigo lg:hidden xl:block">
           International Press
         </span>
@@ -102,6 +106,7 @@ export default function Navbar() {
   // and close both accordions together, and the mobile panel stacks them.
   const [isConfOpen, setIsConfOpen] = useState(false);
   const [isHrOpen, setIsHrOpen] = useState(false);
+  const [isSvcOpen, setIsSvcOpen] = useState(false);
   const [conferences, setConferences] = useState([]);
   const [scrolled, setScrolled] = useState(false);
   const menuButtonRef = useRef(null);
@@ -113,6 +118,7 @@ export default function Navbar() {
     setIsMenuOpen(false);
     setIsConfOpen(false);
     setIsHrOpen(false);
+    setIsSvcOpen(false);
   };
 
   useEffect(() => {
@@ -202,11 +208,12 @@ export default function Navbar() {
   }, [resetPill]);
 
   const confActive = location.pathname.startsWith("/conferences/");
+  const svcActive = location.pathname === "/services" || location.pathname.startsWith("/services/");
   const hrActive = hrLinks.some((l) => location.pathname.startsWith(l.to)) || location.pathname === "/hr";
 
   useEffect(() => {
     resetPill();
-  }, [location.pathname, confActive, hrActive, resetPill]);
+  }, [location.pathname, confActive, hrActive, svcActive, resetPill]);
 
   useEffect(() => {
     if (!isMenuOpen) return undefined;
@@ -316,6 +323,37 @@ export default function Navbar() {
                 </NavLink>
               ))}
 
+              <DesktopDropdown label="Services" active={svcActive} width="w-[46rem]" onEnter={onItemEnter}>
+                <div className="grid grid-cols-[11rem_1fr]">
+                  <Link to="/services" className="vz-nav-feature group relative flex flex-col overflow-hidden p-5 text-white">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">What we do</span>
+                    <span className="mt-3 font-display text-xl font-bold leading-tight">Publishing, IP &amp; Academic Services</span>
+                    <span className="mt-auto flex items-center gap-1.5 pt-4 text-xs font-bold text-amber-300">
+                      View all services
+                      <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:rotate-45" />
+                    </span>
+                  </Link>
+                  <div className="grid grid-cols-2 gap-0.5 p-2">
+                    {serviceLinks.map(({ to, label, hint, icon: Icon }) => (
+                      <Link
+                        key={to}
+                        to={to}
+                        aria-current={location.pathname === to ? "page" : undefined}
+                        className="group flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-amber-50 aria-[current=page]:bg-sf-mist"
+                      >
+                        <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#4f46e5] via-[#4f46e5] to-[#7c3aed] text-white">
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[13px] font-bold leading-snug text-vz-ink">{label}</span>
+                          <span className="block text-xs leading-snug text-slate-500">{hint}</span>
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </DesktopDropdown>
+
               <DesktopDropdown label="Conferences" active={confActive} width="w-[34rem]" onEnter={onItemEnter}>
                 <div className="grid grid-cols-[11rem_1fr]">
                   <div className="vz-nav-feature relative overflow-hidden p-5 text-white">
@@ -385,19 +423,21 @@ export default function Navbar() {
               </a>
               <Link
                 to="/contact"
-                className="pill-primary group/cta ml-1 hidden h-11 items-center gap-2 rounded-full pl-5 pr-5 text-sm font-bold whitespace-nowrap text-white transition-transform hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-indigo sm:flex xl:pr-1.5"
+                className="pill-primary group/cta ml-1 hidden h-11 items-center gap-2 rounded-full pl-5 pr-5 text-sm font-bold whitespace-nowrap text-white transition-transform hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-indigo sm:flex lg:hidden xl:flex min-[1440px]:pr-1.5"
               >
                 Get in Touch
-                <span className="hidden h-8 w-8 items-center justify-center rounded-full bg-amber-400 text-sf-navy xl:flex">
+                <span className="hidden h-8 w-8 items-center justify-center rounded-full bg-amber-400 text-sf-navy min-[1440px]:flex">
                   <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover/cta:rotate-45" />
                 </span>
               </Link>
-              {/* Phones: the same link as a round gold button, so contact is
-                  one tap away at every width (the number is in the strip above). */}
+              {/* Phones, and small laptops (1024-1279px) where the eight links
+                  need the room: the same link as a round gold button, so
+                  contact is one tap away at every width (the number is in the
+                  strip above). */}
               <Link
                 to="/contact"
                 aria-label="Get in Touch"
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-400 text-sf-navy transition-colors hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-indigo sm:hidden"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-400 text-sf-navy transition-colors hover:bg-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-indigo sm:hidden lg:flex xl:hidden"
               >
                 <Mail className="h-[18px] w-[18px]" />
               </Link>
@@ -465,6 +505,16 @@ export default function Navbar() {
           ))}
 
           {[
+            {
+              label: "Services",
+              open: isSvcOpen,
+              toggle: () => setIsSvcOpen((v) => !v),
+              active: svcActive,
+              items: [
+                { key: "/services", to: "/services", label: "All Services", hint: "Everything we offer, at a glance" },
+                ...serviceLinks.map(({ to, label, hint }) => ({ key: to, to, label, hint })),
+              ],
+            },
             {
               label: "Conferences",
               open: isConfOpen,

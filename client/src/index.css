@@ -7,6 +7,7 @@
 @import "./styles/hr.css";
 @import "./styles/events.css";
 @import "./styles/conference.css";
+@import "./styles/services.css";
 
 /* `short:` applies on wide but low screens (a laptop with browser chrome),
    where the one-screen home sections tighten up to still fit. */
@@ -263,17 +264,18 @@ h2 {
   color: rgb(17 24 68 / 0.75);
   transition: color 0.2s ease;
 }
-/* Seven links have to fit beside the logo and Get in Touch at every
-   laptop width, so the spacing grows in steps. */
+/* Eight links have to fit beside the logo and Get in Touch at every
+   laptop width, so the spacing grows in steps (and Get in Touch is a round
+   button below 1280px, without its arrow below 1440px; see Navbar.jsx). */
 @media (min-width: 1280px) {
   .vz-nav-link {
-    padding-inline: 0.75rem;
+    padding-inline: 0.5rem;
     font-size: 15px;
   }
 }
 @media (min-width: 1440px) {
   .vz-nav-link {
-    padding-inline: 1.05rem;
+    padding-inline: 0.7rem;
   }
 }
 /* Navy on the gold highlight. */

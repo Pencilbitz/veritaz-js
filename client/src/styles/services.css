@@ -1,0 +1,118 @@
+/* ---------------------------------------------------------------------------
+   Services pages (pages/Services.jsx, pages/ServiceDetail.jsx,
+   components/ServiceUI.jsx).
+
+   They are built from the Our Company page's pieces (oc-hero, oc-frame,
+   oc-callout, oc-glass, oc-rail, oc-watermark, oc-cta in index.css) and the
+   home page's cards and badges (svc-card, svc-badge, svc-feature). Only what
+   those don't cover lives here.
+   --------------------------------------------------------------------------- */
+
+/* A card's running number, faint in the headline serif. */
+.sv-num {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgb(79 70 229 / 0.12);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The arrow on a service link turns to point straight ahead on hover. */
+.sv-arrow {
+  color: var(--color-sf-amber);
+}
+
+/* Labels on the navy band: glass pills with a gold dot or number. */
+.sv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1rem 0.55rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background-color: rgb(255 255 255 / 0.08);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16);
+}
+.sv-chip-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  rotate: 45deg;
+  background-color: var(--color-sf-amber);
+}
+.sv-chip-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-sf-navy);
+  background-image: linear-gradient(140deg, #fcd34d, var(--color-sf-amber));
+}
+
+/* The close's mark: the service's icon on three stacked glass tiles. */
+.sv-cta-mark {
+  position: relative;
+  height: 100%;
+  min-height: 20rem;
+  align-items: center;
+  justify-content: center;
+}
+.sv-cta-tile {
+  position: absolute;
+  width: 9.5rem;
+  height: 9.5rem;
+  border-radius: 2.25rem;
+  background-color: rgb(255 255 255 / 0.07);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.sv-cta-tile--back {
+  translate: 2.6rem -2.4rem;
+  rotate: 14deg;
+}
+.sv-cta-tile--mid {
+  translate: -2.2rem 1.6rem;
+  rotate: -10deg;
+  background-color: rgb(167 139 250 / 0.14);
+}
+.sv-cta-tile--front {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background-image: linear-gradient(140deg, #4f46e5, #7c3aed 55%, #a855f7);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    inset 0 -4px 10px rgb(46 16 101 / 0.45),
+    0 30px 50px -20px rgb(0 0 0 / 0.55);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sv-arrow {
+    transition: rotate 0.3s ease, translate 0.3s ease;
+  }
+  .group:hover .sv-arrow,
+  .group:focus-visible .sv-arrow {
+    rotate: 45deg;
+  }
+  .sv-cta-tile {
+    transition: rotate 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), translate 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .oc-cta:hover .sv-cta-tile--back {
+    rotate: 22deg;
+    translate: 3.2rem -2.8rem;
+  }
+  .oc-cta:hover .sv-cta-tile--mid {
+    rotate: -16deg;
+    translate: -2.8rem 2rem;
+  }
+}
