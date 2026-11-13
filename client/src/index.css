@@ -1983,8 +1983,10 @@ h2 {
    cutting of warm newsprint held up with a strip of gold tape. The current
    clipping sits in front; the previous and next are tucked behind it, fanned
    to either side; the rest wait out of sight. Every clipping stays in the page
-   (stacked in one grid cell, so the tallest sets the height and nothing jumps
-   between reviews), and a change slides them between places.
+   (stacked in one grid cell), and a change slides them between places. Each
+   clipping is cut to its own review, and the two behind to the one in front
+   (--tm-front, set in Home.jsx); an unseen copy of the longest review holds
+   the cell at its height, so nothing jumps between reviews.
    --------------------------------------------------------------------------- */
 .tm-stage {
   position: relative;
@@ -2002,17 +2004,40 @@ h2 {
   background-size: 15px 15px;
   mask-image: radial-gradient(50% 50% at 50% 50%, #000, transparent 75%);
 }
-/* Every clipping fills the shared cell, so all are cut to the same height
-   and the one in front hides those behind. */
+/* Every clipping shares the cell, at the height of its own review: at the
+   top on phones (under the arrows), centred beside the heading from 1024px. */
 .tm-clip {
   grid-area: 1 / 1;
   position: relative;
   display: flex;
   flex-direction: column;
+  align-self: start;
   justify-self: center;
   width: min(100%, 36rem);
   margin: 0;
   filter: drop-shadow(0 22px 26px rgb(76 29 149 / 0.2)) drop-shadow(0 2px 3px rgb(17 24 68 / 0.08));
+}
+@media (min-width: 1024px) {
+  .tm-clip {
+    align-self: center;
+  }
+}
+/* The two tucked behind are cut to the front one's height, their text
+   fading out above the byline, so they never stand taller than it. */
+.tm-clip:is([data-role="prev"], [data-role="next"]) {
+  height: var(--tm-front, auto);
+}
+.tm-clip:is([data-role="prev"], [data-role="next"]) .tm-paper {
+  min-height: 0;
+}
+.tm-clip:is([data-role="prev"], [data-role="next"]) blockquote {
+  min-height: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(#000 60%, transparent);
+}
+.tm-sizer {
+  visibility: hidden;
+  pointer-events: none;
 }
 .tm-clip[data-role="front"] {
   z-index: 3;

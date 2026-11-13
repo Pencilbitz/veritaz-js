@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -1000,6 +1000,45 @@ function Reasons() {
   );
 }
 
+const isVideo = (t) => (t.is_video_testimonial === true || t.is_video_testimonial === 1) && Boolean(t.video_url);
+
+/** One review on its newsprint cutting: quote, then the author's byline,
+ *  with a Watch Video button when `onWatch` is given. */
+function ClipPaper({ t, onWatch }) {
+  const long = (t.content || "").length > 280;
+  return (
+    <div className="tm-paper">
+      <span className="tm-mark" aria-hidden="true">
+        &ldquo;
+      </span>
+      <blockquote
+        className={`mb-6 font-medium leading-relaxed text-vz-ink short:mb-4 ${long ? "text-[15px] lg:text-base" : "text-base lg:text-[17px]"}`}
+      >
+        {t.content}
+      </blockquote>
+      <figcaption className="tm-byline mt-auto flex flex-wrap items-center gap-4 pt-5 short:pt-4">
+        <span className="rounded-full bg-[linear-gradient(135deg,var(--color-sf-indigo),var(--color-sf-violet))] p-[2px]">
+          <Avatar src={t.avatar_url} name={t.name} />
+        </span>
+        <div className="min-w-0">
+          <p className="font-bold text-vz-ink">{t.name}</p>
+          <p className="text-sm text-slate-600">{t.designation}</p>
+          <div className="mt-1 flex gap-0.5" role="img" aria-label={`${t.rating || 5} out of 5 stars`}>
+            {Array.from({ length: Number(t.rating) || 5 }).map((_, k) => (
+              <Star key={k} className="h-3.5 w-3.5 fill-brand-gold text-brand-gold" aria-hidden="true" />
+            ))}
+          </div>
+        </div>
+        {onWatch && (
+          <Pill onClick={onWatch} icon={Play} className="h-11 px-5 text-sm sm:ml-auto short:h-11">
+            Watch Video
+          </Pill>
+        )}
+      </figcaption>
+    </div>
+  );
+}
+
 /** Testimonials: each review set as a press clipping taped up, with the
  *  previous and next clippings fanned out behind it. The reviews change by
  *  themselves, holding while the pointer or focus is on them (not for
@@ -1011,7 +1050,22 @@ function Testimonials({ testimonials }) {
   const [calm] = useState(prefersCalm);
   const [held, setHeld] = useState(false);
   const [videoUrl, setVideoUrl] = useState(null);
+  const stageRef = useRef(null);
   const count = testimonials.length;
+
+  // Each clipping is cut to its own review, and the two tucked behind are
+  // cut to the one in front, so a short review shows no blank newsprint.
+  // The front clipping's height is handed to the CSS as --tm-front.
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    const front = stage?.querySelector('.tm-clip[data-role="front"]');
+    if (!front) return undefined;
+    const fit = () => stage.style.setProperty("--tm-front", `${front.offsetHeight}px`);
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(front);
+    return () => observer.disconnect();
+  }, [index, count]);
 
   useEffect(() => {
     if (count < 2 || calm || held || videoUrl) return undefined;
@@ -1038,6 +1092,7 @@ function Testimonials({ testimonials }) {
     if (count > 2 && i === at(current - 1)) return "prev";
     return "away";
   };
+  const longest = testimonials.reduce((a, b) => ((b.content || "").length > (a.content || "").length ? b : a));
 
   return (
     <section className={`vz-draft relative isolate overflow-hidden ${SCREEN_PAD} ${SCREEN}`}>
@@ -1088,13 +1143,11 @@ function Testimonials({ testimonials }) {
           )}
         </div>
 
-        <div className="tm-stage min-w-0">
+        <div ref={stageRef} className="tm-stage min-w-0">
           <span className="tm-dots" aria-hidden="true" />
           {testimonials.map((t, i) => {
             const role = roleOf(i);
             const front = role === "front";
-            const hasVideo = front && (t.is_video_testimonial === true || t.is_video_testimonial === 1) && t.video_url;
-            const long = (t.content || "").length > 280;
             const turn = role === "prev" ? () => go(-1) : role === "next" ? () => go(1) : undefined;
             return (
               <figure
@@ -1106,38 +1159,16 @@ function Testimonials({ testimonials }) {
                 onClick={turn}
               >
                 <span className="tm-tape" aria-hidden="true" />
-                <div className="tm-paper">
-                  <span className="tm-mark" aria-hidden="true">
-                    &ldquo;
-                  </span>
-                  <blockquote
-                    className={`mb-6 font-medium leading-relaxed text-vz-ink short:mb-4 ${long ? "text-[15px] lg:text-base" : "text-base lg:text-[17px]"}`}
-                  >
-                    {t.content}
-                  </blockquote>
-                  <figcaption className="tm-byline mt-auto flex flex-wrap items-center gap-4 pt-5 short:pt-4">
-                    <span className="rounded-full bg-[linear-gradient(135deg,var(--color-sf-indigo),var(--color-sf-violet))] p-[2px]">
-                      <Avatar src={t.avatar_url} name={t.name} />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="font-bold text-vz-ink">{t.name}</p>
-                      <p className="text-sm text-slate-600">{t.designation}</p>
-                      <div className="mt-1 flex gap-0.5" role="img" aria-label={`${t.rating || 5} out of 5 stars`}>
-                        {Array.from({ length: Number(t.rating) || 5 }).map((_, k) => (
-                          <Star key={k} className="h-3.5 w-3.5 fill-brand-gold text-brand-gold" aria-hidden="true" />
-                        ))}
-                      </div>
-                    </div>
-                    {hasVideo && (
-                      <Pill onClick={() => setVideoUrl(t.video_url)} icon={Play} className="h-11 px-5 text-sm sm:ml-auto short:h-11">
-                        Watch Video
-                      </Pill>
-                    )}
-                  </figcaption>
-                </div>
+                <ClipPaper t={t} onWatch={front && isVideo(t) ? () => setVideoUrl(t.video_url) : undefined} />
               </figure>
             );
           })}
+          {/* An unseen copy of the longest review holds the stage at its
+              height, so the section, its heading and the arrows stay put
+              whichever review is in front. */}
+          <figure className="tm-clip tm-sizer" aria-hidden="true" inert>
+            <ClipPaper t={longest} onWatch={isVideo(longest) ? () => {} : undefined} />
+          </figure>
         </div>
       </div>
 
