@@ -7,6 +7,7 @@ import { CloseCard, Heading, ServiceCard, WHATSAPP_HREF } from "../components/Se
 import { ENGAGEMENT, SERVICES } from "../data/services";
 import { useSeo } from "../seo/useSeo";
 import { PAGES } from "../seo/site";
+import heroPhoto from "photo:/assets/image/services/overview-hero.webp?hero";
 
 /* Services overview, in the Our Company page's press look: the hero with a
    photo under a navy shade, every service as a card, how an engagement runs
@@ -24,7 +25,7 @@ function Hero() {
   return (
     <header className="oc-hero relative isolate flex flex-col overflow-hidden text-white lg:min-h-[calc(100svh-7.6rem)]">
       <img
-        src="/assets/image/services/overview-hero.webp"
+        {...heroPhoto}
         alt=""
         fetchPriority="high"
         className="absolute inset-0 -z-20 h-full w-full object-cover object-[70%_50%]"

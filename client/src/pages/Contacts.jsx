@@ -14,11 +14,14 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter } from "react-icons/fa";
-import { supabase } from "../lib/supabase";
+import { db } from "../lib/db";
 import { Accent, Eyebrow, Rule, Swash } from "../components/PressUI";
 import { H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
 import { useSeo } from "../seo/useSeo";
 import { PAGES } from "../seo/site";
+import LOGO from "../components/logo";
+// This page's own styles (index.css has the shared ones).
+import '../styles/contact.css';
 
 /* Contact, in the home page's "press" look: a lavender hero with the
    telephone receiver hanging in over a violet disc and the conversation in
@@ -26,7 +29,6 @@ import { PAGES } from "../seo/site";
    letter, a navy pane beside a white sheet with an airmail edge, a stamp and
    a postmark. The ct-* styles live in styles/contact.css. */
 
-const LOGO = '/assets/image/veritaz-logo.webp';
 const FOCUS_LIGHT = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white';
 const INPUT = 'ct-input w-full rounded-xl py-3.5 pl-11 pr-4 text-[15px] font-medium text-vz-ink short:py-3';
 
@@ -97,6 +99,7 @@ export default function Contacts() {
     };
 
     try {
+      const supabase = await db();
       const { error } = await supabase.from("veritaz_inquiries").insert(payload);
 
       if (!error) {
@@ -363,7 +366,7 @@ function Stamp() {
     <span aria-hidden="true" className="ct-stamp-wrap">
       <span className="ct-stamp">
         <span className="ct-stamp-face">
-          <img src={LOGO} alt="" />
+          <img {...LOGO} alt="" />
         </span>
       </span>
       <svg className="ct-postmark" viewBox="0 0 140 70" fill="none">

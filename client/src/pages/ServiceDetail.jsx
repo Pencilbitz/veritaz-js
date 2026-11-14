@@ -8,6 +8,7 @@ import { CloseCard, Heading, InfoCard, ServiceCard, WHATSAPP_HREF } from "../com
 import { SERVICES, findService } from "../data/services";
 import { useSeo } from "../seo/useSeo";
 import { PAGES } from "../seo/site";
+import LOGO from "../components/logo";
 import NotFound from "./NotFound";
 
 /* One service's page, built from its entry in data/services.js, in the Our
@@ -16,7 +17,6 @@ import NotFound from "./NotFound";
    white and lavender in whatever order they appear; the coverage section is
    always the navy band. */
 
-const LOGO = "/assets/image/veritaz-logo.webp";
 const LEAD = "text-base leading-relaxed text-slate-600 lg:text-[17px] short:text-[15px]";
 const LIGHT_BANDS = ["vz-draft", "vz-services"];
 
@@ -26,7 +26,7 @@ function Hero({ service }) {
   return (
     <header className="oc-hero relative isolate flex flex-col overflow-hidden text-white lg:min-h-[calc(100svh-7.6rem)]">
       <img
-        src={hero}
+        {...hero}
         alt=""
         fetchPriority="high"
         decoding="async"
@@ -89,7 +89,7 @@ function Overview({ data, band }) {
         <div className="oc-frame relative mx-3 mb-4 sm:mx-8 lg:m-0 lg:mr-6">
           <span className="oc-frame-back" aria-hidden="true" />
           <img
-            src={image}
+            {...image}
             alt={imageAlt}
             loading="lazy"
             decoding="async"
@@ -97,7 +97,7 @@ function Overview({ data, band }) {
             className="oc-frame-img reveal relative aspect-[4/3] w-full rounded-[2rem] object-cover lg:aspect-auto lg:h-[min(28rem,calc(100svh-13rem))]"
           />
           <span className="oc-seal" aria-hidden="true">
-            <img src={LOGO} alt="" />
+            <img {...LOGO} alt="" loading="lazy" />
           </span>
         </div>
 

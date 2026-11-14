@@ -1,21 +1,26 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, ArrowUpRight, BellRing, CalendarClock, History } from "lucide-react";
 import CompletedEvents from "../components/CompletedEvents";
-import { supabase, EVENT_SELECT } from "../lib/supabase";
+import { db, EVENT_SELECT } from "../lib/db";
 import { sortByEventDate } from "../lib/eventDate";
 import StateFilterBar from "../components/StateFilterBar";
 import { Accent, Eyebrow, Rule, Swash } from "../components/PressUI";
 import { H2_FIT, WRAP } from "../components/pressLayout";
 import { useSeo } from "../seo/useSeo";
 import { PAGES } from "../seo/site";
+import { mediaImg, retryOriginal } from "../lib/media";
+import { useRowEdges } from "../lib/layout";
+// seo/site.js preloads this photo for the Events page; keep the two in step.
+import DESK_PHOTO from "photo:/assets/image/our-company/laptop-books.webp?frame";
+// This page's own styles (index.css has the shared ones).
+import "../styles/events.css";
 
 /* Events, in the home page's "press" look: a lavender hero for the upcoming
    events (their posters in a row you page through, or, when there are none,
    a desk photo with a wall calendar pinned over it), then the completed
    events as cards on a white band. The ev-* styles live in styles/events.css. */
 
-const DESK_PHOTO = "/assets/image/our-company/laptop-books.webp";
 
 const ROUND_BUTTON =
   "ev-round flex h-12 w-12 flex-none items-center justify-center rounded-full bg-white text-vz-ink shadow-sm ring-1 ring-vz-line transition-colors hover:bg-sf-indigo hover:text-white hover:ring-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-violet disabled:pointer-events-none disabled:opacity-35";
@@ -55,7 +60,7 @@ function CalendarStage() {
             <span className="ev-halftone -left-10 -top-10 h-44 w-44" />
             <div className="ev-stage-frame overflow-hidden rounded-[2rem]">
                 <img
-                    src={DESK_PHOTO}
+                    {...DESK_PHOTO}
                     alt=""
                     fetchPriority="high"
                     className="ev-stage-photo block aspect-[4/3] w-full object-cover object-[50%_62%] lg:aspect-auto lg:h-[min(30rem,calc(100svh-15rem))]"
@@ -130,21 +135,8 @@ function EmptyHero({ filter }) {
  *  swiping. Each poster opens its event. Nothing moves on its own. */
 function UpcomingRow({ events, filter }) {
     const trackRef = useRef(null);
-    const [edge, setEdge] = useState({ start: true, end: false });
-
-    const updateEdges = useCallback(() => {
-        const el = trackRef.current;
-        if (!el) return;
-        const start = el.scrollLeft <= 4;
-        const end = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
-        setEdge((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
-    }, []);
-
-    useEffect(() => {
-        updateEdges();
-        window.addEventListener("resize", updateEdges);
-        return () => window.removeEventListener("resize", updateEdges);
-    }, [events, updateEdges]);
+    // The arrows turn off at either end of the row (watched without measuring).
+    const edge = useRowEdges(trackRef, [events]);
 
     // Scroll to the poster before or after the first one in view, measured
     // from the posters themselves so it always lands on a snap point.
@@ -181,7 +173,6 @@ function UpcomingRow({ events, filter }) {
                 {/* The inset keeps focus rings and the cards' lift unclipped. */}
                 <ul
                     ref={trackRef}
-                    onScroll={updateEdges}
                     className="ev-track relative -mx-3 flex snap-x snap-mandatory scroll-pl-3 gap-5 overflow-x-auto px-3 pb-8 pt-3 lg:gap-6"
                 >
                     {upcomingCards(events)}
@@ -201,10 +192,11 @@ function upcomingCards(events) {
                 <span aria-hidden="true" className="svc-card-glow" />
                 <span className="ev-proof relative block aspect-[1024/724] overflow-hidden rounded-2xl">
                     <img
-                        src={`${event.poster}`}
+                        {...mediaImg(event.poster, "posterCard")}
                         alt={event.eventTitle || "Upcoming Event"}
+                        loading="lazy"
                         className="ev-poster-img block h-full w-full object-contain"
-                        onError={(e) => { e.target.src = "https://placehold.co/300x450/EEE/31343C?text=No+Poster" }}
+                        onError={retryOriginal(event.poster, (e) => { e.target.src = "https://placehold.co/300x450/EEE/31343C?text=No+Poster" })}
                     />
                 </span>
                 <span aria-hidden="true" className="ev-go">
@@ -248,6 +240,7 @@ export default function Events() {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
+                const supabase = await db();
                 const { data, error } = await supabase
                     .from("veritaz_events")
                     .select(EVENT_SELECT);

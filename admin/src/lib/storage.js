@@ -26,8 +26,12 @@ export const uploadImage = async (file) => {
   const rand = (crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`);
   const objectPath = `uploads/${rand}.${ext}`;
 
+  // Every upload gets a new random name and is never overwritten (upsert:
+  // false), so browsers and Supabase's CDN can keep it for a year rather than
+  // the default hour; a replaced cover is a new file with a new address.
   const { error } = await supabase.storage.from(BUCKET).upload(objectPath, file, {
     contentType: file.type || undefined,
+    cacheControl: "31536000",
     upsert: false,
   });
 

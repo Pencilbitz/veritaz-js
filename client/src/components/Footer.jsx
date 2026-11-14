@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Phone, Mail, ArrowUp, ArrowUpRight, Scissors } from "lucide-react";
 import { FaLinkedinIn, FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { CtaButton } from "./CtaBanner";
+import LOGO from "./logo";
 
 /* Footer: a printed sheet on the press bed. The lavender bed carries the four
    process inks along its head, soft drifting glows and faint halftone. On it
@@ -156,7 +157,7 @@ export default function Footer() {
                   className={`ft-brand inline-flex items-center gap-3.5 rounded-xl ${FOCUS}`}
                 >
                   <span className="ft-logo flex h-14 w-14 flex-none items-center justify-center rounded-full bg-white">
-                    <img src="/assets/image/veritaz-logo.webp" alt="" className="ft-logo-img h-11 w-11 object-contain" />
+                    <img {...LOGO} sizes="44px" alt="" loading="lazy" className="ft-logo-img h-11 w-11 object-contain" />
                   </span>
                   <span className="leading-none">
                     <span className="block font-display text-[1.75rem] font-bold tracking-[-0.01em] text-vz-ink">Veritaz</span>

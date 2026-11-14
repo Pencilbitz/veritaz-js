@@ -102,7 +102,11 @@ export const ORGANIZATION_LD = {
 };
 
 /** The fixed pages, keyed by route. `path` is the address search engines are
- *  told to use, so /hr points at /hr-department rather than competing with it. */
+ *  told to use, so /hr points at /hr-department rather than competing with it.
+ *  `lcp` is the page's main picture, which the build preloads in the page's
+ *  HTML: { photo } is the id of a `photo:` import in the page (it must match
+ *  exactly, with its preset), { media, preset } a Supabase picture and its
+ *  MEDIA preset in lib/media.js. */
 export const PAGES = {
   "/": {
     path: "/",
@@ -111,6 +115,7 @@ export const PAGES = {
       "Veritaz International is a trusted book publishing company in India and academic book publishers in Coimbatore for textbooks, research books and journals.",
     keywords:
       "Book Publishing Company in India, Academic Book Publishers in Coimbatore, Textbook Publishing India, Patent Filing Services, ISBN Registration, Copyright Services, Veritaz International Press, Academic Publishing",
+    lcp: { photo: "/assets/image/our-company/bookshelf.webp?backdrop" },
   },
   "/our-company": {
     path: "/our-company",
@@ -119,6 +124,7 @@ export const PAGES = {
       "Veritaz International is an academic publishing company in India and book publishing company in Coimbatore for textbooks, ISBN, patents and copyrights.",
     keywords:
       "Academic Publishing Company in India, Book Publishing Company in Coimbatore, about Veritaz International, textbook publisher India, research support services, ISBN registration company, patent and copyright services India",
+    lcp: { photo: "/assets/image/our-company/hero-books.webp?hero" },
   },
   "/book-store": {
     path: "/book-store",
@@ -135,6 +141,7 @@ export const PAGES = {
       "Book publication services in India and book publishing services in Coimbatore by Veritaz International: editing, ISBN, cover design, printing and distribution.",
     keywords:
       "Book Publication Services in India, Book Publishing Services in Coimbatore, book publishing services Veritaz, textbook publication India, academic book publishing, professional editing and ISBN, research paper and book publication, author publishing services",
+    lcp: { photo: "/assets/image/publishing-hero/quantum-computing-front.webp?cover", sizes: "320px" },
   },
   "/events": {
     path: "/events",
@@ -143,6 +150,7 @@ export const PAGES = {
       "Explore Veritaz International's academic conferences, FDPs, workshops, seminars, and research events for students, researchers, faculty, and professionals.",
     keywords:
       "academic events, publishing workshops, research conferences, author seminars, webinar schedule, Veritaz International events, scholarly workshops India",
+    lcp: { photo: "/assets/image/our-company/laptop-books.webp?frame" },
   },
   "/contact": {
     path: "/contact",
@@ -167,15 +175,18 @@ export const PAGES = {
       "Join Veritaz International Press. We publish academic textbooks, coordinate scholarly volumes and run international conferences, and accept applications year-round.",
     keywords:
       "Veritaz International careers, publishing jobs India, academic publishing jobs Coimbatore, editorial jobs, conference coordinator jobs, Veritaz International Press jobs",
+    lcp: { photo: "/assets/image/careers-hero.webp?frame" },
   },
 };
 PAGES["/hr"] = PAGES["/hr-department"];
 
 /** The service pages (their content is in data/services.js, which this file
- *  cannot import: it carries React icons). Slugs and names must match it. */
+ *  cannot import: it carries React icons). Slugs, names and hero photos must
+ *  match it. */
 const SERVICE_SEO = [
   {
     slug: "textbook-publications",
+    hero: "textbook-hero-fhd.jpg",
     name: "Textbook Publications",
     title: "Textbook Publishing Services in India | Veritaz International",
     description:
@@ -185,6 +196,7 @@ const SERVICE_SEO = [
   },
   {
     slug: "patent-grant-support",
+    hero: "patent-hero-fhd.jpg",
     name: "Patent Grant Support",
     title: "Patent Filing & Grant Support in India | Veritaz International",
     description:
@@ -194,6 +206,7 @@ const SERVICE_SEO = [
   },
   {
     slug: "trademarks-copyright",
+    hero: "trademark-hero-fhd.jpg",
     name: "Trademarks & Copyright Services",
     title: "Trademark & Copyright Registration | Veritaz International",
     description:
@@ -203,6 +216,7 @@ const SERVICE_SEO = [
   },
   {
     slug: "ieee-conference-publications",
+    hero: "ieee-hero-fhd.jpg",
     name: "IEEE Conference Publications",
     title: "IEEE Conference Paper Publication Support | Veritaz International",
     description:
@@ -212,6 +226,7 @@ const SERVICE_SEO = [
   },
   {
     slug: "edited-book-chapters",
+    hero: "chapters-hero-fhd.jpg",
     name: "Scopus-Indexed Book Chapters",
     title: "Scopus Indexed Book Chapter Publication | Veritaz International",
     description:
@@ -221,6 +236,7 @@ const SERVICE_SEO = [
   },
   {
     slug: "academic-events",
+    hero: "events-hero.webp",
     name: "Educational Event Management",
     title: "Academic Event Management: Conferences & FDPs | Veritaz International",
     description:
@@ -230,6 +246,7 @@ const SERVICE_SEO = [
   },
   {
     slug: "professional-upskilling",
+    hero: "upskilling-hero-fhd.jpg",
     name: "Professional Upskilling Services",
     title: "Professional Upskilling Programs | Veritaz International",
     description:
@@ -256,6 +273,7 @@ PAGES["/services"] = {
     "Veritaz International offers textbook publishing, patent and trademark filing, IEEE and Scopus publication support, academic events and upskilling programs.",
   keywords:
     "Veritaz International services, textbook publishing India, patent filing services, trademark and copyright registration, IEEE conference publication, Scopus book chapters, academic event management, professional upskilling",
+  lcp: { photo: "/assets/image/services/overview-hero.webp?hero" },
   jsonLd: {
     "@context": "https://schema.org",
     "@graph": [
@@ -281,6 +299,7 @@ for (const s of SERVICE_SEO) {
     title: s.title,
     description: s.description,
     keywords: s.keywords,
+    lcp: { photo: `/assets/image/services/${s.hero}?hero` },
     jsonLd: {
       "@context": "https://schema.org",
       "@graph": [
@@ -342,6 +361,7 @@ export function bookMeta(book) {
     description,
     image: book.cover1 || undefined,
     imageAlt: `Cover of ${title}`,
+    lcp: book.cover1 ? { media: book.cover1, preset: "coverLarge" } : undefined,
     type: "book",
     jsonLd: {
       "@context": "https://schema.org",
@@ -399,6 +419,9 @@ export function conferenceMeta(conf) {
       .join(", "),
     image: conf.poster || undefined,
     imageAlt: heading ? `${heading} poster` : undefined,
+    lcp: conf.poster
+      ? { media: conf.poster, preset: "posterHero" }
+      : { photo: "/assets/image/conference/conference-hero-globe.webp?frame" },
   };
 }
 
@@ -416,6 +439,7 @@ export function eventMeta(event) {
     description: snippet(withPublisher.length <= 158 ? withPublisher : facts),
     image: event.poster || undefined,
     imageAlt: topic ? `${topic} poster` : undefined,
+    lcp: event.poster ? { media: event.poster, preset: "posterLarge" } : undefined,
   };
 }
 

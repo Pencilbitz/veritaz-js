@@ -30,22 +30,56 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
+import { db } from "../lib/db";
+import { mediaImg, retryOriginal } from "../lib/media";
+import { useRowEdges } from "../lib/layout";
 import { Accent, Pill, Rule, Swash } from "../components/PressUI";
 import { BADGE_TONES as TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
+import LOGO from "../components/logo";
 import { useSeo } from "../seo/useSeo";
 import { PAGES, bookPath } from "../seo/site";
+import cover1 from "photo:/assets/image/books/index-1.webp?cover";
+import cover2 from "photo:/assets/image/books/index-2.webp?cover";
+import cover3 from "photo:/assets/image/books/index-3.webp?cover";
+import deskPhoto from "photo:/assets/image/our-company/laptop-books.webp?card";
+// The hero's blurred library backdrop; seo/site.js preloads it, as the
+// largest thing on the first screen.
+import libraryBackdrop from "photo:/assets/image/our-company/bookshelf.webp?backdrop";
 
 /* Home page in the "night press" look: night-ink bands lit by the logo's
    cyan-violet-orchid sweep, a display grotesque for headings, square corners
    and ruled hairline grids. The styles live under "Home page" in index.css. */
 
 
-const FALLBACK_COVERS = [
-  "/assets/image/books/index-1.webp",
-  "/assets/image/books/index-2.webp",
-  "/assets/image/books/index-3.webp",
-];
+// Bundled covers, shown until the book list arrives or if a cover fails.
+const FALLBACK_COVERS = [cover1, cover2, cover3];
+
+/** Shows the first bundled cover in place of one that failed to load. */
+function showFallbackCover(event) {
+  const img = event.currentTarget;
+  if (img.dataset.fallback) return;
+  img.dataset.fallback = "1";
+  const { src, srcSet = "", sizes = "" } = FALLBACK_COVERS[0];
+  img.srcset = srcSet;
+  img.sizes = sizes;
+  img.src = src;
+}
+
+/** <img> attributes for a cover: a bundled photo as it is, or a book's cover
+ *  resized by Supabase; if that fails, the full file, then a bundled cover.
+ *  `sizes` overrides how wide it is drawn (the shelf's 190px by default). */
+function coverProps(cover, sizes) {
+  const props =
+    typeof cover === "string"
+      ? { ...mediaImg(cover, "cover"), onError: retryOriginal(cover, showFallbackCover) }
+      : { ...cover };
+  if (sizes && props.srcSet) props.sizes = sizes;
+  return props;
+}
+
+// Covers in the 3D press and the book fan: about 150px wide beside the text
+// on wide screens, about a quarter of the screen on phones.
+const SCENE_SIZES = "(min-width: 1024px) 160px, 26vw";
 
 const stats = [
   { value: "500+", label: "Books Published" },
@@ -152,10 +186,10 @@ function Avatar({ src, name, size = "h-14 w-14 text-lg" }) {
   }
   return (
     <img
-      src={src}
+      {...mediaImg(src, "avatar")}
       alt={name || "Client"}
       className={`${size} flex-shrink-0 rounded-full object-cover ring-1 ring-vz-line`}
-      onError={() => setFailed(true)}
+      onError={retryOriginal(src, () => setFailed(true))}
     />
   );
 }
@@ -230,16 +264,7 @@ function Book3D({ cover, board, x, y, z, ry, className = "" }) {
       className={`book3d ${className}`}
       vars={{ "--board": board }}
       faces={{
-        top: (
-          <img
-            src={cover}
-            alt=""
-            className="book3d-cover"
-            onError={(e) => {
-              e.currentTarget.src = FALLBACK_COVERS[0];
-            }}
-          />
-        ),
+        top: <img {...coverProps(cover, SCENE_SIZES)} alt="" className="book3d-cover" />,
         front: pages,
         back: pages,
         right: pages,
@@ -296,7 +321,7 @@ function PressScene({ covers }) {
                 <span className="mc-slot" />
                 <span className="mc-panel" />
                 <span className="mc-plate">
-                  <img src="/assets/image/veritaz-logo.webp" alt="" />
+                  <img {...LOGO} sizes="34px" alt="" />
                 </span>
                 <span className="mc-vents" />
                 <span className="mc-screw mc-screw--tl" />
@@ -341,13 +366,7 @@ function PressScene({ covers }) {
         {running &&
           [0, 1].map((i) => (
             <div key={i} className="sheet3d" style={{ "--i": i }}>
-              <img
-                src={cover(i)}
-                alt=""
-                onError={(e) => {
-                  e.currentTarget.src = FALLBACK_COVERS[0];
-                }}
-              />
+              <img {...coverProps(cover(i), SCENE_SIZES)} alt="" />
             </div>
           ))}
 
@@ -387,7 +406,7 @@ function Hero({ covers, booksReady }) {
     <section className="vz-hero vz-hero-v2 relative isolate overflow-hidden text-vz-ink lg:flex lg:min-h-[calc(100svh-7.6rem)] lg:flex-col">
       {/* A library softly out of focus behind the press, fading out before
           the text. */}
-      <span aria-hidden="true" className="vz-hero-library" />
+      <span aria-hidden="true" className="vz-hero-library" style={{ "--vz-library": `url("${libraryBackdrop.src}")` }} />
       <svg aria-hidden="true" className="vz-hero-waves" viewBox="0 0 1440 120" preserveAspectRatio="none">
         <defs>
           <linearGradient id="vz-wave" x1="0" y1="0" x2="1" y2="0">
@@ -463,16 +482,7 @@ function StandingBook({ cover, board, x, z, ry, className = "" }) {
       className={`bookstand ${className}`}
       vars={{ "--board": board }}
       faces={{
-        front: (
-          <img
-            src={cover}
-            alt=""
-            className="book3d-cover"
-            onError={(e) => {
-              e.currentTarget.src = FALLBACK_COVERS[0];
-            }}
-          />
-        ),
+        front: <img {...coverProps(cover, SCENE_SIZES)} alt="" className="book3d-cover" />,
         right: <span className="bookstand-pages" />,
         top: <span className="bookstand-top" />,
         left: <span className="book3d-spine" />,
@@ -632,21 +642,8 @@ function FromDraft() {
  *  band, paged with the arrow buttons or by swiping. Nothing moves on its own. */
 function Shelf({ books }) {
   const rowRef = useRef(null);
-  const [edge, setEdge] = useState({ start: true, end: false });
-
-  const updateEdges = useCallback(() => {
-    const el = rowRef.current;
-    if (!el) return;
-    const start = el.scrollLeft <= 4;
-    const end = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
-    setEdge((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
-  }, []);
-
-  useEffect(() => {
-    updateEdges();
-    window.addEventListener("resize", updateEdges);
-    return () => window.removeEventListener("resize", updateEdges);
-  }, [books, updateEdges]);
+  // The arrows turn off at either end of the row (watched without measuring).
+  const edge = useRowEdges(rowRef, [books]);
 
   const page = (direction) => {
     const el = rowRef.current;
@@ -685,7 +682,6 @@ function Shelf({ books }) {
             at more. The inset on the left keeps focus rings unclipped. */}
         <ul
           ref={rowRef}
-          onScroll={updateEdges}
           className="vz-shelf relative -ml-3 -mr-4 flex snap-x snap-mandatory scroll-pl-3 gap-6 overflow-x-auto pb-4 pl-3 pr-4 pt-5 sm:-mr-6 sm:pr-6 lg:-mr-20 lg:gap-9 lg:pr-20"
         >
           {books.map((book) => (
@@ -695,14 +691,7 @@ function Shelf({ books }) {
                 className="shelf-book group block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
               >
                 <span className="shelf-book-3d">
-                  <img
-                    src={book.cover1}
-                    alt={book.title}
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.src = FALLBACK_COVERS[0];
-                    }}
-                  />
+                  <img {...coverProps(book.cover1)} alt={book.title} loading="lazy" />
                 </span>
                 <h3 className="mt-6 line-clamp-2 text-sm font-bold text-white transition-colors group-hover:text-sf-lavender">
                   {book.title}
@@ -744,7 +733,7 @@ function ReasonPage({ index }) {
     return (
       <div className="rb-page rb-page--end" aria-hidden="true">
         <span className="rb-end-mark">
-          <img src="/assets/image/veritaz-logo.webp" alt="" />
+          <img {...LOGO} alt="" loading="lazy" />
         </span>
         <span className="rb-end-rule" />
       </div>
@@ -754,7 +743,7 @@ function ReasonPage({ index }) {
   return (
     <div className="rb-page">
       <span className="rb-runhead" aria-hidden="true">
-        <img src="/assets/image/veritaz-logo.webp" alt="" />
+        <img {...LOGO} sizes="18px" alt="" loading="lazy" />
         <span />
       </span>
       <span className={`svc-badge svc-badge--sm rb-badge ${TONES[index % TONES.length]}`} aria-hidden="true">
@@ -951,7 +940,7 @@ function Reasons() {
                             <span className="rb-cover-dots" />
                             <span className="rb-cover-frame" />
                             <span className="rb-cover-medal">
-                              <img src="/assets/image/veritaz-logo.webp" alt="" />
+                              <img {...LOGO} alt="" loading="lazy" />
                             </span>
                           </>
                         ) : (
@@ -1055,15 +1044,19 @@ function Testimonials({ testimonials }) {
 
   // Each clipping is cut to its own review, and the two tucked behind are
   // cut to the one in front, so a short review shows no blank newsprint.
-  // The front clipping's height is handed to the CSS as --tm-front.
+  // The front clipping's height is handed to the CSS as --tm-front. The
+  // ResizeObserver reports it once layout is done (and again whenever it
+  // changes), still before the frame is painted; reading offsetHeight here
+  // instead would make the browser lay the page out on the spot.
   useLayoutEffect(() => {
     const stage = stageRef.current;
     const front = stage?.querySelector('.tm-clip[data-role="front"]');
     if (!front) return undefined;
-    const fit = () => stage.style.setProperty("--tm-front", `${front.offsetHeight}px`);
-    fit();
-    const observer = new ResizeObserver(fit);
-    observer.observe(front);
+    const observer = new ResizeObserver(([entry]) => {
+      const height = entry.borderBoxSize?.[0]?.blockSize ?? entry.target.getBoundingClientRect().height;
+      stage.style.setProperty("--tm-front", `${height}px`);
+    });
+    observer.observe(front, { box: "border-box" });
     return () => observer.disconnect();
   }, [index, count]);
 
@@ -1248,9 +1241,9 @@ function ReachOut() {
 
           {/* The picture: desk photo, book covers and the hanging receiver. */}
           <div className="ro-visual relative" aria-hidden="true">
-            <img src="/assets/image/our-company/laptop-books.webp" alt="" loading="lazy" className="ro-photo" />
-            <img src={FALLBACK_COVERS[1]} alt="" loading="lazy" className="ro-cover ro-cover--back" />
-            <img src={FALLBACK_COVERS[0]} alt="" loading="lazy" className="ro-cover ro-cover--front" />
+            <img {...deskPhoto} sizes="(min-width: 1024px) 18rem, 54vw" alt="" loading="lazy" className="ro-photo" />
+            <img {...FALLBACK_COVERS[1]} alt="" loading="lazy" className="ro-cover ro-cover--back" />
+            <img {...FALLBACK_COVERS[0]} alt="" loading="lazy" className="ro-cover ro-cover--front" />
             <img src="/assets/image/contact-phone.webp" alt="" loading="lazy" className="ro-phone" />
           </div>
         </div>
@@ -1266,6 +1259,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetchHomeData = async () => {
+      const supabase = await db();
       const [bookResult, testimonialResult] = await Promise.all([
         supabase
           .from("veritaz_books")

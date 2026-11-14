@@ -36,6 +36,24 @@ import {
 } from "lucide-react";
 import { SERVICE_LINKS, servicePath } from "./serviceLinks";
 
+// Each photo comes as responsive WebP (see vite-plugin-photos.js): heroes
+// fill the screen's width, the overview photo one column. seo/site.js
+// preloads each hero, so a new hero file name goes there too.
+import textbookHero from "photo:/assets/image/services/textbook-hero-fhd.jpg?hero";
+import textbookDetail from "photo:/assets/image/services/textbook-detail-fhd.jpg?frame";
+import patentHero from "photo:/assets/image/services/patent-hero-fhd.jpg?hero";
+import patentDetail from "photo:/assets/image/services/patent-detail-fhd.jpg?frame";
+import trademarkHero from "photo:/assets/image/services/trademark-hero-fhd.jpg?hero";
+import trademarkDetail from "photo:/assets/image/services/trademark-detail.webp?frame";
+import ieeeHero from "photo:/assets/image/services/ieee-hero-fhd.jpg?hero";
+import ieeeDetail from "photo:/assets/image/services/ieee-detail-fhd.jpg?frame";
+import chaptersHero from "photo:/assets/image/services/chapters-hero-fhd.jpg?hero";
+import chaptersDetail from "photo:/assets/image/services/chapters-detail-fhd.jpg?frame";
+import eventsHero from "photo:/assets/image/services/events-hero.webp?hero";
+import eventsDetail from "photo:/assets/image/services/events-detail-fhd.jpg?frame";
+import upskillingHero from "photo:/assets/image/services/upskilling-hero-fhd.jpg?hero";
+import upskillingDetail from "photo:/assets/image/services/upskilling-detail-fhd.jpg?frame";
+
 /* What each service's page says, for the Services overview
    (pages/Services.jsx) and each service's own page (pages/ServiceDetail.jsx).
    Names, menu hints and icons are in serviceLinks.js, which the navbar loads
@@ -46,6 +64,7 @@ import { SERVICE_LINKS, servicePath } from "./serviceLinks";
    sections it has data for.
    - h1: [before, accent, after]; the accent word is set in the italic serif.
    - highlights: the four things named in the hero's frosted strip.
+   - hero, overview.image: photos imported above;
    - overview: the photo beside the opening text; `callout` is set off as a
      pull-quote and `points` as a short list.
    - offerings: cards in a grid.
@@ -53,14 +72,12 @@ import { SERVICE_LINKS, servicePath } from "./serviceLinks";
    - coverage: groups of short labels on the navy band.
    - audience: who the service is for. */
 
-const IMG = "/assets/image/services";
-
 const CONTENT = [
   {
     slug: "textbook-publications",
     summary:
       "National and international textbook publishing, from manuscript support and editing to ISBN registration and Flipkart distribution.",
-    hero: `${IMG}/textbook-hero-fhd.jpg`,
+    hero: textbookHero,
     heroPosition: "center center",
     h1: ["", "Textbook", "Publications for Students, Educators & Institutions"],
     lead:
@@ -75,7 +92,7 @@ const CONTENT = [
     overview: {
       eyebrow: "The Transformation",
       title: ["From Academic Content to a Structured", "Textbook"],
-      image: `${IMG}/textbook-detail-fhd.jpg`,
+      image: textbookDetail,
       imageAlt: "A university classroom with an open laptop, potted plant, and a stack of academic textbooks on a wooden desk",
       body: [
         "Textbook publications provide high-quality academic and educational materials designed to meet modern curriculum standards and student needs. Our content is accurate, clear, and easy to understand.",
@@ -120,7 +137,7 @@ const CONTENT = [
     slug: "patent-grant-support",
     summary:
       "Patentability assessment, technical drafting, filing and examination support across India, the US, the UK, Germany, Japan, Australia, Canada and South Africa.",
-    hero: `${IMG}/patent-hero-fhd.jpg`,
+    hero: patentHero,
     heroPosition: "center center",
     h1: ["Patent", "Grant", "& IP Registration Services"],
     lead:
@@ -135,7 +152,7 @@ const CONTENT = [
     overview: {
       eyebrow: "Why Veritaz",
       title: ["Why Choose Veritaz for Patent", "Services?"],
-      image: `${IMG}/patent-detail-fhd.jpg`,
+      image: patentDetail,
       imageAlt: "Official patent grant certificate with gold seal, technical blueprints, and laptop on an executive legal desk",
       body: [
         "We specialize in assisting clients in securing their intellectual property rights across multiple jurisdictions, including India, the US, the UK, Germany, Japan, Australia, Canada, and South Africa.",
@@ -210,7 +227,7 @@ const CONTENT = [
     slug: "trademarks-copyright",
     summary:
       "Brand clearance searches, trademark filing and registration, and copyright protection for books, papers, media, code and artwork.",
-    hero: `${IMG}/trademark-hero-fhd.jpg`,
+    hero: trademarkHero,
     heroPosition: "center center",
     h1: ["Trademarks &", "Copyright", "Services"],
     lead:
@@ -225,7 +242,7 @@ const CONTENT = [
     overview: {
       eyebrow: "Protect What You Create",
       title: ["Legally Secure, Globally", "Defensible"],
-      image: `${IMG}/trademark-detail.webp`,
+      image: trademarkDetail,
       imageAlt: "A laptop showing the trademark and copyright steps beside IP law books, a seal stamp and a padlocked copyright shield",
       body: [
         "We provide structured, compliance-driven guidance through brand clearance searches, trademark filing, official registration, and copyright protection.",
@@ -298,7 +315,7 @@ const CONTENT = [
     slug: "ieee-conference-publications",
     summary:
       "Manuscript preparation, IEEE formatting, technical editing and submission support for high-standard conference papers.",
-    hero: `${IMG}/ieee-hero-fhd.jpg`,
+    hero: ieeeHero,
     heroPosition: "right center",
     h1: ["IEEE", "Conference", "Publications"],
     lead:
@@ -313,7 +330,7 @@ const CONTENT = [
     overview: {
       eyebrow: "Peer-Review Ready",
       title: ["Built to Meet International Peer", "Review"],
-      image: `${IMG}/ieee-detail-fhd.jpg`,
+      image: ieeeDetail,
       imageAlt: "A researcher's desk with an annotated IEEE paper, peer-review submission portal on laptop, and conference proceedings",
       body: [
         "Veritaz International Press provides end-to-end guidance for authors, scholars, and researchers aiming to publish in top-tier academic conferences and IEEE conference publications.",
@@ -351,7 +368,7 @@ const CONTENT = [
     slug: "edited-book-chapters",
     summary:
       "Publisher selection, manuscript editing, plagiarism checks and publication support for chapters in SCI and Scopus indexed volumes.",
-    hero: `${IMG}/chapters-hero-fhd.jpg`,
+    hero: chaptersHero,
     heroPosition: "center center",
     h1: ["Scopus-Indexed", "Book Chapters", ""],
     lead: "Professional editing and formatting support to feature your work in SCI and Scopus indexed volumes.",
@@ -365,7 +382,7 @@ const CONTENT = [
     overview: {
       eyebrow: "SCI & Scopus Indexed Volumes",
       title: ["From Publisher Selection to Final", "Submission"],
-      image: `${IMG}/chapters-detail-fhd.jpg`,
+      image: chaptersDetail,
       imageAlt: "An academic editor reviewing printed manuscript proofs with an indexed reference book and laptop",
       body: [
         "Veritaz International Press provides comprehensive SCI & Scopus publication support for scholars, offering end-to-end assistance from initial publisher selection to final submission.",
@@ -423,7 +440,7 @@ const CONTENT = [
     slug: "academic-events",
     summary:
       "Complete organisation support for international conferences, faculty development programs, workshops and seminars.",
-    hero: `${IMG}/events-hero.webp`,
+    hero: eventsHero,
     h1: ["Educational", "Event", "Management"],
     lead:
       "Complete organization support for International Conferences, Faculty Development Programs, workshops, and seminars.",
@@ -437,7 +454,7 @@ const CONTENT = [
     overview: {
       eyebrow: "Bring Knowledge Into Conversation",
       title: ["Academic Gatherings, Managed", "End to End"],
-      image: `${IMG}/events-detail-fhd.jpg`,
+      image: eventsDetail,
       imageAlt: "A keynote speaker presenting at a prestigious international academic conference with attentive faculty and researchers",
       body: [
         "Veritaz International Press partners with educational institutions and organizations to design and execute impactful academic gatherings. From international conferences to specialized faculty development initiatives, we manage every detail to foster collaboration, learning, and professional excellence.",
@@ -510,7 +527,7 @@ const CONTENT = [
     slug: "professional-upskilling",
     summary:
       "Structured, high-impact learning modules that build technical knowledge, practical domain skills and professional efficiency.",
-    hero: `${IMG}/upskilling-hero-fhd.jpg`,
+    hero: upskillingHero,
     heroPosition: "center center",
     h1: ["Professional", "Upskilling", "Services"],
     lead: "Targeted learning programs engineered to boost your professional capabilities.",
@@ -524,7 +541,7 @@ const CONTENT = [
     overview: {
       eyebrow: "Upskilling Modules",
       title: ["Structured, High-Impact Upskilling", "Modules"],
-      image: `${IMG}/upskilling-detail-fhd.jpg`,
+      image: upskillingDetail,
       imageAlt: "An instructor and a professional collaborating on an interactive learning module and analytics dashboard",
       body: [
         "Veritaz International Press delivers structured, high-impact upskilling modules designed to expand technical knowledge, refine practical domain skills, and enhance professional efficiency.",

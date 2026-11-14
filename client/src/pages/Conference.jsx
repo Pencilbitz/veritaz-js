@@ -33,11 +33,17 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
+import { db } from "../lib/db";
 import { Accent, Eyebrow, Pill, Rule, Swash } from "../components/PressUI";
 import { BADGE_TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
 import { useSeo } from "../seo/useSeo";
 import { NOT_FOUND, conferenceMeta } from "../seo/site";
+import { mediaImg, retryOriginal } from "../lib/media";
+import LOGO from "../components/logo";
+// The globe stands in for a conference with no poster; seo/site.js preloads
+// it then, so keep the two in step.
+import GLOBE from "photo:/assets/image/conference/conference-hero-globe.webp?frame";
+import DESK from "photo:/assets/image/our-company/laptop-books.webp?card";
 
 /* A conference, in the home page's "press" look: a lavender hero with the
    poster on a violet backing (or the globe-on-a-book artwork when there is no
@@ -54,9 +60,6 @@ const KICKER_LIGHT = "text-xs font-semibold uppercase tracking-[0.14em] text-whi
 const CLOSED =
   "inline-flex cursor-not-allowed select-none items-center justify-center gap-2.5 rounded-full border-2 border-red-600 bg-red-50 text-[15px] font-bold text-red-700";
 
-const GLOBE = "/assets/image/conference/conference-hero-globe.webp";
-const LOGO = "/assets/image/veritaz-logo.webp";
-const DESK = "/assets/image/our-company/laptop-books.webp";
 
 /** Section backgrounds: white and lavender alternate, navy sets off the
  *  fees and the speakers. */
@@ -350,12 +353,12 @@ function Hero({ conference, dates, shortDate, registrationClosed, showPoster, po
                 className={`cf-poster group relative block max-w-full cursor-zoom-in overflow-hidden rounded-2xl bg-white ${FOCUS} focus-visible:outline-sf-violet`}
               >
                 <img
-                  src={conference.poster}
+                  {...mediaImg(conference.poster, "posterHero")}
                   alt="Conference Poster"
                   fetchPriority="high"
                   className="block h-auto max-h-[460px] w-auto max-w-full object-contain motion-safe:transition-transform motion-safe:group-hover:scale-[1.03] motion-safe:duration-500 lg:max-h-[min(36rem,calc(100svh-16rem))]"
                   onLoad={onPosterLoad}
-                  onError={onPosterError}
+                  onError={retryOriginal(conference.poster, onPosterError)}
                 />
                 <span
                   aria-hidden="true"
@@ -370,7 +373,7 @@ function Hero({ conference, dates, shortDate, registrationClosed, showPoster, po
           ) : (
             <div aria-hidden="true" className="cf-globe-stage">
               <span className="cf-globe-disc" />
-              <img src={GLOBE} alt="" fetchPriority="high" className="cf-globe-img" />
+              <img {...GLOBE} alt="" fetchPriority="high" className="cf-globe-img" />
             </div>
           )}
         </figure>
@@ -569,7 +572,7 @@ function Downloads({ tone, conference, certificates, hasProceedings }) {
                 <span aria-hidden="true" className="cf-volume">
                   <span className="cf-volume-cover">
                     <span className="cf-volume-band" />
-                    <img src={LOGO} alt="" loading="lazy" />
+                    <img {...LOGO} alt="" loading="lazy" />
                     <span className="cf-volume-lines" />
                   </span>
                 </span>
@@ -658,7 +661,7 @@ function Topics({ tone, topics }) {
           <Eyebrow icon={Layers}>Topics</Eyebrow>
           <Heading id="conf-tracks-h" text="Conference Topics & Tracks" className="mt-5 short:mt-3" />
           <div aria-hidden="true" className="cf-desk relative mt-12 hidden lg:block short:mt-8">
-            <img src={DESK} alt="" loading="lazy" className="reveal relative h-[min(22rem,calc(100svh-24rem))] w-full max-w-sm rounded-[1.75rem] object-cover object-[50%_62%]" />
+            <img {...DESK} alt="" loading="lazy" className="reveal relative h-[min(22rem,calc(100svh-24rem))] w-full max-w-sm rounded-[1.75rem] object-cover object-[50%_62%]" />
           </div>
         </div>
 
@@ -689,7 +692,7 @@ function SpeakerPhoto({ src, name }) {
           {initials(name)}
         </span>
       ) : (
-        <img src={src} alt={name} loading="lazy" onError={() => setFailed(true)} />
+        <img {...mediaImg(src, "portrait")} alt={name} loading="lazy" onError={retryOriginal(src, () => setFailed(true))} />
       )}
     </span>
   );
@@ -923,6 +926,7 @@ export default function Conference() {
   useEffect(() => {
     const fetchConference = async () => {
       try {
+        const supabase = await db();
         const { data, error } = await supabase
           .from("veritaz_conferences")
           .select("*");

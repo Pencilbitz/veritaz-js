@@ -1,13 +1,12 @@
 @import "tailwindcss";
+@import "./fonts.css";
 
-/* Per-page styles, one file per page group. */
+/* Styles shared across pages (book-store.css and conference.css hold classes
+   other pages use too). Styles used by one page only are imported by that
+   page (publishing.css, contact.css, hr.css, events.css, services.css), so
+   they download with the page's code instead of holding up every first paint. */
 @import "./styles/book-store.css";
-@import "./styles/publishing.css";
-@import "./styles/contact.css";
-@import "./styles/hr.css";
-@import "./styles/events.css";
 @import "./styles/conference.css";
-@import "./styles/services.css";
 
 /* `short:` applies on wide but low screens (a laptop with browser chrome),
    where the one-screen home sections tighten up to still fit. */
@@ -503,11 +502,13 @@ h2 {
     mask-image: linear-gradient(90deg, transparent 28%, #000 68%);
   }
 }
+/* --vz-library is a small copy of the bookshelf photo made for this blurred
+   backdrop (Home.jsx); the page's HTML preloads it. */
 .vz-hero-library::before {
   content: "";
   position: absolute;
   inset: -12px;
-  background: url("/assets/image/our-company/bookshelf.webp") 70% 40% / cover no-repeat;
+  background: var(--vz-library, url("/assets/image/our-company/bookshelf.webp")) 70% 40% / cover no-repeat;
   filter: blur(3px) saturate(0.85);
   opacity: 0.42;
 }

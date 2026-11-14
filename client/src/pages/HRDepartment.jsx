@@ -27,6 +27,9 @@ import { Accent, Pill, Rule } from '../components/PressUI';
 import { H2_FIT, SCREEN, WRAP } from '../components/pressLayout';
 import { useSeo } from "../seo/useSeo";
 import { PAGES } from "../seo/site";
+import LOGO from "../components/logo";
+// This page's own styles (index.css has the shared ones).
+import '../styles/hr.css';
 
 /**
  * Employment verification, for an employer checking a current or former member
@@ -82,7 +85,6 @@ const EMPTY_REQUEST = {
 const formatAadhaar = (value) =>
   value.replace(/\D/g, '').slice(0, 12).replace(/(\d{4})(?=\d)/g, '$1 ').trim();
 
-const LOGO = '/assets/image/veritaz-logo.webp';
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sf-indigo';
 const FOCUS_LIGHT = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 
@@ -163,7 +165,7 @@ function RecordArt() {
       <div className="hr2-sheet hr2-sheet--front">
         <div className="flex items-center gap-[3cqw]">
           <span className="hr2-logo">
-            <img src={LOGO} alt="" />
+            <img {...LOGO} alt="" />
           </span>
           <span className="grid flex-1 gap-[1.6cqw]">
             <span className="hr2-bar hr2-bar--ink w-[78%]" />
@@ -256,7 +258,7 @@ function TicketArt() {
         <div className="hr2-ticket">
           <div className="flex items-center gap-3">
             <span className="hr2-ticket-logo">
-              <img src={LOGO} alt="" />
+              <img {...LOGO} alt="" />
             </span>
             <span className="grid flex-1 gap-2">
               <span className="hr2-bar hr2-bar--ink h-2 w-[70%]" />

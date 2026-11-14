@@ -4,6 +4,8 @@ import { FaWhatsapp } from "react-icons/fa";
 import { Accent, Pill } from "./PressUI";
 import { BADGE_TONES, H2_FIT, WRAP } from "./pressLayout";
 import { servicePath } from "../data/services";
+// This page's own styles (index.css has the shared ones).
+import "../styles/services.css";
 
 /* Pieces shared by the Services overview and each service's own page. Their
    styles (sv-*) live in styles/services.css; the rest is the Our Company

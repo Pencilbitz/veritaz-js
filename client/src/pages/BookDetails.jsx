@@ -6,7 +6,8 @@ import {
   Users, Weight, X,
 } from 'lucide-react';
 import { FaWhatsapp, FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
-import { supabase } from "../lib/supabase";
+import { db } from "../lib/db";
+import { mediaImg, retryOriginal } from "../lib/media";
 import { Accent, Pill, Rule } from '../components/PressUI';
 import { H2_FIT, SCREEN, SCREEN_PAD, WRAP } from '../components/pressLayout';
 import { useSeo } from "../seo/useSeo";
@@ -53,6 +54,7 @@ export default function BookDetails() {
   useEffect(() => {
     const fetchBook = async () => {
       try {
+        const supabase = await db();
         const { data, error: sbError } = await supabase
           .from("veritaz_books")
           .select("*");
@@ -320,9 +322,13 @@ export default function BookDetails() {
                     className="bs-flipkart w-full whitespace-nowrap px-5!"
                   >
                     <span className="flex h-8 items-center rounded-lg bg-white px-1.5">
+                      {/* Served from this site at the size it is shown (the
+                          original was a 3840px file on another server). */}
                       <img
-                        src="https://logos-world.net/wp-content/uploads/2020/11/Flipkart-Logo.png"
+                        src="/assets/image/flipkart-logo.webp"
                         alt="Flipkart"
+                        width="160"
+                        height="90"
                         className="h-7 w-auto"
                       />
                     </span>
@@ -426,10 +432,12 @@ export default function BookDetails() {
         >
           <X size={24} aria-hidden="true" />
         </button>
+        {/* The full-size file, fetched only when the viewer opens. */}
         <img
           id="bs-lightbox-image"
           src={currentImage || book.cover1}
           alt="Fullscreen preview"
+          loading="lazy"
           className="max-h-[90vh] max-w-full rounded object-contain shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         />
@@ -453,7 +461,7 @@ export default function BookDetails() {
 
         <div className="p-6">
           <div className="mb-6 flex items-center gap-3 rounded-2xl bg-vz-paper p-3 ring-1 ring-vz-line">
-            <img src={book.cover1} alt={book.title} className="h-16 w-12 rounded bg-white object-cover shadow-md" onError={fallbackOnce("https://placehold.co/50x70?text=No+Cover")} />
+            <img {...mediaImg(book.cover1, "thumb")} alt={book.title} loading="lazy" className="h-16 w-12 rounded bg-white object-cover shadow-md" onError={retryOriginal(book.cover1, fallbackOnce("https://placehold.co/50x70?text=No+Cover"))} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-vz-ink">{book.title}</p>
               <p className="mt-0.5 text-sm font-extrabold text-sf-indigo">₹{book.price}</p>
@@ -543,6 +551,9 @@ export default function BookDetails() {
  *  back thumbnails and the preview and share buttons. */
 function BookShowcase({ book, currentImage, onSelect, onPreview, onShare }) {
   const showingBack = Boolean(book.cover2) && currentImage === book.cover2;
+  // One resized copy of the full wrap serves the back, the spine and the
+  // back thumbnail.
+  const wrap = book.cover2 ? mediaImg(book.cover2, "coverWrap").src : "";
 
   return (
     <div className="min-w-0">
@@ -556,14 +567,19 @@ function BookShowcase({ book, currentImage, onSelect, onPreview, onShare }) {
         >
           <span className="bs-b3" data-side={showingBack ? 'back' : 'front'}>
             <span className="bs-b3-face bs-b3-front">
-              <img src={book.cover1} alt={book.title} onError={fallbackOnce(FRONT_FALLBACK)} />
+              <img
+                {...mediaImg(book.cover1, "coverLarge")}
+                alt={book.title}
+                fetchPriority="high"
+                onError={retryOriginal(book.cover1, fallbackOnce(FRONT_FALLBACK))}
+              />
             </span>
             {book.cover2 ? (
               <>
                 <span aria-hidden="true" className="bs-b3-face bs-b3-back">
-                  <img src={book.cover2} alt="" />
+                  <img src={wrap} alt="" onError={retryOriginal(book.cover2)} />
                 </span>
-                <span aria-hidden="true" className="bs-b3-spine" style={{ backgroundImage: `url("${book.cover2}")` }} />
+                <span aria-hidden="true" className="bs-b3-spine" style={{ backgroundImage: `url("${wrap}")` }} />
               </>
             ) : (
               <span aria-hidden="true" className="bs-b3-spine" />
@@ -586,7 +602,7 @@ function BookShowcase({ book, currentImage, onSelect, onPreview, onShare }) {
           aria-pressed={currentImage === book.cover1}
           className={`bs-thumb h-[72px] w-14 overflow-hidden rounded-lg bg-white ${currentImage === book.cover1 ? 'bs-thumb--on' : ''} ${FOCUS}`}
         >
-          <img src={book.cover1} alt="Front Cover" className="h-full w-full object-cover" />
+          <img {...mediaImg(book.cover1, "thumb")} alt="Front Cover" className="h-full w-full object-cover" onError={retryOriginal(book.cover1)} />
         </button>
         <button
           type="button"
@@ -596,7 +612,7 @@ function BookShowcase({ book, currentImage, onSelect, onPreview, onShare }) {
           className={`bs-thumb h-[72px] w-14 overflow-hidden rounded-lg bg-white ${book.cover2 && currentImage === book.cover2 ? 'bs-thumb--on' : ''} ${FOCUS}`}
         >
           {book.cover2 ? (
-            <img src={book.cover2} alt="Back Preview" className="h-full w-full object-cover object-left" />
+            <img src={wrap} alt="Back Preview" className="h-full w-full object-cover object-left" onError={retryOriginal(book.cover2)} />
           ) : (
             <span className="flex h-full w-full flex-col">
               <span className="flex h-1/2 items-center justify-center bg-vz-ink p-1 text-center text-[8px] text-white">Full Preview</span>

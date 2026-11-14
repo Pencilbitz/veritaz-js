@@ -22,15 +22,21 @@ import { Accent, Eyebrow, Pill, Rule } from "../components/PressUI";
 import { BADGE_TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
 import { useSeo } from "../seo/useSeo";
 import { PAGES } from "../seo/site";
+import LOGO from "../components/logo";
+import heroPhoto from "photo:/assets/image/our-company/hero-books.webp?hero";
+import shelfPhoto from "photo:/assets/image/our-company/bookshelf.webp?frame";
+import penPhoto from "photo:/assets/image/our-company/pen-book.webp?frame";
+import deskPhoto from "photo:/assets/image/our-company/laptop-books.webp?card";
+import cover1 from "photo:/assets/image/books/index-1.webp?cover";
+import cover2 from "photo:/assets/image/books/index-2.webp?cover";
+import cover3 from "photo:/assets/image/books/index-3.webp?cover";
 
 /* Our Company, in the home page's "press" look: lavender, white and navy
    bands, headings with an italic accent word and a brush stroke, glossy icon
    badges, and each section sized to one screen on wide screens. The oc-*
    styles live under "Our Company page." in index.css. */
 
-const IMG = "/assets/image/our-company";
-const LOGO = "/assets/image/veritaz-logo.webp";
-const COVERS = ["/assets/image/books/index-1.webp", "/assets/image/books/index-2.webp", "/assets/image/books/index-3.webp"];
+const COVERS = [cover1, cover2, cover3];
 const H2 = `${H2_FIT} leading-[1.1] text-vz-ink`;
 const H2_LIGHT = `${H2_FIT} leading-[1.1] text-white`;
 const LEAD = "text-base leading-relaxed text-slate-600 lg:text-[17px] short:text-[15px]";
@@ -94,7 +100,7 @@ function Hero() {
     return (
         <header className="oc-hero relative isolate flex flex-col overflow-hidden text-white lg:min-h-[calc(100svh-7.6rem)]">
             <img
-                src={`${IMG}/hero-books.webp`}
+                {...heroPhoto}
                 alt=""
                 fetchPriority="high"
                 className="absolute inset-0 -z-20 h-full w-full object-cover object-[72%_50%]"
@@ -149,13 +155,13 @@ function About() {
                 <div className="oc-frame relative mx-3 mb-4 sm:mx-8 lg:m-0 lg:mr-6">
                     <span className="oc-frame-back" aria-hidden="true" />
                     <img
-                        src={`${IMG}/bookshelf.webp`}
+                        {...shelfPhoto}
                         alt="Our Team"
                         loading="lazy"
                         className="oc-frame-img reveal relative aspect-[4/3] w-full rounded-[2rem] object-cover lg:aspect-auto lg:h-[min(28rem,calc(100svh-13rem))]"
                     />
                     <span className="oc-seal" aria-hidden="true">
-                        <img src={LOGO} alt="" />
+                        <img {...LOGO} alt="" loading="lazy" />
                     </span>
                 </div>
 
@@ -202,7 +208,7 @@ function Knowledge() {
 
                 <div className="oc-photo relative mx-3 sm:mx-8 lg:mx-0">
                     <img
-                        src={`${IMG}/pen-book.webp`}
+                        {...penPhoto}
                         alt=""
                         loading="lazy"
                         className="reveal h-[22rem] w-full rounded-[2rem] object-cover object-[50%_70%] sm:h-[26rem] lg:h-[min(32rem,calc(100svh-12rem))]"
@@ -272,7 +278,7 @@ function Benefits() {
                         What a published, ISBN-registered book does for your teaching, your career and your academic profile.
                     </p>
                     <img
-                        src={`${IMG}/laptop-books.webp`}
+                        {...deskPhoto}
                         alt=""
                         loading="lazy"
                         className="oc-tilt reveal mt-10 hidden aspect-[4/3] w-full max-w-sm rounded-[1.75rem] object-cover object-[50%_60%] lg:block short:hidden"
@@ -371,8 +377,8 @@ function PublishCta() {
 
                     <div className="oc-cta-books relative" aria-hidden="true">
                         <span className="oc-cta-shelf" />
-                        {COVERS.map((src, i) => (
-                            <img key={src} src={src} alt="" loading="lazy" className={`oc-cta-book oc-cta-book--${i}`} />
+                        {COVERS.map((cover, i) => (
+                            <img key={cover.src} {...cover} alt="" loading="lazy" className={`oc-cta-book oc-cta-book--${i}`} />
                         ))}
                     </div>
                 </div>

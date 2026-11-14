@@ -1,5 +1,6 @@
 import { MapPin, Calendar, Users, CalendarCheck2, CheckCheck } from "lucide-react";
 import StateFilterBar from "./StateFilterBar";
+import { mediaImg, retryOriginal } from "../lib/media";
 
 /* The completed events on the events page: a toolbar holding the list's
    title and the state filter, then the events as cards. Each card shows its
@@ -57,11 +58,11 @@ export default function CompletedEvents({ events = [], states = [], stateFilter 
               <div className="relative p-2.5 pb-0">
                 <div className="ev-proof relative aspect-[1024/724] overflow-hidden rounded-2xl">
                   <img
-                    src={`${event.poster}`}
+                    {...mediaImg(event.poster, "posterCard")}
                     alt={event.eventTitle || "Completed Event"}
                     loading="lazy"
                     className="ev-poster-img h-full w-full object-contain"
-                    onError={(e) => { e.target.src = "https://placehold.co/480x300/EEE/31343C?text=No+Poster" }}
+                    onError={retryOriginal(event.poster, (e) => { e.target.src = "https://placehold.co/480x300/EEE/31343C?text=No+Poster" })}
                   />
                 </div>
                 <span aria-hidden="true" className="ev-stamp">

@@ -2,8 +2,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Menu, X, Phone, Mail, ChevronDown, ArrowUpRight, ShieldCheck, Briefcase } from "lucide-react";
 import { FaLinkedinIn, FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
-import { supabase } from "../lib/supabase";
+import { db } from "../lib/db";
 import { SERVICE_LINKS, servicePath } from "../data/serviceLinks";
+import LOGO from "./logo";
 
 /* Navbar: a dark contact strip that scrolls away, then a white bar that lifts
    into a floating pill once the page scrolls. A highlight slides between the
@@ -60,7 +61,7 @@ function Logo() {
       aria-label="Veritaz International Press, home"
     >
       <span className="vz-nav-logo flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-white">
-        <img src="/assets/image/veritaz-logo.webp" alt="" className="h-9 w-9 object-contain" />
+        <img {...LOGO} sizes="36px" alt="" className="h-9 w-9 object-contain" />
       </span>
       <span className="leading-none">
         <span className="block font-display text-[1.35rem] font-bold tracking-[-0.01em] text-vz-ink">Veritaz</span>
@@ -113,6 +114,7 @@ export default function Navbar() {
   const closeButtonRef = useRef(null);
   const trayRef = useRef(null);
   const pillRef = useRef(null);
+  const stripRef = useRef(null);
 
   const closeMenu = () => {
     setIsMenuOpen(false);
@@ -124,7 +126,10 @@ export default function Navbar() {
   useEffect(() => {
     const fetchConferences = async () => {
       try {
-        const { data, error } = await supabase.from("veritaz_conferences").select("*");
+        const supabase = await db();
+        // The menu needs only each conference's name (every page loads this,
+        // so not the whole row: about 0.2 KB instead of 12 KB).
+        const { data, error } = await supabase.from("veritaz_conferences").select("id, conferencename");
         if (error) throw error;
         setConferences(data || []);
       } catch (error) {
@@ -152,12 +157,14 @@ export default function Navbar() {
   }, [location.pathname]);
 
   // Once the 40px contact strip has scrolled away and the bar is pinned to
-  // the top, it lifts into a floating pill.
+  // the top, it lifts into a floating pill. Watching the strip leave the
+  // screen, rather than reading the scroll position, costs no layout work.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const strip = stripRef.current;
+    if (!strip) return undefined;
+    const observer = new IntersectionObserver(([entry]) => setScrolled(!entry.isIntersecting));
+    observer.observe(strip);
+    return () => observer.disconnect();
   }, []);
 
   // The sliding highlight is positioned straight on the DOM: it follows the
@@ -190,30 +197,34 @@ export default function Navbar() {
 
   const onItemEnter = (e) => movePill(e.currentTarget);
 
-  // Re-measure when the tray changes size (breakpoints, web font arriving),
-  // and only turn the slide animation on after the first placement, so the
-  // pill does not sweep in from the left edge on page load.
-  useEffect(() => {
-    const tray = trayRef.current;
-    if (!tray) return undefined;
-    resetPill();
-    const observer = new ResizeObserver(resetPill);
-    observer.observe(tray);
-    document.fonts?.ready.then(resetPill);
-    const frame = requestAnimationFrame(() => tray.setAttribute("data-ready", ""));
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(frame);
-    };
-  }, [resetPill]);
-
   const confActive = location.pathname.startsWith("/conferences/");
   const svcActive = location.pathname === "/services" || location.pathname.startsWith("/services/");
   const hrActive = hrLinks.some((l) => location.pathname.startsWith(l.to)) || location.pathname === "/hr";
 
+  // Place the pill under the current link. It is measured only in a
+  // ResizeObserver callback, which runs once layout is done: when it starts
+  // watching (on load and after each page change, as the current link moves)
+  // and whenever the tray or the current link changes size (breakpoints, the
+  // web font arriving). Measuring straight after React has changed the page
+  // would make the browser lay it out early. The slide animation turns on
+  // after the first placement, so the pill does not sweep in from the left
+  // edge on page load.
   useEffect(() => {
-    resetPill();
-  }, [location.pathname, confActive, hrActive, svcActive, resetPill]);
+    const tray = trayRef.current;
+    if (!tray) return undefined;
+    let frame;
+    const observer = new ResizeObserver(() => {
+      resetPill();
+      if (frame === undefined) frame = requestAnimationFrame(() => tray.setAttribute("data-ready", ""));
+    });
+    observer.observe(tray);
+    const current = tray.querySelector('[aria-current="page"], [data-active]');
+    if (current) observer.observe(current);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [resetPill, location.pathname, confActive, hrActive, svcActive]);
 
   useEffect(() => {
     if (!isMenuOpen) return undefined;
@@ -241,7 +252,7 @@ export default function Navbar() {
           reads apart from the page. The teal stays in the darker range
           (#0f766e to #115e59) so white 13px text keeps at least 4.5:1;
           icons are gold, and links and buttons turn gold on hover. */}
-      <div className="border-b border-white/10 bg-[linear-gradient(90deg,#0f766e,#0d7a70_50%,#115e59)] text-[13px] text-white">
+      <div ref={stripRef} className="border-b border-white/10 bg-[linear-gradient(90deg,#0f766e,#0d7a70_50%,#115e59)] text-[13px] text-white">
         <div className={`${WRAP} flex h-10 items-center justify-between gap-4`}>
           <div className="flex min-w-0 items-center gap-4 sm:gap-5">
             <a href={PHONE_HREF} className="flex items-center gap-2 whitespace-nowrap transition-colors hover:text-amber-300">

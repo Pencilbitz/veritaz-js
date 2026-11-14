@@ -20,11 +20,14 @@ import {
   Sparkles,
   Ticket,
 } from "lucide-react";
-import { supabase, EVENT_SELECT } from "../lib/supabase";
+import { db, EVENT_SELECT } from "../lib/db";
 import { Accent, Eyebrow, Pill } from "../components/PressUI";
 import { BADGE_TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
 import { useSeo } from "../seo/useSeo";
 import { NOT_FOUND, eventMeta } from "../seo/site";
+import { mediaImg, retryOriginal } from "../lib/media";
+// This page's own styles (index.css has the shared ones).
+import "../styles/events.css";
 
 /* One event, in the home page's "press" look: a lavender hero with the
    college and topic beside the poster (set in a white mat on a violet
@@ -89,6 +92,7 @@ export default function UpcomingEvents() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
+        const supabase = await db();
         const { data: events, error } = await supabase
           .from("veritaz_events")
           .select(EVENT_SELECT);
@@ -223,11 +227,13 @@ export default function UpcomingEvents() {
               <div className="ev-frame relative mx-3 sm:mx-8 lg:mx-0 lg:ml-auto lg:mr-4 lg:max-w-[calc((100svh-19.5rem)*1.38)]">
                 <span aria-hidden="true" className="ev-frame-back" />
                 <div className="ev-mat rounded-[2rem] p-2.5">
+                  {/* seo/site.js preloads this poster with the same preset. */}
                   <img
-                    src={`${event.poster}`}
+                    {...mediaImg(event.poster, "posterLarge")}
                     alt={event.topic}
+                    fetchPriority="high"
                     className="ev-proof block aspect-[1024/724] w-full rounded-[1.5rem] object-contain"
-                    onError={(e) => { e.target.src = "https://via.placeholder.com/600x600?text=No+Event+Media" }}
+                    onError={retryOriginal(event.poster, (e) => { e.target.src = "https://via.placeholder.com/600x600?text=No+Event+Media" })}
                   />
                 </div>
                 <span aria-hidden="true" className="absolute -bottom-5 -left-4 sm:-left-5">

@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Search, SearchX, Barcode, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { Link, useSearchParams } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { db } from "../lib/db";
+import { mediaImg, retryOriginal } from "../lib/media";
 import { Accent, Rule } from "../components/PressUI";
 import { WRAP } from "../components/pressLayout";
 import { useSeo } from "../seo/useSeo";
@@ -70,9 +71,13 @@ export default function BookStore() {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
+        const supabase = await db();
+        // Only what the shelves, cards and search use: the covers wait on
+        // this list, and whole rows (descriptions and all) are four times
+        // the size.
         const { data, error } = await supabase
           .from("veritaz_books")
-          .select("*")
+          .select("id, title, authors, isbn, cover1")
           .eq("status", "In Stock");
 
         if (error) throw error;
@@ -177,7 +182,7 @@ export default function BookStore() {
         <div className={WRAP}>
           <div ref={gridRef} className="grid scroll-mt-28 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-7">
             {loaded
-              ? pageBooks.map((book) => <BookCard key={book.id} book={book} />)
+              ? pageBooks.map((book, i) => <BookCard key={book.id} book={book} index={i} />)
               : Array.from({ length: 8 }, (_, i) => <CardSkeleton key={i} />)}
           </div>
 
@@ -300,7 +305,7 @@ function Bookcase({ books }) {
           <span className="bs-faceout">
             {faceOut ? (
               <Link to={bookPath(faceOut)} tabIndex={-1} title={faceOut.title}>
-                <img src={faceOut.cover1} alt="" onError={coverFallback} />
+                <img {...mediaImg(faceOut.cover1, "cover")} alt="" onError={retryOriginal(faceOut.cover1, coverFallback)} />
               </Link>
             ) : (
               <span className="bs-faceout-blank" />
@@ -332,8 +337,10 @@ function Bookcase({ books }) {
 
 /** One book in the catalogue: the cover as a real hardcover standing on
  *  clean white (spine crease, page edges down its side, a soft shadow
- *  where it stands), then the title, authors, ISBN and the two actions. */
-function BookCard({ book }) {
+ *  where it stands), then the title, authors, ISBN and the two actions.
+ *  The first row is on screen as the page opens, so its covers load at once
+ *  (the first one first); the rest wait until they are scrolled near. */
+function BookCard({ book, index = Infinity }) {
   return (
     <article className="bs-card svc-card reveal group relative isolate flex flex-col overflow-hidden rounded-[1.75rem] bg-white">
       <Link
@@ -343,7 +350,13 @@ function BookCard({ book }) {
         <span className="bs-stage">
           <span className="bs-book">
             {/* FIX 3: Changed book.cover to book.cover1 to match API structure */}
-            <img src={book.cover1} alt={book.title} loading="lazy" onError={coverFallback} />
+            <img
+              {...mediaImg(book.cover1, "cover")}
+              alt={book.title}
+              loading={index < 4 ? undefined : "lazy"}
+              fetchPriority={index === 0 ? "high" : undefined}
+              onError={retryOriginal(book.cover1, coverFallback)}
+            />
           </span>
         </span>
 

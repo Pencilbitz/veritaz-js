@@ -23,6 +23,16 @@ import { Accent, Eyebrow, Pill, Rule, Swash } from "../components/PressUI";
 import { H2_FIT, SCREEN, SCREEN_PAD, WRAP } from "../components/pressLayout";
 import { useSeo } from "../seo/useSeo";
 import { PAGES } from "../seo/site";
+import LOGO from "../components/logo";
+import { afterPaint } from "../lib/layout";
+// The hero book's cover; seo/site.js preloads it (with the sizes used below).
+import HERO_COVER from "photo:/assets/image/publishing-hero/quantum-computing-front.webp?cover";
+import tomeFront from "photo:/assets/image/publishing-hero/data-structures-front.webp?cover";
+import tomeBack from "photo:/assets/image/publishing-hero/data-structures-back.webp?cover";
+import pileBlue from "photo:/assets/image/publishing-covers/blue-economy.webp?cover";
+import pileResearch from "photo:/assets/image/publishing-covers/research.webp?cover";
+// This page's own styles (index.css has the shared ones).
+import "../styles/publishing.css";
 
 /* Book Publishing, in the home page's "press" look: a lavender hero with a
    real book that opens on the desk, the services on white as tabs (each
@@ -30,8 +40,7 @@ import { PAGES } from "../seo/site";
    book, and a close on an indigo-to-violet card with a pile of books. The
    bp-* styles live in styles/publishing.css. */
 
-const IMG = "/assets/image";
-const H2 = `${H2_FIT} leading-[1.1] text-vz-ink`;
+const H2 =`${H2_FIT} leading-[1.1] text-vz-ink`;
 const H2_LIGHT = `${H2_FIT} leading-[1.1] text-white`;
 
 const featuredService = {
@@ -157,8 +166,6 @@ const steps = [
  *  turns one back. Each leaf has a front (right-hand page) and a back
  *  (left-hand page once turned). Open on Chapter 1 from the start when the
  *  visitor prefers reduced motion. */
-const HERO_COVER = `${IMG}/publishing-hero/quantum-computing-front.webp`;
-const LOGO = `${IMG}/veritaz-logo.webp`;
 const BOOK_TITLE = "Foundation of Quantum Computing";
 
 // Sample page text, for illustration only.
@@ -364,12 +371,12 @@ function OpenBook() {
                   }}
                 >
                   <div className={`bp-face bp-face--front ${leaf.cover ? "bp-cover" : ""}`}>
-                    {leaf.cover ? <img src={HERO_COVER} alt="" decoding="async" /> : <BookPage page={leaf.front} />}
+                    {leaf.cover ? <img {...HERO_COVER} sizes="320px" alt="" decoding="async" /> : <BookPage page={leaf.front} />}
                   </div>
                   <div className={`bp-face bp-face--back ${leaf.cover ? "bp-inside" : ""}`}>
                     {leaf.cover ? (
                       <span className="bp-endpaper">
-                        <img src={LOGO} alt="" decoding="async" />
+                        <img {...LOGO} alt="" decoding="async" />
                       </span>
                     ) : (
                       <BookPage page={leaf.back} />
@@ -464,12 +471,19 @@ function ServiceTabs({ selected, onSelect, timer, timerKey }) {
   const refs = useRef({});
   const listRef = useRef(null);
 
-  useEffect(() => {
-    const list = listRef.current;
-    const tab = refs.current[selected];
-    if (!list || !tab || list.scrollWidth <= list.clientWidth) return;
-    list.scrollTo({ left: tab.offsetLeft - 16, behavior: prefersCalm() ? "auto" : "smooth" });
-  }, [selected]);
+  // Measured once the new tab state has been laid out and painted, so the
+  // browser is not made to lay the page out early (on load, and each time
+  // the tabs advance on their own).
+  useEffect(
+    () =>
+      afterPaint(() => {
+        const list = listRef.current;
+        const tab = refs.current[selected];
+        if (!list || !tab || list.scrollWidth <= list.clientWidth) return;
+        list.scrollTo({ left: tab.offsetLeft - 16, behavior: prefersCalm() ? "auto" : "smooth" });
+      }),
+    [selected]
+  );
 
   const onKeyDown = (e) => {
     const i = contentIds.indexOf(selected);
@@ -544,7 +558,7 @@ function ServicePanel({ service, hidden }) {
             </span>
             <span className="bp-sv-title">{title}</span>
             <span className="bp-sv-logo">
-              <img src={LOGO} alt="" />
+              <img {...LOGO} alt="" />
             </span>
           </div>
           <span className="bp-sv-pages" />
@@ -684,8 +698,8 @@ function FinishedBook() {
   return (
     <div aria-hidden="true" className="bp-tome mt-12 hidden xl:block short:mt-8">
       <div className="bp-tome-body">
-        <img src={`${IMG}/publishing-hero/data-structures-front.webp`} alt="" loading="lazy" className="bp-tome-face bp-tome-front" />
-        <img src={`${IMG}/publishing-hero/data-structures-back.webp`} alt="" loading="lazy" className="bp-tome-face bp-tome-back" />
+        <img {...tomeFront} sizes="196px" alt="" loading="lazy" className="bp-tome-face bp-tome-front" />
+        <img {...tomeBack} sizes="196px" alt="" loading="lazy" className="bp-tome-face bp-tome-back" />
         <span className="bp-tome-face bp-tome-pages" />
         <span className="bp-tome-face bp-tome-spine" />
         <span className="bp-tome-face bp-tome-top" />
@@ -780,8 +794,8 @@ function CallToAction() {
               <span className="bp-spine bp-spine--0" />
               <span className="bp-spine bp-spine--1" />
               <span className="bp-spine bp-spine--2" />
-              <img src={`${IMG}/publishing-covers/blue-economy.webp`} alt="" loading="lazy" className="bp-pile-cover bp-pile-cover--lean" />
-              <img src={`${IMG}/publishing-covers/research.webp`} alt="" loading="lazy" className="bp-pile-cover bp-pile-cover--top" />
+              <img {...pileBlue} alt="" loading="lazy" className="bp-pile-cover bp-pile-cover--lean" />
+              <img {...pileResearch} alt="" loading="lazy" className="bp-pile-cover bp-pile-cover--top" />
             </div>
           </div>
         </div>

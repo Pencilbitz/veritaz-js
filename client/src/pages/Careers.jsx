@@ -12,11 +12,15 @@ import {
   Target,
 } from 'lucide-react';
 
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/db';
 import { Accent, Pill, Rule } from '../components/PressUI';
 import { BADGE_TONES, H2_FIT, SCREEN, SCREEN_PAD, WRAP } from '../components/pressLayout';
 import { useSeo } from "../seo/useSeo";
 import { PAGES } from "../seo/site";
+// seo/site.js preloads this photo for the Careers page; keep the two in step.
+import HERO_PHOTO from "photo:/assets/image/careers-hero.webp?frame";
+// This page's own styles (index.css has the shared ones).
+import '../styles/hr.css';
 
 /**
  * Careers — the public "we are open to applications" page.
@@ -112,7 +116,6 @@ const INCLUDE_BADGES = [
   { Icon: Phone, tone: 'svc-badge--emerald' },
 ];
 
-const HERO_PHOTO = '/assets/image/careers-hero.webp';
 const H2 = `${H2_FIT} leading-[1.1] text-vz-ink`;
 const H2_LIGHT = `${H2_FIT} leading-[1.1] text-white`;
 
@@ -133,6 +136,7 @@ export default function Careers() {
 
     const load = async () => {
       try {
+        const supabase = await db();
         const { data, error } = await supabase
           .from('veritaz_careers')
           .select(CAREERS_SELECT)
@@ -243,7 +247,7 @@ function CareersHero() {
         <div className="cr-frame relative mx-5 mb-4 sm:mx-12 lg:m-0 lg:mr-4">
           <span aria-hidden="true" className="cr-frame-back" />
           <img
-            src={HERO_PHOTO}
+            {...HERO_PHOTO}
             alt=""
             fetchPriority="high"
             className="cr-frame-img relative aspect-[4/3] w-full rounded-[2rem] object-cover object-[50%_60%] lg:aspect-auto lg:h-[min(27rem,calc(100svh-17rem))]"
