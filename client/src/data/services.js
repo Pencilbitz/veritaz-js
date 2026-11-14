@@ -298,8 +298,8 @@ const CONTENT = [
     slug: "ieee-conference-publications",
     summary:
       "Manuscript preparation, IEEE formatting, technical editing and submission support for high-standard conference papers.",
-    hero: `${IMG}/ieee-hero.webp`,
-    heroPosition: "center center",
+    hero: `${IMG}/ieee-hero-fhd.jpg`,
+    heroPosition: "right center",
     h1: ["IEEE", "Conference", "Publications"],
     lead:
       "End-to-end guidance for authors, scholars, and researchers aiming to publish high-standard papers in top-tier academic conferences and IEEE conference publications.",
